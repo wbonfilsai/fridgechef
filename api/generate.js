@@ -13,10 +13,14 @@ export default async function handler(req, res) {
     })
   }
 
-  const { prompt } = req.body
+  const { prompt, model, maxTokens } = req.body
   if (!prompt || typeof prompt !== 'string' || prompt.length > 8000) {
     return res.status(400).json({ error: 'Prompt invalide.' })
   }
+
+  const ALLOWED_MODELS = ['claude-sonnet-4-6', 'claude-opus-4-6', 'claude-haiku-4-5-20251001']
+  const safeModel     = ALLOWED_MODELS.includes(model) ? model : 'claude-sonnet-4-6'
+  const safeMaxTokens = Math.min(Math.max(100, parseInt(maxTokens) || 2000), 4096)
 
   // Server-Sent Events
   res.setHeader('Content-Type', 'text/event-stream')
@@ -30,8 +34,8 @@ export default async function handler(req, res) {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   const stream = client.messages.stream({
-    model: 'claude-opus-4-6',
-    max_tokens: 4096,
+    model: safeModel,
+    max_tokens: safeMaxTokens,
     messages: [{ role: 'user', content: prompt }],
   })
 

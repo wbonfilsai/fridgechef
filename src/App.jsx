@@ -684,8 +684,15 @@ export default function App() {
 
   const handleLogout = () => supabase.auth.signOut()
 
+  /* Ingredient auto-focus */
+  const newIngIdRef = useRef(null)
+
   /* Ingredient helpers */
-  const addIngredient    = () => setIngredients(prev => [...prev, { id: Date.now(), name: '', qty: '', unit: 'g' }])
+  const addIngredient    = () => {
+    const id = Date.now()
+    newIngIdRef.current = id
+    setIngredients(prev => [...prev, { id, name: '', qty: '', unit: 'g' }])
+  }
   const removeIngredient = (id) => setIngredients(prev => prev.length > 1 ? prev.filter(i => i.id !== id) : prev)
   const updateIngredient = (id, field, value) => setIngredients(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i))
   const handleIngKeyDown = (e) => { if (e.key === 'Enter') { e.preventDefault(); addIngredient() } }
@@ -693,11 +700,11 @@ export default function App() {
   const toggleCheckIng   = (idx) => setCheckIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, checked: !ing.checked } : ing))
 
   /* SSE helper */
-  const streamSSE = async (prompt, onChunk, signal) => {
+  const streamSSE = async (prompt, onChunk, signal, model = 'claude-sonnet-4-6', maxTokens = 2000) => {
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ prompt, model, maxTokens }),
       signal,
     })
     if (!res.ok) {
@@ -730,25 +737,14 @@ export default function App() {
   const buildProposalsPrompt = (valid) => {
     const ingList = buildIngList(valid)
     const cNames  = selectedCuisines.map(id => t.cuisines.find(c => c.id === id)?.label).filter(Boolean)
-    const cText   = cNames.length ? cNames.join(', ') : 'toutes les cuisines du monde'
+    const cText   = cNames.length ? cNames.join(', ') : 'any cuisine'
     const constraint = COOKING_TIME_CONSTRAINTS[cookingTime]
-    return `Tu es un chef cuisinier créatif. Réponds UNIQUEMENT avec un tableau JSON valide, sans texte ni backticks.
+    return `JSON only, no text, no backticks.
+Ingredients: ${ingList}
+${people} serving(s) · Style: ${cText} · Time: ${constraint}
 
-Ingrédients disponibles :
-${ingList}
-
-Pour ${people} personne${people > 1 ? 's' : ''}. Style(s) : ${cText}
-Contrainte de temps : ${constraint}. TOUTES les recettes doivent respecter cette contrainte.
-
-Génère EXACTEMENT 3 propositions variées. Format JSON strict :
-
-[
-  { "nom": "Nom", "emoji": "🍝", "cuisine": "Style", "description": "2-3 phrases appétissantes.", "tempsPrep": "10 min", "tempsCuisson": "15 min", "difficulte": "Facile" },
-  { "nom": "...", "emoji": "...", "cuisine": "...", "description": "...", "tempsPrep": "...", "tempsCuisson": "...", "difficulte": "..." },
-  { "nom": "...", "emoji": "...", "cuisine": "...", "description": "...", "tempsPrep": "...", "tempsCuisson": "...", "difficulte": "..." }
-]
-
-Réponds UNIQUEMENT avec ce JSON.${t.langPrompt}`
+3 varied proposals. Strict format:
+[{"nom":"Name","emoji":"🍝","cuisine":"Style","description":"1-2 sentences.","tempsPrep":"10 min","tempsCuisson":"15 min","difficulte":"Easy","calories":420,"protein":28,"carbs":35,"fat":14}]${t.langPrompt}`
   }
 
   const buildFullRecipePrompt = (valid, proposal, checkIngs) => {
@@ -761,49 +757,32 @@ Réponds UNIQUEMENT avec ce JSON.${t.langPrompt}`
     if (available.length)   extras += `\nIngrédients complémentaires disponibles :\n${available.map(i => `- ${i.name}${i.note ? ` (${i.note})` : ''}`).join('\n')}\n`
     if (unavailable.length) extras += `\nIngrédients NON disponibles (propose une substitution pour chacun) :\n${unavailable.map(i => `- ${i.name}`).join('\n')}\n`
 
-    return `Tu es un chef cuisinier de renommée mondiale.
+    return `Chef expert. Recette concise pour "${proposal.nom}" (${proposal.cuisine}).
+Ingrédients : ${ingList}${extras}
+${people} pers. · ${constraint}.
 
-Recette complète pour "${proposal.nom}" (${proposal.cuisine}).
-
-Ingrédients principaux :
-${ingList}${extras}
-Pour ${people} personne${people > 1 ? 's' : ''}. Contrainte : ${constraint}.
-
-Format markdown exact :
+Markdown exact, étapes courtes et précises :
 
 ## ${proposal.emoji} ${proposal.nom}
-
-**Cuisine :** ${proposal.cuisine}
-**Pour :** ${people} personne${people > 1 ? 's' : ''}
-**Préparation :** [X min]
-**Cuisson :** [X min]
-**Temps total :** [X min]
-**Difficulté :** ${proposal.difficulte}
+**Cuisine :** ${proposal.cuisine} | **Pour :** ${people} pers. | **Prép :** [X min] | **Cuisson :** [X min] | **Difficulté :** ${proposal.difficulte}
 
 ### 📋 Ingrédients
-
-- [ingrédient : quantité${unavailable.length ? ' — ou [substitut]' : ''}]
+- [ingredient : qty${unavailable.length ? ' — or [substitute]' : ''}]
 
 ### 👨‍🍳 Préparation
-
-1. [Étape]
+1. [Step — concise]
 
 ### 💡 Conseil du Chef
+[1 tip]
 
-[Astuce]
-
-### 🍷 Accord parfait
-
-[Suggestion]
+### 🍷 Accord
+[1 suggestion]
 
 ### 📊 Macros (par portion)
-
 - 🔥 **Calories :** ~XXX kcal
 - 💪 **Protéines :** ~XX g
 - 🍞 **Glucides :** ~XX g
-- 🫒 **Lipides :** ~XX g
-
-Sois enthousiaste et précis. ✨${t.langPrompt}`
+- 🫒 **Lipides :** ~XX g${t.langPrompt}`
   }
 
   /* Step 1: Generate proposals */
@@ -819,7 +798,7 @@ Sois enthousiaste et précis. ✨${t.langPrompt}`
     const ctrl = new AbortController(); abortRef.current = ctrl
     let rawJson = ''
     try {
-      await streamSSE(buildProposalsPrompt(valid), c => { rawJson += c }, ctrl.signal)
+      await streamSSE(buildProposalsPrompt(valid), c => { rawJson += c }, ctrl.signal, 'claude-sonnet-4-6', 1000)
       const match = rawJson.match(/\[[\s\S]*\]/)
       if (!match) throw new Error(lang === 'fr' ? 'Format invalide. Réessayez.' : 'Invalid format. Please retry.')
       const parsed = JSON.parse(match[0])
@@ -875,7 +854,7 @@ Sois enthousiaste et précis. ✨${t.langPrompt}`
     try {
       await streamSSE(buildFullRecipePrompt(valid, proposal, extras), chunk => {
         accumulated += chunk; setRecipeText(prev => prev + chunk)
-      }, ctrl.signal)
+      }, ctrl.signal, 'claude-opus-4-6', 2000)
       setPhase('recipe')
     } catch (err) {
       if (err.name !== 'AbortError') { setError(`❌ ${err.message}`); setPhase(extras.length ? 'check' : 'proposals') }
@@ -965,6 +944,7 @@ Sois enthousiaste et précis. ✨${t.langPrompt}`
                 {ingredients.map((ing, idx) => (
                   <div key={ing.id} className="ing-row">
                     <input type="text" className="inp ing-name" value={ing.name}
+                      ref={el => { if (el && ing.id === newIngIdRef.current) { el.focus(); newIngIdRef.current = null } }}
                       onChange={e => updateIngredient(ing.id, 'name', e.target.value)}
                       onKeyDown={handleIngKeyDown}
                       placeholder={idx === 0 ? t.ing1Placeholder : t.ingPlaceholder} />
@@ -1102,6 +1082,14 @@ Sois enthousiaste et précis. ✨${t.langPrompt}`
                         <span className="proposal-meta-item">🔥 {p.tempsCuisson}</span>
                         <span className="proposal-meta-item">📊 {p.difficulte}</span>
                       </div>
+                      {p.calories && (
+                        <div className="proposal-macros">
+                          <span>🔥 {p.calories} kcal</span>
+                          <span>💪 {p.protein}g</span>
+                          <span>🍞 {p.carbs}g</span>
+                          <span>🫒 {p.fat}g</span>
+                        </div>
+                      )}
                       {selectedIdx === i && <span className="proposal-check">✓</span>}
                     </button>
                   ))}

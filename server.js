@@ -21,10 +21,14 @@ app.post('/api/generate', async (req, res) => {
     })
   }
 
-  const { prompt } = req.body
+  const { prompt, model, maxTokens } = req.body
   if (!prompt || typeof prompt !== 'string' || prompt.length > 8000) {
     return res.status(400).json({ error: 'Prompt invalide.' })
   }
+
+  const ALLOWED_MODELS = ['claude-sonnet-4-6', 'claude-opus-4-6', 'claude-haiku-4-5-20251001']
+  const safeModel     = ALLOWED_MODELS.includes(model) ? model : 'claude-sonnet-4-6'
+  const safeMaxTokens = Math.min(Math.max(100, parseInt(maxTokens) || 2000), 4096)
 
   // Server-Sent Events
   res.setHeader('Content-Type', 'text/event-stream')
@@ -38,8 +42,8 @@ app.post('/api/generate', async (req, res) => {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   const stream = client.messages.stream({
-    model: 'claude-opus-4-6',
-    max_tokens: 4096,
+    model: safeModel,
+    max_tokens: safeMaxTokens,
     messages: [{ role: 'user', content: prompt }],
   })
 
@@ -88,28 +92,18 @@ app.post('/api/check-ingredients', async (req, res) => {
   const timeLabels = { express: '15 minutes', rapide: '30 minutes', normal: '45 minutes', leisurely: '1 heure ou plus' }
   const timeLabel = timeLabels[cookingTime] || '45 minutes'
 
-  const prompt = `Tu es un chef cuisinier expert. Pour la recette "${recipeName}" (cuisine ${recipeCuisine}), identifie les ingrédients complémentaires courants nécessaires que l'utilisateur n'a pas encore listés.
-
-L'utilisateur a déjà :
+  const prompt = `Recette "${recipeName}" (${recipeCuisine}), ${people} pers., ${timeLabel}.
+Ingrédients déjà disponibles :
 ${userIngList}
 
-Pour ${people} personne${people > 1 ? 's' : ''}. Temps total disponible : ${timeLabel}.
-
-Réponds UNIQUEMENT avec un tableau JSON des ingrédients complémentaires typiquement nécessaires (maximum 8). Ne liste JAMAIS ce que l'utilisateur a déjà. Format strict :
-
-[
-  { "name": "Ail", "emoji": "🧄", "note": "3 gousses" },
-  { "name": "Sauce soja", "emoji": "🫙", "note": "3 c. à soupe" }
-]
-
-Si aucun ingrédient complémentaire n'est nécessaire, réponds : []
-Réponds UNIQUEMENT avec ce JSON, rien d'autre.`
+Réponds UNIQUEMENT avec un JSON — max 6 ingrédients complémentaires manquants. Si rien ne manque : [].
+[{"name":"Ail","emoji":"🧄","note":"3 gousses"}]`
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   try {
     const message = await client.messages.create({
-      model: 'claude-opus-4-6',
-      max_tokens: 512,
+      model: 'claude-sonnet-4-6',
+      max_tokens: 400,
       messages: [{ role: 'user', content: prompt }],
     })
     const text = message.content[0].text

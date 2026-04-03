@@ -26,28 +26,18 @@ export default async function handler(req, res) {
   }
   const timeLabel = timeLabels[cookingTime] || '45 minutes'
 
-  const prompt = `Tu es un chef cuisinier expert. Pour la recette "${recipeName}" (cuisine ${recipeCuisine}), identifie les ingrédients complémentaires courants nécessaires que l'utilisateur n'a pas encore listés.
-
-L'utilisateur a déjà :
+  const prompt = `Recette "${recipeName}" (${recipeCuisine}), ${people} pers., ${timeLabel}.
+Ingrédients déjà disponibles :
 ${userIngList}
 
-Pour ${people} personne${people > 1 ? 's' : ''}. Temps total disponible : ${timeLabel}.
-
-Réponds UNIQUEMENT avec un tableau JSON des ingrédients complémentaires typiquement nécessaires (maximum 8). Ne liste JAMAIS ce que l'utilisateur a déjà. Format strict :
-
-[
-  { "name": "Ail", "emoji": "🧄", "note": "3 gousses" },
-  { "name": "Sauce soja", "emoji": "🫙", "note": "3 c. à soupe" }
-]
-
-Si aucun ingrédient complémentaire n'est nécessaire, réponds : []
-Réponds UNIQUEMENT avec ce JSON, rien d'autre.`
+Réponds UNIQUEMENT avec un JSON — max 6 ingrédients complémentaires manquants. Si rien ne manque : [].
+[{"name":"Ail","emoji":"🧄","note":"3 gousses"}]`
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   try {
     const message = await client.messages.create({
-      model: 'claude-opus-4-6',
-      max_tokens: 512,
+      model: 'claude-sonnet-4-6',
+      max_tokens: 400,
       messages: [{ role: 'user', content: prompt }],
     })
     const text = message.content[0].text
