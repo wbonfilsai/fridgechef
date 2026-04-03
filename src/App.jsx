@@ -1,0 +1,1201 @@
+import { useState, useEffect, useRef } from 'react'
+import './App.css'
+import { supabase } from './supabase'
+
+/* Claude prompt constraints — always French (used in AI prompts) */
+const COOKING_TIME_CONSTRAINTS = {
+  express:   '15 minutes maximum au total (préparation + cuisson)',
+  rapide:    '30 minutes maximum au total (préparation + cuisson)',
+  normal:    '45 minutes maximum au total (préparation + cuisson)',
+  leisurely: "plus d'une heure — propose quelque chose d'élaboré si tu le souhaites",
+}
+
+const UNITS = ['g', 'kg', 'L', 'mL', 'cl', 'unités', 'tasses', 'c. à soupe', 'c. à café', 'tranches', 'pincées']
+
+/* ═══════════════════════════════════════════
+   TRANSLATIONS
+   ═══════════════════════════════════════════ */
+const T = {
+  fr: {
+    cuisines: [
+      { id: 'francaise',  label: 'Française',    emoji: '🇫🇷' },
+      { id: 'italienne',  label: 'Italienne',    emoji: '🇮🇹' },
+      { id: 'japonaise',  label: 'Japonaise',    emoji: '🇯🇵' },
+      { id: 'mexicaine',  label: 'Mexicaine',    emoji: '🇲🇽' },
+      { id: 'indienne',   label: 'Indienne',     emoji: '🇮🇳' },
+      { id: 'chinoise',   label: 'Chinoise',     emoji: '🇨🇳' },
+      { id: 'thai',       label: 'Thaïlandaise', emoji: '🇹🇭' },
+      { id: 'grecque',    label: 'Grecque',      emoji: '🇬🇷' },
+      { id: 'marocaine',  label: 'Marocaine',    emoji: '🇲🇦' },
+      { id: 'americaine', label: 'Américaine',   emoji: '🇺🇸' },
+      { id: 'espagnole',  label: 'Espagnole',    emoji: '🇪🇸' },
+      { id: 'surprise',   label: 'Surprise !',   emoji: '🌍' },
+    ],
+    cookingTimes: [
+      { id: 'express',   label: 'Express',       detail: '15 min', emoji: '⚡' },
+      { id: 'rapide',    label: 'Rapide',        detail: '30 min', emoji: '🏃' },
+      { id: 'normal',    label: 'Normal',        detail: '45 min', emoji: '🍳' },
+      { id: 'leisurely', label: "J'ai le temps", detail: '1h+',    emoji: '😌' },
+    ],
+    langToggle: '🇺🇸 EN',
+    connect: 'Se connecter',
+    heroBadge: '✨ Propulsé par Claude AI (Anthropic)',
+    heroTitle1: 'Votre frigo mérite mieux',
+    heroTitle2: "que l'improvisation",
+    heroSub: "Entrez vos ingrédients, choisissez un style de cuisine, et laissez l'IA vous proposer des recettes personnalisées — substitutions, macros et conseils de chef inclus.",
+    heroCta: 'Commencer à cuisiner',
+    statsProposals: 'propositions', statsCuisines: 'cuisines', statsRecipes: 'recettes',
+    featuresLabel: 'Fonctionnalités',
+    featuresTitle: "Tout ce qu'il faut pour cuisiner mieux",
+    features: [
+      { emoji: '✨', title: '3 propositions en secondes', desc: "Claude génère 3 idées de recettes variées, adaptées à vos ingrédients, votre style de cuisine et votre temps disponible." },
+      { emoji: '🛒', title: 'Ingrédients intelligents', desc: "Cochez les ingrédients complémentaires que vous avez. Les substitutions créatives s'occupent du reste." },
+      { emoji: '📊', title: 'Macros nutritionnelles', desc: 'Calories, protéines, glucides et lipides estimés par portion — pour cuisiner sainement sans y penser.' },
+    ],
+    hiwLabel: 'Comment ça marche',
+    hiwTitle: 'Cinq étapes, une recette parfaite',
+    hiwSteps: [
+      { n: '1', icon: '🥦', label: 'Listez vos ingrédients et le nombre de convives' },
+      { n: '2', icon: '🌍', label: 'Choisissez un style de cuisine et votre temps' },
+      { n: '3', icon: '🍽️', label: 'Sélectionnez parmi 3 propositions personnalisées' },
+      { n: '4', icon: '🛒', label: "Confirmez les ingrédients complémentaires que vous avez" },
+      { n: '5', icon: '📖', label: 'La recette complète avec macros et conseils du chef' },
+    ],
+    ctaTitle: 'Prêt à transformer votre frigo ?',
+    ctaSub: 'Gratuit, rapide et intelligent. Des recettes en 30 secondes.',
+    ctaBtn: 'Créer mon compte',
+    footerPowered: 'Propulsé par', footerSuffix: '(Anthropic) 🤖 — Cuisinez avec passion 🔥',
+    loginTab: 'Se connecter', signupTab: "S'inscrire",
+    loginTitle: 'Bon retour !', signupTitle: 'Rejoignez FridgeChef',
+    loginSub: 'Connectez-vous pour accéder à vos recettes',
+    signupSub: 'Créez votre compte gratuitement',
+    emailLabel: 'Email', passwordLabel: 'Mot de passe',
+    passwordHint: 'Minimum 6 caractères', passwordDots: '••••••••',
+    loginBtn: 'Se connecter', signupBtn: 'Créer mon compte',
+    signupSuccess: 'Compte créé ! Vérifiez votre email pour confirmer votre adresse, puis connectez-vous.',
+    authErrors: {
+      'Invalid login credentials': 'Email ou mot de passe incorrect.',
+      'User already registered': 'Cet email est déjà utilisé.',
+      'Password should be at least 6 characters': 'Le mot de passe doit faire au moins 6 caractères.',
+      'Email not confirmed': 'Email non confirmé. Vérifiez votre boîte mail.',
+    },
+    newRecipe: '✨ Nouvelle recette', myRecipes: '❤️ Mes recettes', logout: 'Déconnexion',
+    step1Title: '🥦 Mes ingrédients', step1Sub: "Qu'est-ce qu'il y a dans votre frigo ?",
+    ing1Placeholder: 'Ex: poulet, tomates, œufs...', ingPlaceholder: 'Ingrédient...',
+    addIngredient: '＋ Ajouter un ingrédient', removeIng: 'Supprimer',
+    step2Title: '👥 Nombre de convives', step2Sub: 'Pour combien de personnes cuisinez-vous ?',
+    person: 'personne', persons: 'personnes',
+    step3Title: '🌍 Style de cuisine',
+    step3Sub: 'Sélectionnez vos cuisines préférées, ou laissez-nous vous surprendre !',
+    step3SubSelected: (n) => `${n} cuisine${n > 1 ? 's' : ''} sélectionnée${n > 1 ? 's' : ''}`,
+    step4Title: '⏱️ Temps disponible', step4Sub: 'Combien de temps avez-vous pour cuisiner ?',
+    generateBtn: '✨ Générer mes recettes', stopBtn: '⏹ Arrêter', resetBtn: '🔄 Nouvelles propositions',
+    proposalsTitle: '🍽️ Choisissez votre recette',
+    proposalsSub: 'Cliquez sur la recette qui vous inspire',
+    proposalsSubChange: 'Cliquez sur une autre carte pour changer de recette',
+    proposalsLoadingMsg: 'Le chef imagine 3 recettes pour vous...',
+    checkLoadingMsg: 'Analyse des ingrédients nécessaires...',
+    recipeLoadingMsg: 'Le chef rédige la recette complète...',
+    checkTitle: '🛒 Est-ce que tu as aussi ?',
+    checkSub: (name) => `Pour ${name} — coche les ingrédients que tu as`,
+    checkEmpty: "✅ Tu as tout ce qu'il faut !",
+    checkNote: '💡 Les ingrédients non cochés seront remplacés par des substitutions créatives.',
+    checkGenBtn: '👨‍🍳 Générer la recette complète',
+    recipeTitle: '📖 Recette complète',
+    saveBtn: '❤️ Sauvegarder', savedConfirm: '✅ Sauvegardée !',
+    savedPageTitle: '❤️ Mes recettes sauvegardées',
+    savedPageSub0: 'Votre collection est vide',
+    savedPageSubN: (n) => `${n} recette${n > 1 ? 's' : ''} dans votre collection`,
+    savedLoadingMsg: 'Chargement de vos recettes...',
+    savedSearchPlaceholder: 'Rechercher par nom ou cuisine...',
+    savedEmptyTitle: 'Aucune recette sauvegardée',
+    savedEmptyDesc: 'Générez une recette et cliquez sur ❤️ pour la retrouver ici.',
+    savedNewRecipeBtn: 'Créer une recette',
+    savedDeleteTip: 'Supprimer', savedDeleteConfirm: 'Supprimer ?',
+    savedDeleteYes: 'Oui', savedDeleteNo: 'Non',
+    savedClose: 'Fermer',
+    dateLocale: 'fr-FR',
+    langPrompt: '',
+  },
+  en: {
+    cuisines: [
+      { id: 'francaise',  label: 'French',    emoji: '🇫🇷' },
+      { id: 'italienne',  label: 'Italian',   emoji: '🇮🇹' },
+      { id: 'japonaise',  label: 'Japanese',  emoji: '🇯🇵' },
+      { id: 'mexicaine',  label: 'Mexican',   emoji: '🇲🇽' },
+      { id: 'indienne',   label: 'Indian',    emoji: '🇮🇳' },
+      { id: 'chinoise',   label: 'Chinese',   emoji: '🇨🇳' },
+      { id: 'thai',       label: 'Thai',      emoji: '🇹🇭' },
+      { id: 'grecque',    label: 'Greek',     emoji: '🇬🇷' },
+      { id: 'marocaine',  label: 'Moroccan',  emoji: '🇲🇦' },
+      { id: 'americaine', label: 'American',  emoji: '🇺🇸' },
+      { id: 'espagnole',  label: 'Spanish',   emoji: '🇪🇸' },
+      { id: 'surprise',   label: 'Surprise!', emoji: '🌍' },
+    ],
+    cookingTimes: [
+      { id: 'express',   label: 'Express',       detail: '15 min', emoji: '⚡' },
+      { id: 'rapide',    label: 'Quick',         detail: '30 min', emoji: '🏃' },
+      { id: 'normal',    label: 'Normal',        detail: '45 min', emoji: '🍳' },
+      { id: 'leisurely', label: "I've got time", detail: '1h+',    emoji: '😌' },
+    ],
+    langToggle: '🇫🇷 FR',
+    connect: 'Sign in',
+    heroBadge: '✨ Powered by Claude AI (Anthropic)',
+    heroTitle1: 'Your fridge deserves better',
+    heroTitle2: 'than improvisation',
+    heroSub: "Enter your ingredients, choose a cuisine style, and let AI suggest personalized recipes — substitutions, macros and chef tips included.",
+    heroCta: 'Start cooking',
+    statsProposals: 'proposals', statsCuisines: 'cuisines', statsRecipes: 'recipes',
+    featuresLabel: 'Features',
+    featuresTitle: 'Everything you need to cook better',
+    features: [
+      { emoji: '✨', title: '3 proposals in seconds', desc: "Claude generates 3 varied recipe ideas, tailored to your ingredients, cuisine style and available time." },
+      { emoji: '🛒', title: 'Smart ingredients', desc: "Check off the complementary ingredients you have. Creative substitutions handle the rest." },
+      { emoji: '📊', title: 'Nutritional macros', desc: 'Calories, proteins, carbs and fats estimated per serving — for healthy cooking without thinking about it.' },
+    ],
+    hiwLabel: 'How it works',
+    hiwTitle: 'Five steps, one perfect recipe',
+    hiwSteps: [
+      { n: '1', icon: '🥦', label: 'List your ingredients and number of guests' },
+      { n: '2', icon: '🌍', label: 'Choose a cuisine style and your time' },
+      { n: '3', icon: '🍽️', label: 'Pick from 3 personalized proposals' },
+      { n: '4', icon: '🛒', label: "Confirm the complementary ingredients you have" },
+      { n: '5', icon: '📖', label: 'Full recipe with macros and chef tips' },
+    ],
+    ctaTitle: 'Ready to transform your fridge?',
+    ctaSub: 'Free, fast and smart. Recipes in 30 seconds.',
+    ctaBtn: 'Create my account',
+    footerPowered: 'Powered by', footerSuffix: '(Anthropic) 🤖 — Cook with passion 🔥',
+    loginTab: 'Sign in', signupTab: 'Sign up',
+    loginTitle: 'Welcome back!', signupTitle: 'Join FridgeChef',
+    loginSub: 'Sign in to access your recipes',
+    signupSub: 'Create your free account',
+    emailLabel: 'Email', passwordLabel: 'Password',
+    passwordHint: 'At least 6 characters', passwordDots: '••••••••',
+    loginBtn: 'Sign in', signupBtn: 'Create account',
+    signupSuccess: 'Account created! Check your email to confirm your address, then sign in.',
+    authErrors: {
+      'Invalid login credentials': 'Incorrect email or password.',
+      'User already registered': 'This email is already in use.',
+      'Password should be at least 6 characters': 'Password must be at least 6 characters.',
+      'Email not confirmed': 'Email not confirmed. Check your inbox.',
+    },
+    newRecipe: '✨ New recipe', myRecipes: '❤️ My recipes', logout: 'Sign out',
+    step1Title: '🥦 My ingredients', step1Sub: "What's in your fridge?",
+    ing1Placeholder: 'E.g. chicken, tomatoes, eggs...', ingPlaceholder: 'Ingredient...',
+    addIngredient: '＋ Add an ingredient', removeIng: 'Remove',
+    step2Title: '👥 Number of guests', step2Sub: 'How many people are you cooking for?',
+    person: 'person', persons: 'people',
+    step3Title: '🌍 Cuisine style',
+    step3Sub: 'Select your favourite cuisines, or let us surprise you!',
+    step3SubSelected: (n) => `${n} cuisine${n > 1 ? 's' : ''} selected`,
+    step4Title: '⏱️ Available time', step4Sub: 'How much time do you have to cook?',
+    generateBtn: '✨ Generate my recipes', stopBtn: '⏹ Stop', resetBtn: '🔄 New proposals',
+    proposalsTitle: '🍽️ Choose your recipe',
+    proposalsSub: 'Click on the recipe that inspires you',
+    proposalsSubChange: 'Click another card to change recipe',
+    proposalsLoadingMsg: 'The chef is imagining 3 recipes for you...',
+    checkLoadingMsg: 'Analysing required ingredients...',
+    recipeLoadingMsg: 'The chef is writing the full recipe...',
+    checkTitle: '🛒 Do you also have?',
+    checkSub: (name) => `For ${name} — check the ingredients you have`,
+    checkEmpty: '✅ You have everything you need!',
+    checkNote: '💡 Unchecked ingredients will be replaced with creative substitutions.',
+    checkGenBtn: '👨‍🍳 Generate full recipe',
+    recipeTitle: '📖 Full Recipe',
+    saveBtn: '❤️ Save', savedConfirm: '✅ Saved!',
+    savedPageTitle: '❤️ My saved recipes',
+    savedPageSub0: 'Your collection is empty',
+    savedPageSubN: (n) => `${n} recipe${n > 1 ? 's' : ''} in your collection`,
+    savedLoadingMsg: 'Loading your recipes...',
+    savedSearchPlaceholder: 'Search by name or cuisine...',
+    savedEmptyTitle: 'No saved recipes',
+    savedEmptyDesc: 'Generate a recipe and click ❤️ to save it here.',
+    savedNewRecipeBtn: 'Create a recipe',
+    savedDeleteTip: 'Delete', savedDeleteConfirm: 'Delete?',
+    savedDeleteYes: 'Yes', savedDeleteNo: 'No',
+    savedClose: 'Close',
+    dateLocale: 'en-US',
+    langPrompt: '\nRespond entirely in English.',
+  },
+}
+
+/* ── Inline markdown parser ── */
+function parseInline(text) {
+  const parts = []
+  const regex = /\*\*([^*]+)\*\*/g
+  let lastIndex = 0, match, i = 0
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index))
+    parts.push(<strong key={i++}>{match[1]}</strong>)
+    lastIndex = match.index + match[0].length
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex))
+  return parts.length === 0 ? [text] : parts
+}
+
+/* ── Block markdown renderer ── */
+function RecipeContent({ text, isStreaming }) {
+  const lines = text.split('\n')
+  const elements = []
+  let ulItems = [], olItems = [], k = 0
+  const key = () => k++
+  const flushUL = () => { if (ulItems.length) { elements.push(<ul key={key()}>{[...ulItems]}</ul>); ulItems = [] } }
+  const flushOL = () => { if (olItems.length) { elements.push(<ol key={key()}>{[...olItems]}</ol>); olItems = [] } }
+  const flush = () => { flushUL(); flushOL() }
+
+  for (const line of lines) {
+    if (line.startsWith('## ')) {
+      flush(); elements.push(<h2 key={key()}>{parseInline(line.slice(3))}</h2>)
+    } else if (line.startsWith('### ')) {
+      flush(); elements.push(<h3 key={key()}>{parseInline(line.slice(4))}</h3>)
+    } else if (line.trim() === '---') {
+      flush(); elements.push(<div key={key()} className="recipe-sep" />)
+    } else if (line.startsWith('- ') || line.startsWith('* ')) {
+      flushOL(); ulItems.push(<li key={key()}>{parseInline(line.slice(2))}</li>)
+    } else if (/^\d+\.[ \t]/.test(line)) {
+      flushUL(); olItems.push(<li key={key()}>{parseInline(line.replace(/^\d+\.[ \t]*/, ''))}</li>)
+    } else if (line.trim() === '') {
+      flush()
+    } else {
+      flush(); elements.push(<p key={key()}>{parseInline(line)}</p>)
+    }
+  }
+  flush()
+  return (
+    <div className="recipe-content">
+      {elements}
+      {isStreaming && <span className="cursor">▌</span>}
+    </div>
+  )
+}
+
+/* ════════════════════════════════════════════
+   RECIPE MODAL (saved recipes detail)
+   ════════════════════════════════════════════ */
+function RecipeModal({ recipe, onClose, t }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div className="recipe-modal-overlay" onClick={onClose}>
+      <div className="recipe-modal" onClick={e => e.stopPropagation()}>
+        <div className="recipe-modal-header">
+          <div className="recipe-modal-title-row">
+            <span className="recipe-modal-emoji">{recipe.emoji || '🍽️'}</span>
+            <div className="recipe-modal-title-info">
+              <h2 className="recipe-modal-title">{recipe.title}</h2>
+              <div className="recipe-modal-meta">
+                {recipe.cuisine   && <span className="saved-badge">{recipe.cuisine}</span>}
+                {recipe.prep_time && <span className="saved-meta-item">🔪 {recipe.prep_time}</span>}
+                {recipe.cook_time && <span className="saved-meta-item">🔥 {recipe.cook_time}</span>}
+                {recipe.difficulty && <span className="saved-meta-item">📊 {recipe.difficulty}</span>}
+              </div>
+            </div>
+          </div>
+          <button className="recipe-modal-close" onClick={onClose} aria-label={t.savedClose}>×</button>
+        </div>
+        <div className="recipe-modal-body">
+          <RecipeContent text={recipe.full_text} isStreaming={false} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ════════════════════════════════════════════
+   LANDING PAGE
+   ════════════════════════════════════════════ */
+function LandingPage({ t, lang, onToggleLang, onGetStarted }) {
+  return (
+    <div className="landing">
+      <nav className="landing-nav">
+        <div className="l-container l-nav-inner">
+          <div className="landing-logo">
+            <span className="landing-logo-icon">🍳</span>
+            <span className="landing-logo-text">FridgeChef</span>
+          </div>
+          <div className="landing-nav-right">
+            <button className="lang-toggle" onClick={onToggleLang}>{t.langToggle}</button>
+            <button className="btn-outline-sm" onClick={onGetStarted}>{t.connect}</button>
+          </div>
+        </div>
+      </nav>
+
+      <section className="hero">
+        <div className="hero-bg-glow" />
+        <div className="l-container">
+          <div className="hero-badge">{t.heroBadge}</div>
+          <h1 className="hero-title">
+            {t.heroTitle1}<br />
+            <span className="hero-accent">{t.heroTitle2}</span>
+          </h1>
+          <p className="hero-sub">{t.heroSub}</p>
+          <button className="btn-hero" onClick={onGetStarted}>
+            {t.heroCta} <span className="btn-arrow">→</span>
+          </button>
+          <div className="hero-stats">
+            <div className="hero-stat"><strong>3</strong><span>{t.statsProposals}</span></div>
+            <div className="hero-stat-sep" />
+            <div className="hero-stat"><strong>12</strong><span>{t.statsCuisines}</span></div>
+            <div className="hero-stat-sep" />
+            <div className="hero-stat"><strong>∞</strong><span>{t.statsRecipes}</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="features-section">
+        <div className="l-container">
+          <div className="section-eyebrow">{t.featuresLabel}</div>
+          <h2 className="section-title">{t.featuresTitle}</h2>
+          <div className="features-grid">
+            {t.features.map((f, i) => (
+              <div key={i} className="feature-card">
+                <div className="feature-emoji">{f.emoji}</div>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="hiw-section">
+        <div className="l-container">
+          <div className="section-eyebrow">{t.hiwLabel}</div>
+          <h2 className="section-title hiw-title">{t.hiwTitle}</h2>
+          <div className="hiw-steps">
+            {t.hiwSteps.map((s, i) => (
+              <div key={i} className="hiw-step">
+                <div className="hiw-num">{s.n}</div>
+                <div className="hiw-icon">{s.icon}</div>
+                <p className="hiw-label">{s.label}</p>
+                {i < t.hiwSteps.length - 1 && <div className="hiw-connector" />}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="cta-section">
+        <div className="l-container">
+          <div className="cta-inner">
+            <h2>{t.ctaTitle}</h2>
+            <p>{t.ctaSub}</p>
+            <button className="btn-hero btn-hero-white" onClick={onGetStarted}>
+              {t.ctaBtn} <span className="btn-arrow">→</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <footer className="landing-footer">
+        <div className="l-container">
+          <p>{t.footerPowered} <strong>Claude AI</strong> {t.footerSuffix}</p>
+        </div>
+      </footer>
+    </div>
+  )
+}
+
+/* ════════════════════════════════════════════
+   AUTH MODAL
+   ════════════════════════════════════════════ */
+function AuthModal({ t, onClose, onSuccess }) {
+  const [tab, setTab]           = useState('login')
+  const [email, setEmail]       = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState('')
+  const [success, setSuccess]   = useState('')
+
+  const switchTab = (newTab) => { setTab(newTab); setError(''); setSuccess('') }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true); setError(''); setSuccess('')
+    try {
+      if (tab === 'login') {
+        const { error: err } = await supabase.auth.signInWithPassword({ email, password })
+        if (err) throw err
+        onSuccess()
+      } else {
+        const { error: err } = await supabase.auth.signUp({ email, password })
+        if (err) throw err
+        setSuccess(t.signupSuccess)
+      }
+    } catch (err) {
+      setError(t.authErrors[err.message] || err.message)
+    } finally { setLoading(false) }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose} aria-label="Fermer">×</button>
+        <div className="modal-logo">🍳</div>
+        <h2 className="modal-title">{tab === 'login' ? t.loginTitle : t.signupTitle}</h2>
+        <p className="modal-sub">{tab === 'login' ? t.loginSub : t.signupSub}</p>
+
+        <div className="modal-tabs">
+          <button className={`modal-tab${tab === 'login' ? ' active' : ''}`} onClick={() => switchTab('login')}>{t.loginTab}</button>
+          <button className={`modal-tab${tab === 'signup' ? ' active' : ''}`} onClick={() => switchTab('signup')}>{t.signupTab}</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="modal-form">
+          <div className="form-group">
+            <label className="form-label">{t.emailLabel}</label>
+            <input type="email" className="modal-input" value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="votre@email.com" required autoFocus />
+          </div>
+          <div className="form-group">
+            <label className="form-label">{t.passwordLabel}</label>
+            <input type="password" className="modal-input" value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder={tab === 'signup' ? t.passwordHint : t.passwordDots}
+              required minLength={6} />
+          </div>
+          {error   && <div className="modal-error">{error}</div>}
+          {success && <div className="modal-success">{success}</div>}
+          <button type="submit" className="modal-submit" disabled={loading}>
+            {loading ? <span className="modal-spinner" /> : (tab === 'login' ? t.loginBtn : t.signupBtn)}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+/* ════════════════════════════════════════════
+   APP HEADER
+   ════════════════════════════════════════════ */
+function AppHeader({ t, lang, onToggleLang, user, view, onNavigate, onLogout }) {
+  return (
+    <header className="app-header">
+      <div className="container header-inner">
+        <button className="header-logo" onClick={() => onNavigate('app')}>
+          <span className="header-logo-icon">🍳</span>
+          <span className="header-logo-text">FridgeChef</span>
+        </button>
+        <nav className="header-nav">
+          <button className={`header-nav-btn${view === 'app' ? ' active' : ''}`} onClick={() => onNavigate('app')}>
+            {t.newRecipe}
+          </button>
+          <button className={`header-nav-btn${view === 'saved' ? ' active' : ''}`} onClick={() => onNavigate('saved')}>
+            {t.myRecipes}
+          </button>
+        </nav>
+        <div className="header-user">
+          <button className="lang-toggle lang-toggle-sm" onClick={onToggleLang}>{t.langToggle}</button>
+          <span className="header-email">{user.email}</span>
+          <button className="btn-logout" onClick={onLogout}>{t.logout}</button>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+/* ════════════════════════════════════════════
+   SAVED RECIPES VIEW
+   ════════════════════════════════════════════ */
+function SavedRecipesView({ t, onNavigate }) {
+  const [recipes, setRecipes]       = useState([])
+  const [loading, setLoading]       = useState(true)
+  const [activeRecipe, setActiveRecipe] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(null)
+  const [deleting, setDeleting]     = useState(null)
+  const [search, setSearch]         = useState('')
+
+  useEffect(() => { loadRecipes() }, [])
+
+  const loadRecipes = async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('saved_recipes')
+      .select('*')
+      .order('created_at', { ascending: false })
+    setRecipes(data || [])
+    setLoading(false)
+  }
+
+  const deleteRecipe = async (id) => {
+    setDeleting(id)
+    await supabase.from('saved_recipes').delete().eq('id', id)
+    setRecipes(prev => prev.filter(r => r.id !== id))
+    if (activeRecipe?.id === id) setActiveRecipe(null)
+    setDeleting(null)
+    setConfirmDelete(null)
+  }
+
+  const fmt = (iso) => new Date(iso).toLocaleDateString(t.dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })
+
+  const filtered = search.trim()
+    ? recipes.filter(r =>
+        r.title.toLowerCase().includes(search.toLowerCase()) ||
+        (r.cuisine && r.cuisine.toLowerCase().includes(search.toLowerCase()))
+      )
+    : recipes
+
+  return (
+    <main className="main">
+      <div className="container">
+        <div className="saved-header">
+          <h1 className="saved-title">{t.savedPageTitle}</h1>
+          <p className="saved-sub">
+            {recipes.length === 0 ? t.savedPageSub0 : t.savedPageSubN(recipes.length)}
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="loading-state">
+            <span className="chef-anim">📚</span>
+            <p>{t.savedLoadingMsg}</p>
+            <div className="dots"><span /><span /><span /></div>
+          </div>
+        ) : recipes.length === 0 ? (
+          <div className="saved-empty">
+            <div className="saved-empty-illustration">🍽️</div>
+            <h3>{t.savedEmptyTitle}</h3>
+            <p>{t.savedEmptyDesc}</p>
+            <button className="gen-btn saved-empty-btn" onClick={() => onNavigate('app')}>
+              <span>✨</span> {t.savedNewRecipeBtn}
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="saved-search-wrap">
+              <span className="saved-search-icon">🔍</span>
+              <input
+                type="text"
+                className="saved-search"
+                placeholder={t.savedSearchPlaceholder}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              {search && (
+                <button className="saved-search-clear" onClick={() => setSearch('')}>×</button>
+              )}
+            </div>
+
+            <div className="saved-grid">
+              {filtered.map((r, idx) => (
+                <div key={r.id} className="saved-card" style={{ animationDelay: `${idx * 0.05}s` }}
+                  onClick={() => setActiveRecipe(r)}>
+                  <div className="saved-card-emoji-wrap">
+                    <span className="saved-card-emoji">{r.emoji || '🍽️'}</span>
+                  </div>
+                  <div className="saved-card-content">
+                    <h3 className="saved-card-title">{r.title}</h3>
+                    <div className="saved-card-badges">
+                      {r.cuisine && <span className="saved-badge">{r.cuisine}</span>}
+                      {r.difficulty && <span className="saved-difficulty-badge">{r.difficulty}</span>}
+                    </div>
+                    <div className="saved-card-times">
+                      {r.prep_time && <span className="saved-meta-item">🔪 {r.prep_time}</span>}
+                      {r.cook_time && <span className="saved-meta-item">🔥 {r.cook_time}</span>}
+                    </div>
+                    <span className="saved-date">{fmt(r.created_at)}</span>
+                  </div>
+                  <div className="saved-card-delete-wrap" onClick={e => e.stopPropagation()}>
+                    {confirmDelete === r.id ? (
+                      <div className="saved-delete-confirm-inline">
+                        <span className="saved-delete-label">{t.savedDeleteConfirm}</span>
+                        <button className="saved-del-yes" onClick={() => deleteRecipe(r.id)} disabled={deleting === r.id}>
+                          {deleting === r.id ? '…' : t.savedDeleteYes}
+                        </button>
+                        <button className="saved-del-no" onClick={() => setConfirmDelete(null)}>{t.savedDeleteNo}</button>
+                      </div>
+                    ) : (
+                      <button className="saved-delete-btn" onClick={() => setConfirmDelete(r.id)} title={t.savedDeleteTip}>
+                        🗑️
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {activeRecipe && (
+        <RecipeModal recipe={activeRecipe} onClose={() => setActiveRecipe(null)} t={t} />
+      )}
+    </main>
+  )
+}
+
+/* ════════════════════════════════════════════
+   MAIN APP
+   ════════════════════════════════════════════ */
+export default function App() {
+  /* i18n */
+  const [lang, setLang] = useState('fr')
+  const t = T[lang]
+  const toggleLang = () => setLang(l => l === 'fr' ? 'en' : 'fr')
+
+  /* Auth */
+  const [user, setUser]           = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+  const [view, setView]           = useState('landing')
+  const [showAuth, setShowAuth]   = useState(false)
+
+  /* Form */
+  const [ingredients, setIngredients] = useState([{ id: 1, name: '', qty: '', unit: 'g' }])
+  const [people, setPeople]           = useState(2)
+  const [selectedCuisines, setSelectedCuisines] = useState([])
+  const [cookingTime, setCookingTime] = useState('normal')
+
+  /* Flow */
+  const [phase, setPhase]               = useState('idle')
+  const [proposals, setProposals]       = useState([])
+  const [selectedIdx, setSelectedIdx]   = useState(null)
+  const [selectedProposal, setSelectedProposal] = useState(null)
+  const [checkIngredients, setCheckIngredients] = useState([])
+  const [recipeText, setRecipeText]     = useState('')
+  const [error, setError]               = useState('')
+  const [saved, setSaved]               = useState(false)
+  const [saving, setSaving]             = useState(false)
+  const [heartPop, setHeartPop]         = useState(false)
+
+  const proposalsRef = useRef(null)
+  const checkRef     = useRef(null)
+  const recipeRef    = useRef(null)
+  const abortRef     = useRef(null)
+
+  /* Auth setup */
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      setView(session?.user ? 'app' : 'landing')
+      setAuthLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) { setView('app'); setShowAuth(false) }
+      else setView('landing')
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = () => supabase.auth.signOut()
+
+  /* Ingredient helpers */
+  const addIngredient    = () => setIngredients(prev => [...prev, { id: Date.now(), name: '', qty: '', unit: 'g' }])
+  const removeIngredient = (id) => setIngredients(prev => prev.length > 1 ? prev.filter(i => i.id !== id) : prev)
+  const updateIngredient = (id, field, value) => setIngredients(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i))
+  const handleIngKeyDown = (e) => { if (e.key === 'Enter') { e.preventDefault(); addIngredient() } }
+  const toggleCuisine    = (id) => setSelectedCuisines(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
+  const toggleCheckIng   = (idx) => setCheckIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, checked: !ing.checked } : ing))
+
+  /* SSE helper */
+  const streamSSE = async (prompt, onChunk, signal) => {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+      signal,
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error || `Erreur serveur (${res.status})`)
+    }
+    const reader = res.body.getReader()
+    const dec    = new TextDecoder()
+    let buf      = ''
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buf += dec.decode(value, { stream: true })
+      const lines = buf.split('\n'); buf = lines.pop()
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue
+        const raw = line.slice(6).trim()
+        if (raw === '[DONE]') return
+        let p; try { p = JSON.parse(raw) } catch { continue }
+        if (p.text)  onChunk(p.text)
+        if (p.error) throw new Error(p.error)
+      }
+    }
+  }
+
+  /* Prompt builders */
+  const buildIngList = (valid) =>
+    valid.map(i => `- ${i.name.trim()}${i.qty ? ` : ${i.qty} ${i.unit}` : ''}`).join('\n')
+
+  const buildProposalsPrompt = (valid) => {
+    const ingList = buildIngList(valid)
+    const cNames  = selectedCuisines.map(id => t.cuisines.find(c => c.id === id)?.label).filter(Boolean)
+    const cText   = cNames.length ? cNames.join(', ') : 'toutes les cuisines du monde'
+    const constraint = COOKING_TIME_CONSTRAINTS[cookingTime]
+    return `Tu es un chef cuisinier créatif. Réponds UNIQUEMENT avec un tableau JSON valide, sans texte ni backticks.
+
+Ingrédients disponibles :
+${ingList}
+
+Pour ${people} personne${people > 1 ? 's' : ''}. Style(s) : ${cText}
+Contrainte de temps : ${constraint}. TOUTES les recettes doivent respecter cette contrainte.
+
+Génère EXACTEMENT 3 propositions variées. Format JSON strict :
+
+[
+  { "nom": "Nom", "emoji": "🍝", "cuisine": "Style", "description": "2-3 phrases appétissantes.", "tempsPrep": "10 min", "tempsCuisson": "15 min", "difficulte": "Facile" },
+  { "nom": "...", "emoji": "...", "cuisine": "...", "description": "...", "tempsPrep": "...", "tempsCuisson": "...", "difficulte": "..." },
+  { "nom": "...", "emoji": "...", "cuisine": "...", "description": "...", "tempsPrep": "...", "tempsCuisson": "...", "difficulte": "..." }
+]
+
+Réponds UNIQUEMENT avec ce JSON.${t.langPrompt}`
+  }
+
+  const buildFullRecipePrompt = (valid, proposal, checkIngs) => {
+    const ingList     = buildIngList(valid)
+    const available   = checkIngs.filter(i => i.checked)
+    const unavailable = checkIngs.filter(i => !i.checked)
+    const constraint  = COOKING_TIME_CONSTRAINTS[cookingTime]
+
+    let extras = ''
+    if (available.length)   extras += `\nIngrédients complémentaires disponibles :\n${available.map(i => `- ${i.name}${i.note ? ` (${i.note})` : ''}`).join('\n')}\n`
+    if (unavailable.length) extras += `\nIngrédients NON disponibles (propose une substitution pour chacun) :\n${unavailable.map(i => `- ${i.name}`).join('\n')}\n`
+
+    return `Tu es un chef cuisinier de renommée mondiale.
+
+Recette complète pour "${proposal.nom}" (${proposal.cuisine}).
+
+Ingrédients principaux :
+${ingList}${extras}
+Pour ${people} personne${people > 1 ? 's' : ''}. Contrainte : ${constraint}.
+
+Format markdown exact :
+
+## ${proposal.emoji} ${proposal.nom}
+
+**Cuisine :** ${proposal.cuisine}
+**Pour :** ${people} personne${people > 1 ? 's' : ''}
+**Préparation :** [X min]
+**Cuisson :** [X min]
+**Temps total :** [X min]
+**Difficulté :** ${proposal.difficulte}
+
+### 📋 Ingrédients
+
+- [ingrédient : quantité${unavailable.length ? ' — ou [substitut]' : ''}]
+
+### 👨‍🍳 Préparation
+
+1. [Étape]
+
+### 💡 Conseil du Chef
+
+[Astuce]
+
+### 🍷 Accord parfait
+
+[Suggestion]
+
+### 📊 Macros (par portion)
+
+- 🔥 **Calories :** ~XXX kcal
+- 💪 **Protéines :** ~XX g
+- 🍞 **Glucides :** ~XX g
+- 🫒 **Lipides :** ~XX g
+
+Sois enthousiaste et précis. ✨${t.langPrompt}`
+  }
+
+  /* Step 1: Generate proposals */
+  const generateProposals = async () => {
+    const valid = ingredients.filter(i => i.name.trim())
+    if (!valid.length) { setError(lang === 'fr' ? 'Veuillez ajouter au moins un ingrédient !' : 'Please add at least one ingredient!'); return }
+
+    setError(''); setSaved(false)
+    setPhase('proposals-loading')
+    setProposals([]); setSelectedIdx(null); setSelectedProposal(null)
+    setCheckIngredients([]); setRecipeText('')
+
+    const ctrl = new AbortController(); abortRef.current = ctrl
+    let rawJson = ''
+    try {
+      await streamSSE(buildProposalsPrompt(valid), c => { rawJson += c }, ctrl.signal)
+      const match = rawJson.match(/\[[\s\S]*\]/)
+      if (!match) throw new Error(lang === 'fr' ? 'Format invalide. Réessayez.' : 'Invalid format. Please retry.')
+      const parsed = JSON.parse(match[0])
+      if (!Array.isArray(parsed) || !parsed.length) throw new Error(lang === 'fr' ? 'Réponse invalide. Réessayez.' : 'Invalid response. Please retry.')
+      setProposals(parsed); setPhase('proposals')
+      setTimeout(() => proposalsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+    } catch (err) {
+      if (err.name !== 'AbortError') setError(`❌ ${err.message}`)
+      setPhase('idle')
+    } finally { abortRef.current = null }
+  }
+
+  /* Step 2: Select proposal → check ingredients */
+  const selectProposal = async (proposal, idx) => {
+    if (isLoading) return
+    setSelectedIdx(idx); setSelectedProposal(proposal)
+    setPhase('check-loading'); setCheckIngredients([]); setRecipeText(''); setError(''); setSaved(false)
+
+    const valid = ingredients.filter(i => i.name.trim())
+    const ctrl  = new AbortController(); abortRef.current = ctrl
+    setTimeout(() => checkRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150)
+
+    try {
+      const res = await fetch('/api/check-ingredients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipeName: proposal.nom, recipeCuisine: proposal.cuisine,
+          userIngredients: valid.map(i => `${i.name.trim()}${i.qty ? ` : ${i.qty} ${i.unit}` : ''}`),
+          people, cookingTime,
+        }),
+        signal: ctrl.signal,
+      })
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || `Erreur (${res.status})`) }
+      const { ingredients: extras } = await res.json()
+      if (!extras?.length) {
+        await doGenerateRecipe(valid, proposal, [])
+      } else {
+        setCheckIngredients(extras.map(e => ({ ...e, checked: true }))); setPhase('check')
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') setError(`❌ ${err.message}`)
+      setPhase('proposals')
+    } finally { abortRef.current = null }
+  }
+
+  /* Step 3: Generate full recipe */
+  const doGenerateRecipe = async (valid, proposal, extras) => {
+    setPhase('recipe-loading'); setRecipeText(''); setError(''); setSaved(false)
+    const ctrl = new AbortController(); abortRef.current = ctrl
+    let accumulated = ''
+    setTimeout(() => recipeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150)
+    try {
+      await streamSSE(buildFullRecipePrompt(valid, proposal, extras), chunk => {
+        accumulated += chunk; setRecipeText(prev => prev + chunk)
+      }, ctrl.signal)
+      setPhase('recipe')
+    } catch (err) {
+      if (err.name !== 'AbortError') { setError(`❌ ${err.message}`); setPhase(extras.length ? 'check' : 'proposals') }
+      else setPhase(accumulated ? 'recipe' : (extras.length ? 'check' : 'proposals'))
+    } finally { abortRef.current = null }
+  }
+
+  const generateFullRecipe = () => doGenerateRecipe(ingredients.filter(i => i.name.trim()), selectedProposal, checkIngredients)
+
+  const stopGeneration = () => {
+    abortRef.current?.abort(); abortRef.current = null
+    if (phase === 'proposals-loading') setPhase('idle')
+    if (phase === 'check-loading') setPhase('proposals')
+  }
+
+  const resetProposals = () => {
+    abortRef.current?.abort()
+    setPhase('idle'); setProposals([]); setSelectedIdx(null); setSelectedProposal(null)
+    setCheckIngredients([]); setRecipeText(''); setError(''); setSaved(false)
+  }
+
+  /* Save recipe */
+  const saveRecipe = async () => {
+    if (!user || !recipeText || !selectedProposal) return
+    setSaving(true)
+    const { error: err } = await supabase.from('saved_recipes').insert({
+      user_id:    user.id,
+      title:      selectedProposal.nom,
+      emoji:      selectedProposal.emoji,
+      cuisine:    selectedProposal.cuisine,
+      prep_time:  selectedProposal.tempsPrep,
+      cook_time:  selectedProposal.tempsCuisson,
+      difficulty: selectedProposal.difficulte,
+      full_text:  recipeText,
+    })
+    setSaving(false)
+    if (!err) {
+      setSaved(true)
+      setHeartPop(true)
+      setTimeout(() => setHeartPop(false), 600)
+    } else {
+      setError(`❌ ${err.message}`)
+    }
+  }
+
+  const isLoading     = phase === 'proposals-loading' || phase === 'check-loading' || phase === 'recipe-loading'
+  const showProposals = proposals.length > 0 && phase !== 'idle' && phase !== 'proposals-loading'
+  const showCheck     = (phase === 'check-loading' || phase === 'check') && selectedProposal !== null
+  const showRecipe    = phase === 'recipe-loading' || phase === 'recipe'
+
+  /* Auth loading splash */
+  if (authLoading) return (
+    <div className="auth-splash">
+      <span className="auth-splash-icon">🍳</span>
+    </div>
+  )
+
+  /* Landing (unauthenticated) */
+  if (view === 'landing') return (
+    <>
+      <LandingPage t={t} lang={lang} onToggleLang={toggleLang} onGetStarted={() => setShowAuth(true)} />
+      {showAuth && <AuthModal t={t} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
+    </>
+  )
+
+  /* App (authenticated) */
+  return (
+    <div className="app">
+      <AppHeader t={t} lang={lang} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} />
+
+      {view === 'saved' ? (
+        <SavedRecipesView t={t} onNavigate={setView} />
+      ) : (
+        <main className="main">
+          <div className="container">
+
+            {/* Step 1: Ingredients */}
+            <section className="card">
+              <div className="step-header">
+                <div className="step-badge">1</div>
+                <div>
+                  <h2>{t.step1Title}</h2>
+                  <p>{t.step1Sub}</p>
+                </div>
+              </div>
+              <div className="ing-list">
+                {ingredients.map((ing, idx) => (
+                  <div key={ing.id} className="ing-row">
+                    <input type="text" className="inp ing-name" value={ing.name}
+                      onChange={e => updateIngredient(ing.id, 'name', e.target.value)}
+                      onKeyDown={handleIngKeyDown}
+                      placeholder={idx === 0 ? t.ing1Placeholder : t.ingPlaceholder} />
+                    <input type="text" className="inp ing-qty" value={ing.qty}
+                      onChange={e => updateIngredient(ing.id, 'qty', e.target.value)}
+                      placeholder="250" inputMode="decimal" />
+                    <select className="inp ing-unit" value={ing.unit}
+                      onChange={e => updateIngredient(ing.id, 'unit', e.target.value)}>
+                      {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                    </select>
+                    <button className="rm-btn" onClick={() => removeIngredient(ing.id)}
+                      disabled={ingredients.length === 1} title={t.removeIng}>×</button>
+                  </div>
+                ))}
+              </div>
+              <button className="add-btn" onClick={addIngredient}>{t.addIngredient}</button>
+            </section>
+
+            {/* Step 2: People */}
+            <section className="card">
+              <div className="step-header">
+                <div className="step-badge">2</div>
+                <div>
+                  <h2>{t.step2Title}</h2>
+                  <p>{t.step2Sub}</p>
+                </div>
+              </div>
+              <div className="people-wrap">
+                <button className="people-ctrl" onClick={() => setPeople(p => Math.max(1, p - 1))}>−</button>
+                <div className="people-display">
+                  <span className="people-num">{people}</span>
+                  <span className="people-lbl">{people > 1 ? t.persons : t.person}</span>
+                </div>
+                <button className="people-ctrl" onClick={() => setPeople(p => Math.min(20, p + 1))}>＋</button>
+                <div className="people-avatars">
+                  {Array.from({ length: Math.min(people, 8) }).map((_, i) => <span key={i} className="avatar">👤</span>)}
+                  {people > 8 && <span className="avatar-more">+{people - 8}</span>}
+                </div>
+              </div>
+            </section>
+
+            {/* Step 3: Cuisine */}
+            <section className="card">
+              <div className="step-header">
+                <div className="step-badge">3</div>
+                <div>
+                  <h2>{t.step3Title}</h2>
+                  <p>
+                    {selectedCuisines.length === 0
+                      ? t.step3Sub
+                      : t.step3SubSelected(selectedCuisines.length)}
+                  </p>
+                </div>
+              </div>
+              <div className="cuisine-grid">
+                {t.cuisines.map(c => (
+                  <button key={c.id}
+                    className={`cuisine-card${selectedCuisines.includes(c.id) ? ' selected' : ''}`}
+                    onClick={() => toggleCuisine(c.id)}>
+                    <span className="c-flag">{c.emoji}</span>
+                    <span className="c-name">{c.label}</span>
+                    {selectedCuisines.includes(c.id) && <span className="c-check">✓</span>}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Step 4: Cooking time */}
+            <section className="card">
+              <div className="step-header">
+                <div className="step-badge">4</div>
+                <div>
+                  <h2>{t.step4Title}</h2>
+                  <p>{t.step4Sub}</p>
+                </div>
+              </div>
+              <div className="time-grid">
+                {t.cookingTimes.map(ct => (
+                  <button key={ct.id}
+                    className={`time-card${cookingTime === ct.id ? ' selected' : ''}`}
+                    onClick={() => setCookingTime(ct.id)}>
+                    <span className="time-emoji">{ct.emoji}</span>
+                    <span className="time-label">{ct.label}</span>
+                    <span className="time-detail">{ct.detail}</span>
+                    {cookingTime === ct.id && <span className="c-check">✓</span>}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Error */}
+            {error && <div className="error-msg" role="alert">{error}</div>}
+
+            {/* Generate / Stop / Reset */}
+            <div className="gen-wrap">
+              {isLoading ? (
+                <button className="gen-btn stop" onClick={stopGeneration}><span>⏹</span> {t.stopBtn.replace('⏹ ', '')}</button>
+              ) : phase === 'idle' ? (
+                <button className="gen-btn" onClick={generateProposals}><span>✨</span> {t.generateBtn.replace('✨ ', '')}</button>
+              ) : (
+                <button className="gen-btn secondary" onClick={resetProposals}><span>🔄</span> {t.resetBtn.replace('🔄 ', '')}</button>
+              )}
+            </div>
+
+            {/* Proposals loading */}
+            {phase === 'proposals-loading' && (
+              <div className="loading-state">
+                <span className="chef-anim">👨‍🍳</span>
+                <p>{t.proposalsLoadingMsg}</p>
+                <div className="dots"><span /><span /><span /></div>
+              </div>
+            )}
+
+            {/* Proposal Cards */}
+            {showProposals && (
+              <section className="proposals-section" ref={proposalsRef}>
+                <h2 className="proposals-title">{t.proposalsTitle}</h2>
+                <p className="proposals-subtitle">
+                  {phase === 'recipe' || phase === 'recipe-loading'
+                    ? t.proposalsSubChange
+                    : t.proposalsSub}
+                </p>
+                <div className="proposals-grid">
+                  {proposals.map((p, i) => (
+                    <button key={i}
+                      className={`proposal-card${selectedIdx === i ? ' selected' : ''}${isLoading ? ' disabled' : ''}`}
+                      onClick={() => selectProposal(p, i)} disabled={isLoading}
+                      style={{ animationDelay: `${i * 0.07}s` }}>
+                      <div className="proposal-emoji">{p.emoji}</div>
+                      <h3 className="proposal-nom">{p.nom}</h3>
+                      <span className="proposal-cuisine-badge">{p.cuisine}</span>
+                      <p className="proposal-desc">{p.description}</p>
+                      <div className="proposal-meta">
+                        <span className="proposal-meta-item">🔪 {p.tempsPrep}</span>
+                        <span className="proposal-meta-item">🔥 {p.tempsCuisson}</span>
+                        <span className="proposal-meta-item">📊 {p.difficulte}</span>
+                      </div>
+                      {selectedIdx === i && <span className="proposal-check">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Ingredient Check */}
+            {showCheck && (
+              <section className="check-section" ref={checkRef}>
+                {phase === 'check-loading' ? (
+                  <div className="loading-state">
+                    <span className="chef-anim">🛒</span>
+                    <p>{t.checkLoadingMsg}</p>
+                    <div className="dots"><span /><span /><span /></div>
+                  </div>
+                ) : (
+                  <div className="check-card">
+                    <div className="check-header">
+                      <h2>{t.checkTitle}</h2>
+                      <p>{t.checkSub(selectedProposal.nom)}</p>
+                    </div>
+                    {checkIngredients.length > 0 ? (
+                      <div className="check-list">
+                        {checkIngredients.map((ing, i) => (
+                          <div key={i} className={`check-item${ing.checked ? ' has-it' : ''}`}
+                            onClick={() => toggleCheckIng(i)}
+                            style={{ animationDelay: `${i * 0.04}s` }}>
+                            <span className="check-emoji">{ing.emoji}</span>
+                            <div className="check-info">
+                              <span className="check-name">{ing.name}</span>
+                              {ing.note && <span className="check-note">{ing.note}</span>}
+                            </div>
+                            <div className={`toggle${ing.checked ? ' on' : ''}`}>
+                              <div className="toggle-thumb" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="check-empty">{t.checkEmpty}</p>
+                    )}
+                    {checkIngredients.some(i => !i.checked) && (
+                      <p className="check-sub-note">{t.checkNote}</p>
+                    )}
+                    <button className="gen-btn check-gen-btn" onClick={generateFullRecipe}>
+                      <span>👨‍🍳</span> {t.checkGenBtn.replace('👨‍🍳 ', '')}
+                    </button>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Full Recipe */}
+            {showRecipe && (
+              <section className="recipes-section" ref={recipeRef}>
+                <div className="recipes-header">
+                  <h2>{t.recipeTitle}</h2>
+                  <div className="recipe-actions">
+                    {phase === 'recipe' && !saved && (
+                      <button
+                        className={`save-btn${heartPop ? ' heart-pop' : ''}`}
+                        onClick={saveRecipe}
+                        disabled={saving}>
+                        {saving ? '…' : t.saveBtn}
+                      </button>
+                    )}
+                    {saved && <span className="saved-confirm">{t.savedConfirm}</span>}
+                  </div>
+                </div>
+                {phase === 'recipe-loading' && !recipeText && (
+                  <div className="loading-state">
+                    <span className="chef-anim">👨‍🍳</span>
+                    <p>{t.recipeLoadingMsg}</p>
+                    <div className="dots"><span /><span /><span /></div>
+                  </div>
+                )}
+                {recipeText && (
+                  <div className="recipes-card">
+                    <RecipeContent text={recipeText} isStreaming={phase === 'recipe-loading'} />
+                  </div>
+                )}
+              </section>
+            )}
+
+          </div>
+        </main>
+      )}
+
+      <footer className="footer">
+        <div className="container">
+          <p>{t.footerPowered} <strong>Claude AI</strong> {t.footerSuffix}</p>
+        </div>
+      </footer>
+    </div>
+  )
+}
