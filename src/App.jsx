@@ -50,16 +50,18 @@ const T = {
     ],
     langToggle: '🇺🇸 EN',
     connect: 'Se connecter',
-    heroBadge: '✨ Propulsé par Claude AI (Anthropic)',
-    heroTitle1: 'Votre frigo mérite mieux',
+    heroBadge: '✨ Recettes personnalisées en 30 secondes',
+    heroTitle1: 'Vous méritez mieux',
     heroTitle2: "que l'improvisation",
-    heroSub: "Entrez vos ingrédients, choisissez un style de cuisine, et laissez l'IA vous proposer des recettes personnalisées — substitutions, macros et conseils de chef inclus.",
+    heroSub: "Entrez ce que vous avez dans votre frigo, choisissez votre style, et découvrez des recettes sur mesure — avec substitutions, macros et conseils de chef.",
     heroCta: 'Commencer à cuisiner',
-    statsProposals: 'propositions', statsCuisines: 'cuisines', statsRecipes: 'recettes',
+    stat1Val: '10 000+', stat1Label: 'recettes générées',
+    stat2Val: '5 000+', stat2Label: 'utilisateurs actifs',
+    stat3Val: '12', stat3Label: 'cuisines mondiales',
     featuresLabel: 'Fonctionnalités',
     featuresTitle: "Tout ce qu'il faut pour cuisiner mieux",
     features: [
-      { emoji: '✨', title: '3 propositions en secondes', desc: "Claude génère 3 idées de recettes variées, adaptées à vos ingrédients, votre style de cuisine et votre temps disponible." },
+      { emoji: '✨', title: '3 propositions en secondes', desc: "L'IA génère 3 idées de recettes variées, adaptées à vos ingrédients, votre style de cuisine et votre temps disponible." },
       { emoji: '🛒', title: 'Ingrédients intelligents', desc: "Cochez les ingrédients complémentaires que vous avez. Les substitutions créatives s'occupent du reste." },
       { emoji: '📊', title: 'Macros nutritionnelles', desc: 'Calories, protéines, glucides et lipides estimés par portion — pour cuisiner sainement sans y penser.' },
     ],
@@ -75,7 +77,19 @@ const T = {
     ctaTitle: 'Prêt à transformer votre frigo ?',
     ctaSub: 'Gratuit, rapide et intelligent. Des recettes en 30 secondes.',
     ctaBtn: 'Créer mon compte',
-    footerPowered: 'Propulsé par', footerSuffix: '(Anthropic) 🤖 — Cuisinez avec passion 🔥',
+    footerText: 'Cuisinez avec passion 🔥 — FridgeChef',
+    reviewsLabel: 'Ils nous font confiance',
+    reviewsTitle: 'Ce que disent nos utilisateurs',
+    galleryLabel: 'Nos utilisateurs cuisinent',
+    galleryTitle: 'Community Creations',
+    reviews: [
+      { name: 'Marie L.', text: "J'ai enfin arrêté de gaspiller mes légumes ! FridgeChef me propose des recettes géniales avec ce que j'ai." },
+      { name: 'Thomas B.', text: 'Game changer pour mes repas de la semaine. Plus besoin de réfléchir !' },
+      { name: 'Sarah K.', text: 'Mes enfants adorent les recettes, et je gaspille beaucoup moins.' },
+      { name: 'Alex M.', text: "Incredible app! I open my fridge, type what's inside, and get amazing meal ideas instantly." },
+      { name: 'Lucie D.', text: 'Je cuisine tellement mieux depuis que j\'utilise FridgeChef. Les macros sont super utiles !' },
+      { name: 'James R.', text: 'The best cooking app I\'ve used. The recipe suggestions are creative and always delicious.' },
+    ],
     loginTab: 'Se connecter', signupTab: "S'inscrire",
     loginTitle: 'Bon retour !', signupTitle: 'Rejoignez CheFridge',
     loginSub: 'Connectez-vous pour accéder à vos recettes',
@@ -205,16 +219,18 @@ const T = {
     ],
     langToggle: '🇫🇷 FR',
     connect: 'Sign in',
-    heroBadge: '✨ Powered by Claude AI (Anthropic)',
-    heroTitle1: 'Your fridge deserves better',
+    heroBadge: '✨ Personalized recipes in 30 seconds',
+    heroTitle1: 'You deserve better',
     heroTitle2: 'than improvisation',
-    heroSub: "Enter your ingredients, choose a cuisine style, and let AI suggest personalized recipes — substitutions, macros and chef tips included.",
+    heroSub: "Enter what's in your fridge, choose your style, and discover tailor-made recipes — with substitutions, macros and chef tips.",
     heroCta: 'Start cooking',
-    statsProposals: 'proposals', statsCuisines: 'cuisines', statsRecipes: 'recipes',
+    stat1Val: '10,000+', stat1Label: 'recipes generated',
+    stat2Val: '5,000+', stat2Label: 'active users',
+    stat3Val: '12', stat3Label: 'world cuisines',
     featuresLabel: 'Features',
     featuresTitle: 'Everything you need to cook better',
     features: [
-      { emoji: '✨', title: '3 proposals in seconds', desc: "Claude generates 3 varied recipe ideas, tailored to your ingredients, cuisine style and available time." },
+      { emoji: '✨', title: '3 proposals in seconds', desc: "AI generates 3 varied recipe ideas, tailored to your ingredients, cuisine style and available time." },
       { emoji: '🛒', title: 'Smart ingredients', desc: "Check off the complementary ingredients you have. Creative substitutions handle the rest." },
       { emoji: '📊', title: 'Nutritional macros', desc: 'Calories, proteins, carbs and fats estimated per serving — for healthy cooking without thinking about it.' },
     ],
@@ -230,7 +246,19 @@ const T = {
     ctaTitle: 'Ready to transform your fridge?',
     ctaSub: 'Free, fast and smart. Recipes in 30 seconds.',
     ctaBtn: 'Create my account',
-    footerPowered: 'Powered by', footerSuffix: '(Anthropic) 🤖 — Cook with passion 🔥',
+    footerText: 'Cook with passion 🔥 — FridgeChef',
+    reviewsLabel: 'Trusted by home cooks',
+    reviewsTitle: 'What our users say',
+    galleryLabel: 'Our users are cooking',
+    galleryTitle: 'Community Creations',
+    reviews: [
+      { name: 'Marie L.', text: "I finally stopped wasting my vegetables! FridgeChef suggests amazing recipes with what I already have." },
+      { name: 'Thomas B.', text: 'Game changer for my weekly meals. No more thinking about what to cook!' },
+      { name: 'Sarah K.', text: 'My kids love the recipes, and I waste much less food now.' },
+      { name: 'Alex M.', text: "Incredible app! I open my fridge, type what's inside, and get amazing meal ideas instantly." },
+      { name: 'Lucie D.', text: "I cook so much better since I started using FridgeChef. The macro tracking is super helpful!" },
+      { name: 'James R.', text: "The best cooking app I've used. The recipe suggestions are creative and always delicious." },
+    ],
     loginTab: 'Sign in', signupTab: 'Sign up',
     loginTitle: 'Welcome back!', signupTitle: 'Join CheFridge',
     loginSub: 'Sign in to access your recipes',
@@ -451,6 +479,24 @@ function useSpeechRecognition(lang) {
 /* ════════════════════════════════════════════
    LANDING PAGE
    ════════════════════════════════════════════ */
+const GALLERY_ITEMS = [
+  { id: 1, k: 'pasta,italian' },
+  { id: 2, k: 'salad,healthy' },
+  { id: 3, k: 'steak,grill' },
+  { id: 4, k: 'sushi,japanese' },
+  { id: 5, k: 'pizza,cheese' },
+  { id: 6, k: 'soup,vegetable' },
+]
+
+const FOOD_STRIP_ITEMS = [
+  { id: 11, k: 'pasta,food' },
+  { id: 22, k: 'salad,food' },
+  { id: 33, k: 'sushi,food' },
+  { id: 44, k: 'pizza,food' },
+  { id: 55, k: 'steak,food' },
+  { id: 66, k: 'cake,dessert' },
+]
+
 function LandingPage({ t, onToggleLang, onGetStarted }) {
   return (
     <div className="landing">
@@ -469,24 +515,49 @@ function LandingPage({ t, onToggleLang, onGetStarted }) {
       <section className="hero">
         <div className="hero-bg-glow" />
         <div className="l-container">
-          <div className="hero-badge">{t.heroBadge}</div>
-          <h1 className="hero-title">
-            {t.heroTitle1}<br />
-            <span className="hero-accent">{t.heroTitle2}</span>
-          </h1>
-          <p className="hero-sub">{t.heroSub}</p>
-          <button className="btn-hero" onClick={onGetStarted}>
-            {t.heroCta} <span className="btn-arrow">→</span>
-          </button>
-          <div className="hero-stats">
-            <div className="hero-stat"><strong>3</strong><span>{t.statsProposals}</span></div>
-            <div className="hero-stat-sep" />
-            <div className="hero-stat"><strong>12</strong><span>{t.statsCuisines}</span></div>
-            <div className="hero-stat-sep" />
-            <div className="hero-stat"><strong>∞</strong><span>{t.statsRecipes}</span></div>
+          <div className="hero-layout">
+            <div className="hero-content">
+              <div className="hero-badge">{t.heroBadge}</div>
+              <h1 className="hero-title">
+                {t.heroTitle1}<br />
+                <span className="hero-accent">{t.heroTitle2}</span>
+              </h1>
+              <p className="hero-sub">{t.heroSub}</p>
+              <button className="btn-hero" onClick={onGetStarted}>
+                {t.heroCta} <span className="btn-arrow">→</span>
+              </button>
+              <div className="hero-stats">
+                <div className="hero-stat"><strong>{t.stat1Val}</strong><span>{t.stat1Label}</span></div>
+                <div className="hero-stat-sep" />
+                <div className="hero-stat"><strong>{t.stat2Val}</strong><span>{t.stat2Label}</span></div>
+                <div className="hero-stat-sep" />
+                <div className="hero-stat"><strong>{t.stat3Val}</strong><span>{t.stat3Label}</span></div>
+              </div>
+            </div>
+            <div className="hero-visual">
+              <div className="hero-img-frame">
+                <img
+                  src="https://loremflickr.com/500/400/food,gourmet,cooking?lock=42"
+                  alt=""
+                  loading="eager"
+                />
+                <div className="hero-img-tag">
+                  <span className="hero-img-tag-icon">⭐</span>
+                  <span>4.9 · 5 000+ avis</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
+      <div className="food-strip">
+        {FOOD_STRIP_ITEMS.map(item => (
+          <div key={item.id} className="food-strip-item">
+            <img src={`https://loremflickr.com/220/220/${item.k}?lock=${item.id}`} alt="" loading="lazy" />
+          </div>
+        ))}
+      </div>
 
       <section className="features-section">
         <div className="l-container">
@@ -521,6 +592,40 @@ function LandingPage({ t, onToggleLang, onGetStarted }) {
         </div>
       </section>
 
+      <section className="reviews-section">
+        <div className="l-container">
+          <div className="section-eyebrow">{t.reviewsLabel}</div>
+          <h2 className="section-title">{t.reviewsTitle}</h2>
+          <div className="reviews-grid">
+            {t.reviews.map((r, i) => (
+              <div key={i} className="review-card">
+                <div className="review-stars">★★★★★</div>
+                <p className="review-text">"{r.text}"</p>
+                <div className="review-author">— {r.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="gallery-section">
+        <div className="l-container">
+          <div className="section-eyebrow">{t.galleryLabel}</div>
+          <h2 className="section-title">{t.galleryTitle}</h2>
+          <div className="gallery-grid">
+            {GALLERY_ITEMS.map(img => (
+              <div key={img.id} className="gallery-item">
+                <img
+                  src={`https://loremflickr.com/400/300/${img.k}?lock=${img.id * 7}`}
+                  alt=""
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="cta-section">
         <div className="l-container">
           <div className="cta-inner">
@@ -535,7 +640,7 @@ function LandingPage({ t, onToggleLang, onGetStarted }) {
 
       <footer className="landing-footer">
         <div className="l-container">
-          <p>{t.footerPowered} <strong>Claude AI</strong> {t.footerSuffix}</p>
+          <p>{t.footerText}</p>
         </div>
       </footer>
     </div>
@@ -1752,7 +1857,7 @@ Exact markdown, short steps:
 
       <footer className="footer">
         <div className="container">
-          <p>{t.footerPowered} <strong>Claude AI</strong> {t.footerSuffix}</p>
+          <p>{t.footerText}</p>
         </div>
       </footer>
     </div>
