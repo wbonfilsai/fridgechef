@@ -58,6 +58,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 @keyframes heartPop  { 0% { transform: scale(1) } 40% { transform: scale(1.45) } 70% { transform: scale(0.92) } 100% { transform: scale(1) } }
 @keyframes modalIn   { from { opacity: 0; transform: translateY(32px) scale(0.96) } to { opacity: 1; transform: none } }
 @keyframes cardIn    { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(194, 65, 12, 0.45) } 70% { box-shadow: 0 0 0 8px rgba(194, 65, 12, 0) } 100% { box-shadow: 0 0 0 0 rgba(194, 65, 12, 0) } }
+@keyframes mealCardIn { from { opacity: 0; transform: translateY(10px) scale(0.97) } to { opacity: 1; transform: none } }
 
 /* ═══════════════════════════════════════════
    AUTH SPLASH
@@ -1197,6 +1199,317 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .footer strong { color: var(--primary); }
 
 /* ═══════════════════════════════════════════
+   MIC BUTTON (Voice Input)
+   ═══════════════════════════════════════════ */
+.mic-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-alt);
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all var(--t);
+  color: var(--text-muted);
+}
+.mic-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+  transform: scale(1.08);
+}
+.mic-btn.mic-listening {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  animation: pulse-ring 1.1s ease-out infinite;
+}
+
+/* ═══════════════════════════════════════════
+   DIETARY FILTER GRID
+   ═══════════════════════════════════════════ */
+.diet-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.diet-card {
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  cursor: pointer;
+  transition: all var(--t);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  user-select: none;
+}
+.diet-card:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+.diet-card.diet-active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+.diet-emoji { font-size: 1rem; }
+.diet-name  { font-size: 0.82rem; }
+
+/* ═══════════════════════════════════════════
+   MEAL PLAN VIEW
+   ═══════════════════════════════════════════ */
+.meal-plan-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  animation: fadeInUp 0.38s ease both;
+}
+.meal-plan-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.4rem;
+}
+.meal-plan-sub {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin-bottom: 1.75rem;
+}
+
+.week-settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  align-items: center;
+}
+.week-setting-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 99px;
+  background: var(--primary-light);
+  border: 1.5px solid var(--primary-ring);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.week-ingredients-input {
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  background: var(--card);
+  color: var(--text);
+  transition: border-color var(--t);
+  margin-bottom: 1.25rem;
+}
+.week-ingredients-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-ring);
+}
+
+.meal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.meal-day-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 140px;
+}
+.meal-day-header {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  text-align: center;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.meal-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  animation: mealCardIn 0.32s ease both;
+  transition: box-shadow var(--t), border-color var(--t);
+  position: relative;
+}
+.meal-card:hover {
+  border-color: var(--border-h);
+  box-shadow: var(--shadow);
+}
+.meal-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.15rem;
+}
+.meal-type-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+.meal-regen-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  transition: all var(--t);
+  color: var(--text-muted);
+}
+.meal-regen-btn:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: rotate(30deg);
+}
+.meal-regen-btn.spinning { animation: spin 0.7s linear infinite; }
+.meal-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+  margin: 0.2rem 0;
+}
+.meal-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+.meal-cuisine-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  background: var(--bg-alt);
+  color: var(--primary);
+  border: 1px solid var(--primary-ring);
+  margin-top: 0.1rem;
+}
+.meal-time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.meal-macros {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.2rem;
+}
+.meal-macro-pill {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 99px;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 600;
+}
+.meal-card-loading {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+.meal-card-loading .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: bounce 1s ease-in-out infinite;
+}
+.meal-card-loading .dot:nth-child(2) { animation-delay: 0.18s; }
+.meal-card-loading .dot:nth-child(3) { animation-delay: 0.36s; }
+
+/* Saved plans */
+.saved-plans-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+.saved-plan-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1rem;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  transition: border-color var(--t);
+}
+.saved-plan-row:hover { border-color: var(--border-h); }
+.saved-plan-date {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.saved-plan-load-btn {
+  padding: 0.35rem 0.85rem;
+  border-radius: 99px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: background var(--t);
+}
+.saved-plan-load-btn:hover { background: var(--primary-h); }
+.saved-plan-del-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--t);
+}
+.saved-plan-del-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: rgba(220, 38, 38, 0.07);
+}
+
+/* ═══════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════ */
 @media (max-width: 900px) {
@@ -1238,4 +1551,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .recipe-modal-header { padding: 1.25rem 1.25rem 1rem; }
 
   .hiw-step { flex: 0 0 100%; }
+  .meal-grid { grid-template-columns: repeat(3, 1fr); }
+  .meal-day-col { min-width: 0; }
+}
+
+@media (max-width: 480px) {
+  .meal-grid { grid-template-columns: repeat(2, 1fr); }
+  .diet-grid { gap: 0.45rem; }
+  .diet-card { padding: 0.38rem 0.7rem; font-size: 0.78rem; }
 }

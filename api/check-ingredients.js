@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'ANTHROPIC_API_KEY non configurée.' })
   }
 
-  const { recipeName, recipeCuisine, userIngredients, people, cookingTime } = req.body
+  const { recipeName, recipeCuisine, userIngredients, people, cookingTime, dietary } = req.body
   if (!recipeName || typeof recipeName !== 'string' || !recipeCuisine) {
     return res.status(400).json({ error: 'Données invalides.' })
   }
@@ -25,8 +25,10 @@ export default async function handler(req, res) {
     leisurely: '1 heure ou plus',
   }
   const timeLabel = timeLabels[cookingTime] || '45 minutes'
+  const dietLine = dietary && typeof dietary === 'string' && dietary.length < 200
+    ? `\nContraintes: ${dietary}.` : ''
 
-  const prompt = `Recette "${recipeName}" (${recipeCuisine}), ${people} pers., ${timeLabel}.
+  const prompt = `Recette "${recipeName}" (${recipeCuisine}), ${people} pers., ${timeLabel}.${dietLine}
 Ingrédients déjà disponibles :
 ${userIngList}
 

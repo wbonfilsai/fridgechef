@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
 
-/* Claude prompt constraints — always French (used in AI prompts) */
+/* Claude prompt constraints */
 const COOKING_TIME_CONSTRAINTS = {
   express:   '15 minutes maximum au total (préparation + cuisson)',
   rapide:    '30 minutes maximum au total (préparation + cuisson)',
@@ -11,6 +11,8 @@ const COOKING_TIME_CONSTRAINTS = {
 }
 
 const UNITS = ['g', 'kg', 'L', 'mL', 'cl', 'unités', 'tasses', 'c. à soupe', 'c. à café', 'tranches', 'pincées']
+
+const ENGLISH_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
 
 /* ═══════════════════════════════════════════
    TRANSLATIONS
@@ -36,6 +38,15 @@ const T = {
       { id: 'rapide',    label: 'Rapide',        detail: '30 min', emoji: '🏃' },
       { id: 'normal',    label: 'Normal',        detail: '45 min', emoji: '🍳' },
       { id: 'leisurely', label: "J'ai le temps", detail: '1h+',    emoji: '😌' },
+    ],
+    dietOptions: [
+      { id: 'vegetarien',  label: 'Végétarien',   emoji: '🥦' },
+      { id: 'vegan',       label: 'Végan',         emoji: '🌱' },
+      { id: 'sans-gluten', label: 'Sans gluten',   emoji: '🌾' },
+      { id: 'keto',        label: 'Keto',           emoji: '🥩' },
+      { id: 'sans-lactose',label: 'Sans lactose',  emoji: '🥛' },
+      { id: 'halal',       label: 'Halal',          emoji: '☪️' },
+      { id: 'casher',      label: 'Casher',         emoji: '✡️' },
     ],
     langToggle: '🇺🇸 EN',
     connect: 'Se connecter',
@@ -79,7 +90,7 @@ const T = {
       'Password should be at least 6 characters': 'Le mot de passe doit faire au moins 6 caractères.',
       'Email not confirmed': 'Email non confirmé. Vérifiez votre boîte mail.',
     },
-    newRecipe: '✨ Nouvelle recette', myRecipes: '❤️ Mes recettes', logout: 'Déconnexion',
+    newRecipe: '✨ Nouvelle recette', myRecipes: '❤️ Mes recettes', mealPlanNav: '📅 Plan semaine', logout: 'Déconnexion',
     step1Title: '🥦 Mes ingrédients', step1Sub: "Qu'est-ce qu'il y a dans votre frigo ?",
     ing1Placeholder: 'Ex: poulet, tomates, œufs...', ingPlaceholder: 'Ingrédient...',
     addIngredient: '＋ Ajouter un ingrédient', removeIng: 'Supprimer',
@@ -88,7 +99,10 @@ const T = {
     step3Title: '🌍 Style de cuisine',
     step3Sub: 'Sélectionnez vos cuisines préférées, ou laissez-nous vous surprendre !',
     step3SubSelected: (n) => `${n} cuisine${n > 1 ? 's' : ''} sélectionnée${n > 1 ? 's' : ''}`,
-    step4Title: '⏱️ Temps disponible', step4Sub: 'Combien de temps avez-vous pour cuisiner ?',
+    step4DietTitle: '🥗 Régime alimentaire',
+    step4DietSub: 'Aucune restriction (toutes les recettes)',
+    step4DietSubSelected: (n) => `${n} restriction${n > 1 ? 's' : ''} sélectionnée${n > 1 ? 's' : ''}`,
+    step5Title: '⏱️ Temps disponible', step5Sub: 'Combien de temps avez-vous pour cuisiner ?',
     generateBtn: '✨ Générer mes recettes', stopBtn: '⏹ Arrêter', resetBtn: '🔄 Nouvelles propositions',
     proposalsTitle: '🍽️ Choisissez votre recette',
     proposalsSub: 'Cliquez sur la recette qui vous inspire',
@@ -116,6 +130,26 @@ const T = {
     savedClose: 'Fermer',
     dateLocale: 'fr-FR',
     langPrompt: '',
+    /* Meal Plan */
+    mealPlanTitle: '📅 Plan de la semaine',
+    mealPlanSub: 'Votre menu 7 jours généré par l\'IA',
+    mealPlanIngredientsLabel: 'Ingrédients disponibles pour la semaine',
+    mealPlanIngredientsPlaceholder: 'Ex: poulet, pâtes, tomates, courgettes, œufs, riz...',
+    mealPlanGenerateBtn: '🗓️ Générer mon plan',
+    mealPlanRegenerateBtn: '🗓️ Régénérer le plan',
+    mealPlanGeneratingMsg: 'Le chef planifie votre semaine...',
+    mealPlanRegenMealMsg: 'Nouveau repas en cours...',
+    mealPlanSaveBtn: '💾 Sauvegarder le plan',
+    mealPlanSavedConfirm: '✅ Plan sauvegardé !',
+    mealPlanSavedPlans: 'Plans sauvegardés',
+    mealPlanLoadBtn: 'Charger',
+    mealPlanDeleteBtn: 'Supprimer',
+    days: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
+    lunch: '🌞 Déjeuner', dinner: '🌙 Dîner',
+    mealPlanEmptyTitle: 'Planifiez votre semaine',
+    mealPlanEmptyDesc: 'Entrez vos ingrédients et générez un menu 7 jours personnalisé avec macros.',
+    mealPlanLoadingMsg: 'Chargement de vos plans...',
+    mealPlanNoSaved: 'Aucun plan sauvegardé',
   },
   en: {
     cuisines: [
@@ -137,6 +171,15 @@ const T = {
       { id: 'rapide',    label: 'Quick',         detail: '30 min', emoji: '🏃' },
       { id: 'normal',    label: 'Normal',        detail: '45 min', emoji: '🍳' },
       { id: 'leisurely', label: "I've got time", detail: '1h+',    emoji: '😌' },
+    ],
+    dietOptions: [
+      { id: 'vegetarien',  label: 'Vegetarian', emoji: '🥦' },
+      { id: 'vegan',       label: 'Vegan',       emoji: '🌱' },
+      { id: 'sans-gluten', label: 'Gluten-free', emoji: '🌾' },
+      { id: 'keto',        label: 'Keto',         emoji: '🥩' },
+      { id: 'sans-lactose',label: 'Dairy-free',  emoji: '🥛' },
+      { id: 'halal',       label: 'Halal',        emoji: '☪️' },
+      { id: 'casher',      label: 'Kosher',       emoji: '✡️' },
     ],
     langToggle: '🇫🇷 FR',
     connect: 'Sign in',
@@ -180,7 +223,7 @@ const T = {
       'Password should be at least 6 characters': 'Password must be at least 6 characters.',
       'Email not confirmed': 'Email not confirmed. Check your inbox.',
     },
-    newRecipe: '✨ New recipe', myRecipes: '❤️ My recipes', logout: 'Sign out',
+    newRecipe: '✨ New recipe', myRecipes: '❤️ My recipes', mealPlanNav: '📅 Meal Plan', logout: 'Sign out',
     step1Title: '🥦 My ingredients', step1Sub: "What's in your fridge?",
     ing1Placeholder: 'E.g. chicken, tomatoes, eggs...', ingPlaceholder: 'Ingredient...',
     addIngredient: '＋ Add an ingredient', removeIng: 'Remove',
@@ -189,7 +232,10 @@ const T = {
     step3Title: '🌍 Cuisine style',
     step3Sub: 'Select your favourite cuisines, or let us surprise you!',
     step3SubSelected: (n) => `${n} cuisine${n > 1 ? 's' : ''} selected`,
-    step4Title: '⏱️ Available time', step4Sub: 'How much time do you have to cook?',
+    step4DietTitle: '🥗 Dietary Preferences',
+    step4DietSub: 'No restrictions (all recipes)',
+    step4DietSubSelected: (n) => `${n} restriction${n > 1 ? 's' : ''} selected`,
+    step5Title: '⏱️ Available time', step5Sub: 'How much time do you have to cook?',
     generateBtn: '✨ Generate my recipes', stopBtn: '⏹ Stop', resetBtn: '🔄 New proposals',
     proposalsTitle: '🍽️ Choose your recipe',
     proposalsSub: 'Click on the recipe that inspires you',
@@ -217,6 +263,26 @@ const T = {
     savedClose: 'Close',
     dateLocale: 'en-US',
     langPrompt: '\nRespond entirely in English.',
+    /* Meal Plan */
+    mealPlanTitle: '📅 Weekly Meal Plan',
+    mealPlanSub: 'Your AI-generated 7-day menu',
+    mealPlanIngredientsLabel: 'Ingredients available for the week',
+    mealPlanIngredientsPlaceholder: 'E.g. chicken, pasta, tomatoes, zucchini, eggs, rice...',
+    mealPlanGenerateBtn: '🗓️ Generate my plan',
+    mealPlanRegenerateBtn: '🗓️ Regenerate plan',
+    mealPlanGeneratingMsg: 'The chef is planning your week...',
+    mealPlanRegenMealMsg: 'Getting a new meal...',
+    mealPlanSaveBtn: '💾 Save plan',
+    mealPlanSavedConfirm: '✅ Plan saved!',
+    mealPlanSavedPlans: 'Saved plans',
+    mealPlanLoadBtn: 'Load',
+    mealPlanDeleteBtn: 'Delete',
+    days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    lunch: '🌞 Lunch', dinner: '🌙 Dinner',
+    mealPlanEmptyTitle: 'Plan your week',
+    mealPlanEmptyDesc: 'Enter your ingredients and generate a personalized 7-day menu with macros.',
+    mealPlanLoadingMsg: 'Loading your plans...',
+    mealPlanNoSaved: 'No saved plans',
   },
 }
 
@@ -270,9 +336,7 @@ function RecipeContent({ text, isStreaming }) {
   )
 }
 
-/* ════════════════════════════════════════════
-   RECIPE MODAL (saved recipes detail)
-   ════════════════════════════════════════════ */
+/* ── Recipe Modal ── */
 function RecipeModal({ recipe, onClose, t }) {
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose() }
@@ -289,9 +353,9 @@ function RecipeModal({ recipe, onClose, t }) {
             <div className="recipe-modal-title-info">
               <h2 className="recipe-modal-title">{recipe.title}</h2>
               <div className="recipe-modal-meta">
-                {recipe.cuisine   && <span className="saved-badge">{recipe.cuisine}</span>}
-                {recipe.prep_time && <span className="saved-meta-item">🔪 {recipe.prep_time}</span>}
-                {recipe.cook_time && <span className="saved-meta-item">🔥 {recipe.cook_time}</span>}
+                {recipe.cuisine    && <span className="saved-badge">{recipe.cuisine}</span>}
+                {recipe.prep_time  && <span className="saved-meta-item">🔪 {recipe.prep_time}</span>}
+                {recipe.cook_time  && <span className="saved-meta-item">🔥 {recipe.cook_time}</span>}
                 {recipe.difficulty && <span className="saved-meta-item">📊 {recipe.difficulty}</span>}
               </div>
             </div>
@@ -306,10 +370,44 @@ function RecipeModal({ recipe, onClose, t }) {
   )
 }
 
+/* ── Voice Recognition Hook ── */
+function useSpeechRecognition(lang) {
+  const [listeningId, setListeningId] = useState(null)
+  const recognitionRef = useRef(null)
+  const supported = typeof window !== 'undefined' &&
+    ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+
+  useEffect(() => () => recognitionRef.current?.abort(), [])
+
+  const startListening = (id, onResult) => {
+    if (!supported) return
+    recognitionRef.current?.abort()
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    const rec = new SR()
+    rec.lang = lang === 'fr' ? 'fr-FR' : 'en-US'
+    rec.interimResults = false
+    rec.maxAlternatives = 1
+    rec.onresult = (e) => { onResult(e.results[0][0].transcript) }
+    rec.onend = () => { setListeningId(null); recognitionRef.current = null }
+    rec.onerror = () => { setListeningId(null); recognitionRef.current = null }
+    recognitionRef.current = rec
+    rec.start()
+    setListeningId(id)
+  }
+
+  const stopListening = () => {
+    recognitionRef.current?.stop()
+    setListeningId(null)
+    recognitionRef.current = null
+  }
+
+  return { listeningId, startListening, stopListening, supported }
+}
+
 /* ════════════════════════════════════════════
    LANDING PAGE
    ════════════════════════════════════════════ */
-function LandingPage({ t, lang, onToggleLang, onGetStarted }) {
+function LandingPage({ t, onToggleLang, onGetStarted }) {
   return (
     <div className="landing">
       <nav className="landing-nav">
@@ -439,25 +537,19 @@ function AuthModal({ t, onClose, onSuccess }) {
         <div className="modal-logo">🍳</div>
         <h2 className="modal-title">{tab === 'login' ? t.loginTitle : t.signupTitle}</h2>
         <p className="modal-sub">{tab === 'login' ? t.loginSub : t.signupSub}</p>
-
         <div className="modal-tabs">
           <button className={`modal-tab${tab === 'login' ? ' active' : ''}`} onClick={() => switchTab('login')}>{t.loginTab}</button>
           <button className={`modal-tab${tab === 'signup' ? ' active' : ''}`} onClick={() => switchTab('signup')}>{t.signupTab}</button>
         </div>
-
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
             <label className="form-label">{t.emailLabel}</label>
-            <input type="email" className="modal-input" value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="votre@email.com" required autoFocus />
+            <input type="email" className="modal-input" value={email} onChange={e => setEmail(e.target.value)} placeholder="votre@email.com" required autoFocus />
           </div>
           <div className="form-group">
             <label className="form-label">{t.passwordLabel}</label>
-            <input type="password" className="modal-input" value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder={tab === 'signup' ? t.passwordHint : t.passwordDots}
-              required minLength={6} />
+            <input type="password" className="modal-input" value={password} onChange={e => setPassword(e.target.value)}
+              placeholder={tab === 'signup' ? t.passwordHint : t.passwordDots} required minLength={6} />
           </div>
           {error   && <div className="modal-error">{error}</div>}
           {success && <div className="modal-success">{success}</div>}
@@ -473,7 +565,7 @@ function AuthModal({ t, onClose, onSuccess }) {
 /* ════════════════════════════════════════════
    APP HEADER
    ════════════════════════════════════════════ */
-function AppHeader({ t, lang, onToggleLang, user, view, onNavigate, onLogout }) {
+function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout }) {
   return (
     <header className="app-header">
       <div className="container header-inner">
@@ -482,12 +574,9 @@ function AppHeader({ t, lang, onToggleLang, user, view, onNavigate, onLogout }) 
           <span className="header-logo-text">FridgeChef</span>
         </button>
         <nav className="header-nav">
-          <button className={`header-nav-btn${view === 'app' ? ' active' : ''}`} onClick={() => onNavigate('app')}>
-            {t.newRecipe}
-          </button>
-          <button className={`header-nav-btn${view === 'saved' ? ' active' : ''}`} onClick={() => onNavigate('saved')}>
-            {t.myRecipes}
-          </button>
+          <button className={`header-nav-btn${view === 'app' ? ' active' : ''}`} onClick={() => onNavigate('app')}>{t.newRecipe}</button>
+          <button className={`header-nav-btn${view === 'mealPlan' ? ' active' : ''}`} onClick={() => onNavigate('mealPlan')}>{t.mealPlanNav}</button>
+          <button className={`header-nav-btn${view === 'saved' ? ' active' : ''}`} onClick={() => onNavigate('saved')}>{t.myRecipes}</button>
         </nav>
         <div className="header-user">
           <button className="lang-toggle lang-toggle-sm" onClick={onToggleLang}>{t.langToggle}</button>
@@ -503,21 +592,18 @@ function AppHeader({ t, lang, onToggleLang, user, view, onNavigate, onLogout }) 
    SAVED RECIPES VIEW
    ════════════════════════════════════════════ */
 function SavedRecipesView({ t, onNavigate }) {
-  const [recipes, setRecipes]       = useState([])
-  const [loading, setLoading]       = useState(true)
+  const [recipes, setRecipes]           = useState([])
+  const [loading, setLoading]           = useState(true)
   const [activeRecipe, setActiveRecipe] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(null)
-  const [deleting, setDeleting]     = useState(null)
-  const [search, setSearch]         = useState('')
+  const [deleting, setDeleting]         = useState(null)
+  const [search, setSearch]             = useState('')
 
   useEffect(() => { loadRecipes() }, [])
 
   const loadRecipes = async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('saved_recipes')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const { data } = await supabase.from('saved_recipes').select('*').order('created_at', { ascending: false })
     setRecipes(data || [])
     setLoading(false)
   }
@@ -527,17 +613,13 @@ function SavedRecipesView({ t, onNavigate }) {
     await supabase.from('saved_recipes').delete().eq('id', id)
     setRecipes(prev => prev.filter(r => r.id !== id))
     if (activeRecipe?.id === id) setActiveRecipe(null)
-    setDeleting(null)
-    setConfirmDelete(null)
+    setDeleting(null); setConfirmDelete(null)
   }
 
   const fmt = (iso) => new Date(iso).toLocaleDateString(t.dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })
 
   const filtered = search.trim()
-    ? recipes.filter(r =>
-        r.title.toLowerCase().includes(search.toLowerCase()) ||
-        (r.cuisine && r.cuisine.toLowerCase().includes(search.toLowerCase()))
-      )
+    ? recipes.filter(r => r.title.toLowerCase().includes(search.toLowerCase()) || (r.cuisine && r.cuisine.toLowerCase().includes(search.toLowerCase())))
     : recipes
 
   return (
@@ -545,9 +627,7 @@ function SavedRecipesView({ t, onNavigate }) {
       <div className="container">
         <div className="saved-header">
           <h1 className="saved-title">{t.savedPageTitle}</h1>
-          <p className="saved-sub">
-            {recipes.length === 0 ? t.savedPageSub0 : t.savedPageSubN(recipes.length)}
-          </p>
+          <p className="saved-sub">{recipes.length === 0 ? t.savedPageSub0 : t.savedPageSubN(recipes.length)}</p>
         </div>
 
         {loading ? (
@@ -561,30 +641,18 @@ function SavedRecipesView({ t, onNavigate }) {
             <div className="saved-empty-illustration">🍽️</div>
             <h3>{t.savedEmptyTitle}</h3>
             <p>{t.savedEmptyDesc}</p>
-            <button className="gen-btn saved-empty-btn" onClick={() => onNavigate('app')}>
-              <span>✨</span> {t.savedNewRecipeBtn}
-            </button>
+            <button className="gen-btn saved-empty-btn" onClick={() => onNavigate('app')}><span>✨</span> {t.savedNewRecipeBtn}</button>
           </div>
         ) : (
           <>
             <div className="saved-search-wrap">
               <span className="saved-search-icon">🔍</span>
-              <input
-                type="text"
-                className="saved-search"
-                placeholder={t.savedSearchPlaceholder}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-              {search && (
-                <button className="saved-search-clear" onClick={() => setSearch('')}>×</button>
-              )}
+              <input type="text" className="saved-search" placeholder={t.savedSearchPlaceholder} value={search} onChange={e => setSearch(e.target.value)} />
+              {search && <button className="saved-search-clear" onClick={() => setSearch('')}>×</button>}
             </div>
-
             <div className="saved-grid">
               {filtered.map((r, idx) => (
-                <div key={r.id} className="saved-card" style={{ animationDelay: `${idx * 0.05}s` }}
-                  onClick={() => setActiveRecipe(r)}>
+                <div key={r.id} className="saved-card" style={{ animationDelay: `${idx * 0.05}s` }} onClick={() => setActiveRecipe(r)}>
                   <div className="saved-card-emoji-wrap">
                     <span className="saved-card-emoji">{r.emoji || '🍽️'}</span>
                   </div>
@@ -604,15 +672,11 @@ function SavedRecipesView({ t, onNavigate }) {
                     {confirmDelete === r.id ? (
                       <div className="saved-delete-confirm-inline">
                         <span className="saved-delete-label">{t.savedDeleteConfirm}</span>
-                        <button className="saved-del-yes" onClick={() => deleteRecipe(r.id)} disabled={deleting === r.id}>
-                          {deleting === r.id ? '…' : t.savedDeleteYes}
-                        </button>
+                        <button className="saved-del-yes" onClick={() => deleteRecipe(r.id)} disabled={deleting === r.id}>{deleting === r.id ? '…' : t.savedDeleteYes}</button>
                         <button className="saved-del-no" onClick={() => setConfirmDelete(null)}>{t.savedDeleteNo}</button>
                       </div>
                     ) : (
-                      <button className="saved-delete-btn" onClick={() => setConfirmDelete(r.id)} title={t.savedDeleteTip}>
-                        🗑️
-                      </button>
+                      <button className="saved-delete-btn" onClick={() => setConfirmDelete(r.id)} title={t.savedDeleteTip}>🗑️</button>
                     )}
                   </div>
                 </div>
@@ -621,10 +685,234 @@ function SavedRecipesView({ t, onNavigate }) {
           </>
         )}
       </div>
+      {activeRecipe && <RecipeModal recipe={activeRecipe} onClose={() => setActiveRecipe(null)} t={t} />}
+    </main>
+  )
+}
 
-      {activeRecipe && (
-        <RecipeModal recipe={activeRecipe} onClose={() => setActiveRecipe(null)} t={t} />
-      )}
+/* ════════════════════════════════════════════
+   MEAL PLAN VIEW
+   ════════════════════════════════════════════ */
+function MealPlanView({ t, user, people, selectedDiets, cookingTime }) {
+  const [weekIngredients, setWeekIngredients] = useState('')
+  const [plan, setPlan]                       = useState(null)
+  const [loading, setLoading]                 = useState(false)
+  const [regenKey, setRegenKey]               = useState(null) // "dayIdx-meal"
+  const [saved, setSaved]                     = useState(false)
+  const [saving, setSaving]                   = useState(false)
+  const [error, setError]                     = useState('')
+  const [savedPlans, setSavedPlans]           = useState([])
+  const [savedLoading, setSavedLoading]       = useState(true)
+
+  useEffect(() => { loadSavedPlans() }, [])
+
+  const loadSavedPlans = async () => {
+    setSavedLoading(true)
+    const { data } = await supabase.from('meal_plans').select('id, created_at, plan').order('created_at', { ascending: false }).limit(5)
+    setSavedPlans(data || [])
+    setSavedLoading(false)
+  }
+
+  const timeLabels = { express: '15 min', rapide: '30 min', normal: '45 min', leisurely: '1h+' }
+  const timeLabel  = timeLabels[cookingTime] || '45 min'
+  const dietLabel  = selectedDiets.map(id => t.dietOptions.find(d => d.id === id)?.label).filter(Boolean).join(', ')
+
+  const buildPlanPrompt = () => {
+    const ing = weekIngredients.trim() || 'assorted ingredients'
+    return `JSON only, no text, no backticks.
+Weekly meal plan for ${people} person(s). Time per meal: ${timeLabel}.
+Ingredients: ${ing}
+${dietLabel ? `Dietary: strictly ${dietLabel}.` : ''}
+
+Return EXACTLY this JSON (7 days Monday-Sunday, lunch+dinner):
+{"days":[{"day":"Monday","lunch":{"name":"...","emoji":"🍝","cuisine":"Italian","time":"25 min","calories":450,"protein":25,"carbs":40,"fat":15},"dinner":{"name":"...","emoji":"🥘","cuisine":"French","time":"30 min","calories":520,"protein":30,"carbs":42,"fat":18}},{"day":"Tuesday",...},{"day":"Wednesday",...},{"day":"Thursday",...},{"day":"Friday",...},{"day":"Saturday",...},{"day":"Sunday",...}]}${t.langPrompt}`
+  }
+
+  const buildRegenPrompt = (dayName, mealType) => {
+    const ing = weekIngredients.trim() || 'assorted ingredients'
+    return `JSON only. One ${mealType} for ${dayName} (${people} person(s), ${timeLabel}).
+Ingredients: ${ing}. ${dietLabel ? `Dietary: ${dietLabel}.` : ''}
+Return: {"name":"...","emoji":"🍝","cuisine":"...","time":"...","calories":450,"protein":25,"carbs":40,"fat":15}${t.langPrompt}`
+  }
+
+  const generatePlan = async () => {
+    setLoading(true); setError(''); setSaved(false)
+    try {
+      const res = await fetch('/api/meal-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: buildPlanPrompt() }),
+      })
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error') }
+      const data = await res.json()
+      if (!data.days?.length) throw new Error(t.langPrompt ? 'Invalid response.' : 'Réponse invalide.')
+      setPlan(data)
+    } catch (err) {
+      setError(`❌ ${err.message}`)
+    } finally { setLoading(false) }
+  }
+
+  const regenMeal = async (dayIdx, mealType) => {
+    const key = `${dayIdx}-${mealType}`
+    setRegenKey(key); setError('')
+    try {
+      const dayName = ENGLISH_DAYS[dayIdx]
+      const res = await fetch('/api/meal-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: buildRegenPrompt(dayName, mealType), singleMeal: true }),
+      })
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error') }
+      const meal = await res.json()
+      if (!meal.name) throw new Error('Invalid meal')
+      setPlan(prev => ({
+        ...prev,
+        days: prev.days.map((d, i) => i === dayIdx ? { ...d, [mealType]: meal } : d),
+      }))
+      setSaved(false)
+    } catch (err) {
+      setError(`❌ ${err.message}`)
+    } finally { setRegenKey(null) }
+  }
+
+  const savePlan = async () => {
+    if (!plan || !user) return
+    setSaving(true)
+    const { error: err } = await supabase.from('meal_plans').insert({ user_id: user.id, plan })
+    setSaving(false)
+    if (!err) { setSaved(true); loadSavedPlans() }
+    else setError(`❌ ${err.message}`)
+  }
+
+  const loadPlan = (saved) => { setPlan(saved.plan); setSaved(true) }
+
+  const deleteSavedPlan = async (id) => {
+    await supabase.from('meal_plans').delete().eq('id', id)
+    setSavedPlans(prev => prev.filter(p => p.id !== id))
+  }
+
+  const fmt = (iso) => new Date(iso).toLocaleDateString(t.dateLocale, { day: 'numeric', month: 'short' })
+
+  return (
+    <main className="main">
+      <div className="container">
+        <div className="saved-header">
+          <h1 className="saved-title">{t.mealPlanTitle}</h1>
+          <p className="saved-sub">{t.mealPlanSub}</p>
+        </div>
+
+        {/* Settings */}
+        <section className="card">
+          <div className="step-header">
+            <div className="step-badge">1</div>
+            <div><h2>{t.mealPlanIngredientsLabel}</h2></div>
+          </div>
+          <textarea
+            className="week-ingredients-input"
+            value={weekIngredients}
+            onChange={e => setWeekIngredients(e.target.value)}
+            placeholder={t.mealPlanIngredientsPlaceholder}
+            rows={3}
+          />
+          <div className="week-settings-row">
+            {people > 0 && <span className="week-setting-badge">👥 {people} {people > 1 ? t.persons : t.person}</span>}
+            {dietLabel && <span className="week-setting-badge">🥗 {dietLabel}</span>}
+            <span className="week-setting-badge">⏱️ {timeLabel}</span>
+          </div>
+        </section>
+
+        {error && <div className="error-msg" role="alert">{error}</div>}
+
+        <div className="gen-wrap">
+          <button className="gen-btn" onClick={generatePlan} disabled={loading}>
+            {loading
+              ? <><span className="modal-spinner" style={{ borderTopColor: '#fff', width: 18, height: 18 }} /><span style={{ marginLeft: 8 }}>{t.mealPlanGeneratingMsg}</span></>
+              : <><span>🗓️</span> {plan ? t.mealPlanRegenerateBtn.replace('🗓️ ', '') : t.mealPlanGenerateBtn.replace('🗓️ ', '')}</>
+            }
+          </button>
+        </div>
+
+        {/* Plan Grid */}
+        {plan && (
+          <div className="meal-plan-section">
+            <div className="meal-plan-actions">
+              {!saved && (
+                <button className="save-btn" onClick={savePlan} disabled={saving}>
+                  {saving ? '…' : t.mealPlanSaveBtn}
+                </button>
+              )}
+              {saved && <span className="saved-confirm">{t.mealPlanSavedConfirm}</span>}
+            </div>
+            <div className="meal-grid">
+              {plan.days.map((day, dayIdx) => (
+                <div key={dayIdx} className="meal-day-col">
+                  <div className="meal-day-header">{t.days[dayIdx]}</div>
+                  {['lunch', 'dinner'].map(mealType => {
+                    const meal = day[mealType]
+                    const key  = `${dayIdx}-${mealType}`
+                    const isRegen = regenKey === key
+                    return (
+                      <div key={mealType} className={`meal-card${isRegen ? ' loading' : ''}`}>
+                        <div className="meal-card-top">
+                          <span className="meal-type-label">{t[mealType]}</span>
+                          <button className="meal-regen-btn" onClick={() => regenMeal(dayIdx, mealType)} disabled={!!regenKey} title="Regenerate">
+                            {isRegen ? '⏳' : '🔄'}
+                          </button>
+                        </div>
+                        {isRegen ? (
+                          <div className="meal-card-loading"><div className="dots"><span /><span /><span /></div></div>
+                        ) : meal ? (
+                          <>
+                            <span className="meal-emoji">{meal.emoji}</span>
+                            <p className="meal-name">{meal.name}</p>
+                            <span className="meal-cuisine-badge">{meal.cuisine}</span>
+                            <span className="meal-time">⏱️ {meal.time}</span>
+                            {meal.calories && (
+                              <div className="meal-macros">
+                                <span>🔥 {meal.calories}</span>
+                                <span>💪 {meal.protein}g</span>
+                                <span>🍞 {meal.carbs}g</span>
+                                <span>🫒 {meal.fat}g</span>
+                              </div>
+                            )}
+                          </>
+                        ) : null}
+                      </div>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!plan && (
+          <div className="saved-empty">
+            <div className="saved-empty-illustration">📅</div>
+            <h3>{t.mealPlanEmptyTitle}</h3>
+            <p>{t.mealPlanEmptyDesc}</p>
+          </div>
+        )}
+
+        {/* Saved Plans */}
+        {!savedLoading && savedPlans.length > 0 && (
+          <section className="card" style={{ marginTop: '2rem' }}>
+            <div className="step-header" style={{ marginBottom: '1rem' }}>
+              <div className="step-badge">📂</div>
+              <div><h2>{t.mealPlanSavedPlans}</h2></div>
+            </div>
+            <div className="saved-plans-list">
+              {savedPlans.map(sp => (
+                <div key={sp.id} className="saved-plan-row">
+                  <span className="saved-plan-date">📅 {fmt(sp.created_at)}</span>
+                  <button className="saved-plan-load-btn" onClick={() => loadPlan(sp)}>{t.mealPlanLoadBtn}</button>
+                  <button className="saved-plan-del-btn" onClick={() => deleteSavedPlan(sp.id)}>🗑️</button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </main>
   )
 }
@@ -639,16 +927,17 @@ export default function App() {
   const toggleLang = () => setLang(l => l === 'fr' ? 'en' : 'fr')
 
   /* Auth */
-  const [user, setUser]           = useState(null)
+  const [user, setUser]               = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
-  const [view, setView]           = useState('landing')
-  const [showAuth, setShowAuth]   = useState(false)
+  const [view, setView]               = useState('landing')
+  const [showAuth, setShowAuth]       = useState(false)
 
   /* Form */
-  const [ingredients, setIngredients] = useState([{ id: 1, name: '', qty: '', unit: 'g' }])
-  const [people, setPeople]           = useState(2)
+  const [ingredients, setIngredients]       = useState([{ id: 1, name: '', qty: '', unit: 'g' }])
+  const [people, setPeople]                 = useState(2)
   const [selectedCuisines, setSelectedCuisines] = useState([])
-  const [cookingTime, setCookingTime] = useState('normal')
+  const [selectedDiets, setSelectedDiets]   = useState([])
+  const [cookingTime, setCookingTime]       = useState('normal')
 
   /* Flow */
   const [phase, setPhase]               = useState('idle')
@@ -666,6 +955,10 @@ export default function App() {
   const checkRef     = useRef(null)
   const recipeRef    = useRef(null)
   const abortRef     = useRef(null)
+  const newIngIdRef  = useRef(null)
+
+  /* Voice */
+  const { listeningId, startListening, stopListening, supported: voiceSupported } = useSpeechRecognition(lang)
 
   /* Auth setup */
   useEffect(() => {
@@ -684,11 +977,8 @@ export default function App() {
 
   const handleLogout = () => supabase.auth.signOut()
 
-  /* Ingredient auto-focus */
-  const newIngIdRef = useRef(null)
-
   /* Ingredient helpers */
-  const addIngredient    = () => {
+  const addIngredient = () => {
     const id = Date.now()
     newIngIdRef.current = id
     setIngredients(prev => [...prev, { id, name: '', qty: '', unit: 'g' }])
@@ -696,8 +986,9 @@ export default function App() {
   const removeIngredient = (id) => setIngredients(prev => prev.length > 1 ? prev.filter(i => i.id !== id) : prev)
   const updateIngredient = (id, field, value) => setIngredients(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i))
   const handleIngKeyDown = (e) => { if (e.key === 'Enter') { e.preventDefault(); addIngredient() } }
-  const toggleCuisine    = (id) => setSelectedCuisines(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
-  const toggleCheckIng   = (idx) => setCheckIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, checked: !ing.checked } : ing))
+  const toggleCuisine = (id) => setSelectedCuisines(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
+  const toggleDiet    = (id) => setSelectedDiets(prev => prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id])
+  const toggleCheckIng = (idx) => setCheckIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, checked: !ing.checked } : ing))
 
   /* SSE helper */
   const streamSSE = async (prompt, onChunk, signal, model = 'claude-sonnet-4-6', maxTokens = 2000) => {
@@ -734,14 +1025,18 @@ export default function App() {
   const buildIngList = (valid) =>
     valid.map(i => `- ${i.name.trim()}${i.qty ? ` : ${i.qty} ${i.unit}` : ''}`).join('\n')
 
+  const buildDietStr = () =>
+    selectedDiets.map(id => t.dietOptions.find(d => d.id === id)?.label).filter(Boolean).join(', ')
+
   const buildProposalsPrompt = (valid) => {
     const ingList = buildIngList(valid)
     const cNames  = selectedCuisines.map(id => t.cuisines.find(c => c.id === id)?.label).filter(Boolean)
     const cText   = cNames.length ? cNames.join(', ') : 'any cuisine'
     const constraint = COOKING_TIME_CONSTRAINTS[cookingTime]
+    const diet       = buildDietStr()
     return `JSON only, no text, no backticks.
 Ingredients: ${ingList}
-${people} serving(s) · Style: ${cText} · Time: ${constraint}
+${people} serving(s) · Style: ${cText} · Time: ${constraint}${diet ? `\nDietary: strictly ${diet}.` : ''}
 
 3 varied proposals. Strict format:
 [{"nom":"Name","emoji":"🍝","cuisine":"Style","description":"1-2 sentences.","tempsPrep":"10 min","tempsCuisson":"15 min","difficulte":"Easy","calories":420,"protein":28,"carbs":35,"fat":14}]${t.langPrompt}`
@@ -752,16 +1047,17 @@ ${people} serving(s) · Style: ${cText} · Time: ${constraint}
     const available   = checkIngs.filter(i => i.checked)
     const unavailable = checkIngs.filter(i => !i.checked)
     const constraint  = COOKING_TIME_CONSTRAINTS[cookingTime]
+    const diet        = buildDietStr()
 
     let extras = ''
-    if (available.length)   extras += `\nIngrédients complémentaires disponibles :\n${available.map(i => `- ${i.name}${i.note ? ` (${i.note})` : ''}`).join('\n')}\n`
-    if (unavailable.length) extras += `\nIngrédients NON disponibles (propose une substitution pour chacun) :\n${unavailable.map(i => `- ${i.name}`).join('\n')}\n`
+    if (available.length)   extras += `\nExtra available: ${available.map(i => `${i.name}${i.note ? ` (${i.note})` : ''}`).join(', ')}`
+    if (unavailable.length) extras += `\nMissing (substitute each): ${unavailable.map(i => i.name).join(', ')}`
 
-    return `Chef expert. Recette concise pour "${proposal.nom}" (${proposal.cuisine}).
-Ingrédients : ${ingList}${extras}
-${people} pers. · ${constraint}.
+    return `Chef expert. Concise recipe for "${proposal.nom}" (${proposal.cuisine}).
+Ingredients: ${ingList}${extras}
+${people} pers. · ${constraint}.${diet ? `\nDietary: strictly ${diet}.` : ''}
 
-Markdown exact, étapes courtes et précises :
+Exact markdown, short steps:
 
 ## ${proposal.emoji} ${proposal.nom}
 **Cuisine :** ${proposal.cuisine} | **Pour :** ${people} pers. | **Prép :** [X min] | **Cuisson :** [X min] | **Difficulté :** ${proposal.difficulte}
@@ -828,7 +1124,7 @@ Markdown exact, étapes courtes et précises :
         body: JSON.stringify({
           recipeName: proposal.nom, recipeCuisine: proposal.cuisine,
           userIngredients: valid.map(i => `${i.name.trim()}${i.qty ? ` : ${i.qty} ${i.unit}` : ''}`),
-          people, cookingTime,
+          people, cookingTime, dietary: buildDietStr(),
         }),
         signal: ctrl.signal,
       })
@@ -891,13 +1187,8 @@ Markdown exact, étapes courtes et précises :
       full_text:  recipeText,
     })
     setSaving(false)
-    if (!err) {
-      setSaved(true)
-      setHeartPop(true)
-      setTimeout(() => setHeartPop(false), 600)
-    } else {
-      setError(`❌ ${err.message}`)
-    }
+    if (!err) { setSaved(true); setHeartPop(true); setTimeout(() => setHeartPop(false), 600) }
+    else setError(`❌ ${err.message}`)
   }
 
   const isLoading     = phase === 'proposals-loading' || phase === 'check-loading' || phase === 'recipe-loading'
@@ -905,28 +1196,23 @@ Markdown exact, étapes courtes et précises :
   const showCheck     = (phase === 'check-loading' || phase === 'check') && selectedProposal !== null
   const showRecipe    = phase === 'recipe-loading' || phase === 'recipe'
 
-  /* Auth loading splash */
-  if (authLoading) return (
-    <div className="auth-splash">
-      <span className="auth-splash-icon">🍳</span>
-    </div>
-  )
+  if (authLoading) return <div className="auth-splash"><span className="auth-splash-icon">🍳</span></div>
 
-  /* Landing (unauthenticated) */
   if (view === 'landing') return (
     <>
-      <LandingPage t={t} lang={lang} onToggleLang={toggleLang} onGetStarted={() => setShowAuth(true)} />
+      <LandingPage t={t} onToggleLang={toggleLang} onGetStarted={() => setShowAuth(true)} />
       {showAuth && <AuthModal t={t} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
     </>
   )
 
-  /* App (authenticated) */
   return (
     <div className="app">
-      <AppHeader t={t} lang={lang} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} />
+      <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} />
 
       {view === 'saved' ? (
         <SavedRecipesView t={t} onNavigate={setView} />
+      ) : view === 'mealPlan' ? (
+        <MealPlanView t={t} user={user} people={people} selectedDiets={selectedDiets} cookingTime={cookingTime} />
       ) : (
         <main className="main">
           <div className="container">
@@ -935,10 +1221,7 @@ Markdown exact, étapes courtes et précises :
             <section className="card">
               <div className="step-header">
                 <div className="step-badge">1</div>
-                <div>
-                  <h2>{t.step1Title}</h2>
-                  <p>{t.step1Sub}</p>
-                </div>
+                <div><h2>{t.step1Title}</h2><p>{t.step1Sub}</p></div>
               </div>
               <div className="ing-list">
                 {ingredients.map((ing, idx) => (
@@ -948,6 +1231,18 @@ Markdown exact, étapes courtes et précises :
                       onChange={e => updateIngredient(ing.id, 'name', e.target.value)}
                       onKeyDown={handleIngKeyDown}
                       placeholder={idx === 0 ? t.ing1Placeholder : t.ingPlaceholder} />
+                    {voiceSupported && (
+                      <button
+                        className={`mic-btn${listeningId === ing.id ? ' listening' : ''}`}
+                        onClick={() => {
+                          if (listeningId === ing.id) { stopListening(); return }
+                          startListening(ing.id, (transcript) => updateIngredient(ing.id, 'name', transcript))
+                        }}
+                        title="Voice input"
+                        type="button">
+                        🎤
+                      </button>
+                    )}
                     <input type="text" className="inp ing-qty" value={ing.qty}
                       onChange={e => updateIngredient(ing.id, 'qty', e.target.value)}
                       placeholder="250" inputMode="decimal" />
@@ -967,10 +1262,7 @@ Markdown exact, étapes courtes et précises :
             <section className="card">
               <div className="step-header">
                 <div className="step-badge">2</div>
-                <div>
-                  <h2>{t.step2Title}</h2>
-                  <p>{t.step2Sub}</p>
-                </div>
+                <div><h2>{t.step2Title}</h2><p>{t.step2Sub}</p></div>
               </div>
               <div className="people-wrap">
                 <button className="people-ctrl" onClick={() => setPeople(p => Math.max(1, p - 1))}>−</button>
@@ -992,18 +1284,12 @@ Markdown exact, étapes courtes et précises :
                 <div className="step-badge">3</div>
                 <div>
                   <h2>{t.step3Title}</h2>
-                  <p>
-                    {selectedCuisines.length === 0
-                      ? t.step3Sub
-                      : t.step3SubSelected(selectedCuisines.length)}
-                  </p>
+                  <p>{selectedCuisines.length === 0 ? t.step3Sub : t.step3SubSelected(selectedCuisines.length)}</p>
                 </div>
               </div>
               <div className="cuisine-grid">
                 {t.cuisines.map(c => (
-                  <button key={c.id}
-                    className={`cuisine-card${selectedCuisines.includes(c.id) ? ' selected' : ''}`}
-                    onClick={() => toggleCuisine(c.id)}>
+                  <button key={c.id} className={`cuisine-card${selectedCuisines.includes(c.id) ? ' selected' : ''}`} onClick={() => toggleCuisine(c.id)}>
                     <span className="c-flag">{c.emoji}</span>
                     <span className="c-name">{c.label}</span>
                     {selectedCuisines.includes(c.id) && <span className="c-check">✓</span>}
@@ -1012,20 +1298,35 @@ Markdown exact, étapes courtes et précises :
               </div>
             </section>
 
-            {/* Step 4: Cooking time */}
+            {/* Step 4: Dietary */}
             <section className="card">
               <div className="step-header">
                 <div className="step-badge">4</div>
                 <div>
-                  <h2>{t.step4Title}</h2>
-                  <p>{t.step4Sub}</p>
+                  <h2>{t.step4DietTitle}</h2>
+                  <p>{selectedDiets.length === 0 ? t.step4DietSub : t.step4DietSubSelected(selectedDiets.length)}</p>
                 </div>
+              </div>
+              <div className="diet-grid">
+                {t.dietOptions.map(d => (
+                  <button key={d.id} className={`diet-card${selectedDiets.includes(d.id) ? ' selected' : ''}`} onClick={() => toggleDiet(d.id)}>
+                    <span className="diet-emoji">{d.emoji}</span>
+                    <span className="diet-name">{d.label}</span>
+                    {selectedDiets.includes(d.id) && <span className="c-check">✓</span>}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Step 5: Cooking time */}
+            <section className="card">
+              <div className="step-header">
+                <div className="step-badge">5</div>
+                <div><h2>{t.step5Title}</h2><p>{t.step5Sub}</p></div>
               </div>
               <div className="time-grid">
                 {t.cookingTimes.map(ct => (
-                  <button key={ct.id}
-                    className={`time-card${cookingTime === ct.id ? ' selected' : ''}`}
-                    onClick={() => setCookingTime(ct.id)}>
+                  <button key={ct.id} className={`time-card${cookingTime === ct.id ? ' selected' : ''}`} onClick={() => setCookingTime(ct.id)}>
                     <span className="time-emoji">{ct.emoji}</span>
                     <span className="time-label">{ct.label}</span>
                     <span className="time-detail">{ct.detail}</span>
@@ -1035,10 +1336,8 @@ Markdown exact, étapes courtes et précises :
               </div>
             </section>
 
-            {/* Error */}
             {error && <div className="error-msg" role="alert">{error}</div>}
 
-            {/* Generate / Stop / Reset */}
             <div className="gen-wrap">
               {isLoading ? (
                 <button className="gen-btn stop" onClick={stopGeneration}><span>⏹</span> {t.stopBtn.replace('⏹ ', '')}</button>
@@ -1049,7 +1348,6 @@ Markdown exact, étapes courtes et précises :
               )}
             </div>
 
-            {/* Proposals loading */}
             {phase === 'proposals-loading' && (
               <div className="loading-state">
                 <span className="chef-anim">👨‍🍳</span>
@@ -1058,15 +1356,10 @@ Markdown exact, étapes courtes et précises :
               </div>
             )}
 
-            {/* Proposal Cards */}
             {showProposals && (
               <section className="proposals-section" ref={proposalsRef}>
                 <h2 className="proposals-title">{t.proposalsTitle}</h2>
-                <p className="proposals-subtitle">
-                  {phase === 'recipe' || phase === 'recipe-loading'
-                    ? t.proposalsSubChange
-                    : t.proposalsSub}
-                </p>
+                <p className="proposals-subtitle">{phase === 'recipe' || phase === 'recipe-loading' ? t.proposalsSubChange : t.proposalsSub}</p>
                 <div className="proposals-grid">
                   {proposals.map((p, i) => (
                     <button key={i}
@@ -1097,7 +1390,6 @@ Markdown exact, étapes courtes et précises :
               </section>
             )}
 
-            {/* Ingredient Check */}
             {showCheck && (
               <section className="check-section" ref={checkRef}>
                 {phase === 'check-loading' ? (
@@ -1115,26 +1407,20 @@ Markdown exact, étapes courtes et précises :
                     {checkIngredients.length > 0 ? (
                       <div className="check-list">
                         {checkIngredients.map((ing, i) => (
-                          <div key={i} className={`check-item${ing.checked ? ' has-it' : ''}`}
-                            onClick={() => toggleCheckIng(i)}
-                            style={{ animationDelay: `${i * 0.04}s` }}>
+                          <div key={i} className={`check-item${ing.checked ? ' has-it' : ''}`} onClick={() => toggleCheckIng(i)} style={{ animationDelay: `${i * 0.04}s` }}>
                             <span className="check-emoji">{ing.emoji}</span>
                             <div className="check-info">
                               <span className="check-name">{ing.name}</span>
                               {ing.note && <span className="check-note">{ing.note}</span>}
                             </div>
-                            <div className={`toggle${ing.checked ? ' on' : ''}`}>
-                              <div className="toggle-thumb" />
-                            </div>
+                            <div className={`toggle${ing.checked ? ' on' : ''}`}><div className="toggle-thumb" /></div>
                           </div>
                         ))}
                       </div>
                     ) : (
                       <p className="check-empty">{t.checkEmpty}</p>
                     )}
-                    {checkIngredients.some(i => !i.checked) && (
-                      <p className="check-sub-note">{t.checkNote}</p>
-                    )}
+                    {checkIngredients.some(i => !i.checked) && <p className="check-sub-note">{t.checkNote}</p>}
                     <button className="gen-btn check-gen-btn" onClick={generateFullRecipe}>
                       <span>👨‍🍳</span> {t.checkGenBtn.replace('👨‍🍳 ', '')}
                     </button>
@@ -1143,17 +1429,13 @@ Markdown exact, étapes courtes et précises :
               </section>
             )}
 
-            {/* Full Recipe */}
             {showRecipe && (
               <section className="recipes-section" ref={recipeRef}>
                 <div className="recipes-header">
                   <h2>{t.recipeTitle}</h2>
                   <div className="recipe-actions">
                     {phase === 'recipe' && !saved && (
-                      <button
-                        className={`save-btn${heartPop ? ' heart-pop' : ''}`}
-                        onClick={saveRecipe}
-                        disabled={saving}>
+                      <button className={`save-btn${heartPop ? ' heart-pop' : ''}`} onClick={saveRecipe} disabled={saving}>
                         {saving ? '…' : t.saveBtn}
                       </button>
                     )}

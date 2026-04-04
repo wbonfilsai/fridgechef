@@ -80,7 +80,7 @@ app.post('/api/check-ingredients', async (req, res) => {
     return res.status(500).json({ error: 'ANTHROPIC_API_KEY non configurée.' })
   }
 
-  const { recipeName, recipeCuisine, userIngredients, people, cookingTime } = req.body
+  const { recipeName, recipeCuisine, userIngredients, people, cookingTime, dietary } = req.body
   if (!recipeName || typeof recipeName !== 'string' || !recipeCuisine) {
     return res.status(400).json({ error: 'Données invalides.' })
   }
@@ -91,8 +91,10 @@ app.post('/api/check-ingredients', async (req, res) => {
 
   const timeLabels = { express: '15 minutes', rapide: '30 minutes', normal: '45 minutes', leisurely: '1 heure ou plus' }
   const timeLabel = timeLabels[cookingTime] || '45 minutes'
+  const dietLine = dietary && typeof dietary === 'string' && dietary.length < 200
+    ? `\nContraintes: ${dietary}.` : ''
 
-  const prompt = `Recette "${recipeName}" (${recipeCuisine}), ${people} pers., ${timeLabel}.
+  const prompt = `Recette "${recipeName}" (${recipeCuisine}), ${people} pers., ${timeLabel}.${dietLine}
 Ingrédients déjà disponibles :
 ${userIngList}
 
@@ -111,6 +113,38 @@ Réponds UNIQUEMENT avec un JSON — max 6 ingrédients complémentaires manquan
     if (!match) return res.json({ ingredients: [] })
     const ingredients = JSON.parse(match[0])
     res.json({ ingredients: Array.isArray(ingredients) ? ingredients : [] })
+  } catch (err) {
+    const msg =
+      err.status === 401 ? 'Clé API invalide.' :
+      err.status === 429 ? 'Limite de requêtes atteinte.' :
+      err.message || 'Erreur serveur.'
+    res.status(500).json({ error: msg })
+  }
+})
+
+/* ── Meal Plan generation (JSON, non-streaming) ── */
+app.post('/api/meal-plan', async (req, res) => {
+  if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'your-key-here') {
+    return res.status(500).json({ error: 'ANTHROPIC_API_KEY non configurée.' })
+  }
+
+  const { prompt } = req.body
+  if (!prompt || typeof prompt !== 'string' || prompt.length > 8000) {
+    return res.status(400).json({ error: 'Prompt invalide.' })
+  }
+
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  try {
+    const message = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2000,
+      messages: [{ role: 'user', content: prompt }],
+    })
+    const text = message.content[0].text
+    const match = text.match(/\{[\s\S]*\}/)
+    if (!match) return res.json({ plan: null, error: 'Format invalide.' })
+    const plan = JSON.parse(match[0])
+    res.json({ plan })
   } catch (err) {
     const msg =
       err.status === 401 ? 'Clé API invalide.' :
