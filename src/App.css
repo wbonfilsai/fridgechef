@@ -1512,148 +1512,172 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 /* ═══════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════ */
+
+/* ── Large tablet / small desktop: ≤ 900px ── */
 @media (max-width: 900px) {
-  .features-grid { grid-template-columns: 1fr; }
-  .hiw-steps { flex-wrap: wrap; gap: 1.5rem; }
-  .hiw-step  { flex: 0 0 calc(50% - 0.75rem); }
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .hiw-steps     { flex-wrap: wrap; gap: 1.5rem; }
+  .hiw-step      { flex: 0 0 calc(50% - 0.75rem); }
   .hiw-connector { display: none; }
-  .saved-grid { grid-template-columns: repeat(2, 1fr); }
+  .saved-grid    { grid-template-columns: repeat(2, 1fr); }
+  .proposals-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 680px) {
+/* ── Tablet: 481–768px ── */
+@media (max-width: 768px) {
+  html, body { overflow-x: hidden; }
+
+  /* Containers */
   .l-container { padding: 0 1.25rem; }
-  .hero { padding: 5rem 0 4rem; }
-  .hero-title { letter-spacing: -0.8px; }
-  .hero-stats { gap: 1.25rem; }
+  .container   { padding: 0 1.25rem; }
+
+  /* Landing */
+  .features-grid { grid-template-columns: 1fr; }
   .features-section, .hiw-section, .cta-section { padding: 4rem 0; }
   .section-title { font-size: 1.5rem; }
+  .hero { padding: 4rem 0 3rem; }
+  .hero-stats { gap: 1.25rem; flex-wrap: wrap; }
+  .hiw-step { flex: 0 0 100%; }
 
-  .header-email { display: none; }
+  /* App header */
+  .header-email   { display: none; }
   .header-nav-btn { font-size: 0.78rem; padding: 0.38rem 0.75rem; }
   .lang-toggle-sm { display: none; }
 
-  .card { padding: 1.25rem; border-radius: var(--r-sm); }
+  /* Cards & forms */
+  .card     { padding: 1.25rem; border-radius: var(--r-sm); }
   .ing-row  { flex-wrap: wrap; }
   .ing-name { width: 100%; flex: none; }
   .ing-qty  { flex: 1; }
   .ing-unit { flex: 1; }
 
-  .cuisine-grid { grid-template-columns: repeat(3, 1fr); }
-  .time-grid    { grid-template-columns: repeat(2, 1fr); }
+  /* Selection grids */
+  .cuisine-grid   { grid-template-columns: repeat(3, 1fr); }
+  .time-grid      { grid-template-columns: repeat(2, 1fr); }
   .proposals-grid { grid-template-columns: 1fr; }
-  .saved-grid { grid-template-columns: 1fr; }
+  .saved-grid     { grid-template-columns: 1fr; }
 
-  .gen-btn { font-size: 0.95rem; padding: 0.95rem 1.25rem; }
+  /* Buttons */
+  .gen-btn      { font-size: 0.95rem; padding: 0.95rem 1.25rem; }
   .recipes-card { padding: 1.25rem; }
 
-  .recipe-modal { max-height: 95vh; border-radius: var(--r) var(--r) 0 0; }
-  .recipe-modal-body { padding: 1.25rem 1.25rem 1.75rem; }
-  .recipe-modal-header { padding: 1.25rem 1.25rem 1rem; }
+  /* Recipe modal — slide up from bottom */
+  .recipe-modal-overlay { padding: 0; align-items: flex-end; }
+  .recipe-modal         { max-height: 95vh; border-radius: var(--r) var(--r) 0 0; width: 100%; }
+  .recipe-modal-body    { padding: 1.25rem 1.25rem 1.75rem; }
+  .recipe-modal-header  { padding: 1.25rem 1.25rem 1rem; }
 
+  /* Meal plan */
+  .meal-grid    { grid-template-columns: repeat(3, 1fr); }
+  .meal-day-col { min-width: 0; }
+}
+
+/* ── Mobile: ≤ 480px ── */
+@media (max-width: 480px) {
+  html, body { overflow-x: hidden; }
+
+  /* Containers */
+  .l-container { padding: 0 1rem; }
+  .container   { padding: 0 1rem; }
+  .main        { padding: 1.5rem 0 4rem; }
+
+  /* Landing nav */
+  .landing-logo-text { font-size: 1.1rem; }
+  .landing-nav-right { gap: 0.3rem; }
+  .btn-outline-sm    { padding: 0.35rem 0.7rem; font-size: 0.78rem; }
+
+  /* Hero */
+  .hero            { padding: 3rem 0 2.5rem; }
+  .hero-title      { letter-spacing: -0.5px; }
+  .hero-sub        { font-size: 0.95rem; }
+  .hero-stats      { gap: 0.75rem; flex-wrap: wrap; }
+  .hero-stat strong{ font-size: 1.3rem; }
+  .hero-stat span  { font-size: 0.7rem; }
+  .hero-stat-sep   { display: none; }
+  .btn-hero        { width: 100%; justify-content: center; }
+  .hero-badge      { font-size: 0.72rem; }
+
+  /* App header */
+  .app-header       { padding: 0.5rem 0; }
+  .header-inner     { gap: 0.35rem; }
+  .header-logo-icon { font-size: 1.3rem; }
+  .header-logo-text { font-size: 0.92rem; }
+  .header-nav-btn   { font-size: 0.73rem; padding: 0.5rem 0.55rem; min-height: 44px; display: flex; align-items: center; }
+  .btn-logout       { font-size: 0.72rem; padding: 0.35rem 0.6rem; min-height: 44px; display: flex; align-items: center; }
+
+  /* Cards */
+  .card { padding: 1rem; }
+
+  /* Ingredient form — touch-friendly 44px targets */
+  .ing-name { min-height: 44px; }
+  .ing-qty  { min-height: 44px; }
+  .ing-unit { min-height: 44px; }
+  .rm-btn   { width: 44px; height: 44px; }
+  .add-btn  { min-height: 44px; }
+  .inp      { min-height: 44px; padding: 0.7rem 0.875rem; }
+
+  /* People controls */
+  .people-ctrl { width: 44px; height: 44px; }
+  .people-wrap { justify-content: center; gap: 0.6rem; }
+
+  /* Selection grids */
+  .cuisine-grid { grid-template-columns: repeat(2, 1fr); }
+  .cuisine-card { padding: 0.7rem 0.4rem; }
+  .time-grid    { grid-template-columns: repeat(2, 1fr); }
+
+  /* Dietary filters — 44px touch targets */
+  .diet-grid { gap: 0.4rem; }
+  .diet-card { padding: 0.5rem 0.85rem; min-height: 44px; font-size: 0.8rem; }
+
+  /* Proposals */
+  .proposals-title { font-size: 1.2rem; }
+
+  /* Generate button */
+  .gen-btn { font-size: 0.9rem; padding: 0.95rem 1rem; min-height: 52px; }
+
+  /* Recipes header */
+  .recipes-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  .recipe-actions { flex-wrap: wrap; gap: 0.5rem; }
+  .save-btn       { min-height: 44px; }
+
+  /* Recipe content */
+  .recipe-content    { font-size: 0.9rem; }
+  .recipe-content h2 { font-size: 1.15rem; }
+
+  /* Auth modal */
+  .modal-card   { padding: 1.75rem 1.25rem; }
+  .modal-input  { min-height: 44px; }
+  .modal-submit { min-height: 52px; font-size: 0.9rem; }
+
+  /* Saved recipes */
+  .saved-title      { font-size: 1.4rem; }
+  .saved-delete-btn { opacity: 1; }
+
+  /* Meal plan — single column on phones */
+  .meal-plan-section { padding: 1.25rem 1rem 3rem; }
+  .meal-plan-title   { font-size: 1.3rem; }
+  .meal-grid         { grid-template-columns: 1fr; }
+  .meal-day-col      { min-width: 0; }
+  .week-settings-row { gap: 0.5rem; }
+  .saved-plan-row    { flex-wrap: wrap; gap: 0.5rem; }
+
+  /* Landing — remaining sections */
+  .feature-card { padding: 1.5rem 1.25rem; }
+  .features-section, .hiw-section, .cta-section { padding: 3rem 0; }
+  .section-title { font-size: 1.35rem; }
   .hiw-step { flex: 0 0 100%; }
-  .dietary-grid { grid-template-columns: repeat(2, 1fr); }
-  .meal-plan-result { padding: 1.25rem; }
+
+  /* Footer */
+  .footer { padding: 1.25rem 1rem; font-size: 0.78rem; }
 }
 
-/* ═══════════════════════════════════════════
-   DIETARY FILTERS
-   ═══════════════════════════════════════════ */
-.dietary-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.625rem;
-}
-
-.dietary-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.6rem 0.9rem;
-  border: 2px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg);
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all var(--t);
-  position: relative;
-  white-space: nowrap;
-  justify-content: center;
-}
-.dietary-btn:hover {
-  border-color: var(--primary-l);
-  color: var(--primary);
-  background: var(--primary-light);
-  transform: translateY(-1px);
-}
-.dietary-btn.active {
-  border-color: var(--primary);
-  background: linear-gradient(135deg, rgba(194,65,12,0.08), rgba(234,88,12,0.14));
-  color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary-ring);
-}
-.dietary-check {
-  margin-left: auto;
-  font-weight: 700;
-  font-size: 0.75rem;
-  color: var(--primary);
-}
-
-/* ═══════════════════════════════════════════
-   VOICE INPUT BUTTON
-   ═══════════════════════════════════════════ */
-.voice-btn {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  background: var(--bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all var(--t);
-  line-height: 1;
-}
-.voice-btn:hover {
-  border-color: var(--primary-l);
-  background: var(--primary-light);
-  transform: scale(1.1);
-}
-.voice-btn.listening {
-  border-color: #DC2626;
-  background: #FEF2F2;
-  animation: pulse 1s ease infinite;
-}
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
-  50%       { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
-}
-
-/* ═══════════════════════════════════════════
-   MEAL PLAN PAGE
-   ═══════════════════════════════════════════ */
-.meal-plan-header {
-  text-align: center;
-  margin-bottom: 2rem;
-  animation: fadeInUp 0.35s ease both;
-}
-.meal-plan-title {
-  font-size: 1.85rem;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: var(--text);
-  margin-bottom: 0.4rem;
-}
-.meal-plan-sub {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-.meal-plan-result {
-  margin-top: 0;
-  animation: fadeInUp 0.3s ease both;
+/* ── Small phones: ≤ 360px ── */
+@media (max-width: 360px) {
+  .header-logo-text { display: none; }
+  .header-nav-btn   { padding: 0.5rem 0.45rem; font-size: 0.7rem; }
+  .hero-title       { font-size: 1.75rem; }
+  .cuisine-grid     { grid-template-columns: repeat(2, 1fr); }
+  .time-grid        { grid-template-columns: repeat(2, 1fr); }
+  .ing-qty          { width: 60px; flex: none; }
+  .ing-unit         { flex: 1; }
 }
