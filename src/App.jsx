@@ -1610,6 +1610,15 @@ Exact markdown, short steps:
                       className={`proposal-card${selectedIdx === i ? ' selected' : ''}${isLoading ? ' disabled' : ''}`}
                       onClick={() => selectProposal(p, i)} disabled={isLoading}
                       style={{ animationDelay: `${i * 0.07}s` }}>
+                      <div className="proposal-img-wrap">
+                        <img
+                          src={`https://loremflickr.com/400/300/${p.nom.toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,',')},food?lock=${i}`}
+                          alt={p.nom}
+                          className="proposal-img"
+                          onLoad={e => { e.target.classList.add('loaded'); e.target.parentElement.classList.add('img-loaded'); }}
+                          onError={e => { e.target.parentElement.classList.add('img-error'); e.target.style.display = 'none'; }}
+                        />
+                      </div>
                       <div className="proposal-emoji">{p.emoji}</div>
                       <h3 className="proposal-nom">{p.nom}</h3>
                       <span className="proposal-cuisine-badge">{p.cuisine}</span>
