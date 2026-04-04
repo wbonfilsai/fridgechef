@@ -77,7 +77,7 @@ const T = {
     ctaBtn: 'Créer mon compte',
     footerPowered: 'Propulsé par', footerSuffix: '(Anthropic) 🤖 — Cuisinez avec passion 🔥',
     loginTab: 'Se connecter', signupTab: "S'inscrire",
-    loginTitle: 'Bon retour !', signupTitle: 'Rejoignez FridgeChef',
+    loginTitle: 'Bon retour !', signupTitle: 'Rejoignez CheFridge',
     loginSub: 'Connectez-vous pour accéder à vos recettes',
     signupSub: 'Créez votre compte gratuitement',
     emailLabel: 'Email', passwordLabel: 'Mot de passe',
@@ -210,7 +210,7 @@ const T = {
     ctaBtn: 'Create my account',
     footerPowered: 'Powered by', footerSuffix: '(Anthropic) 🤖 — Cook with passion 🔥',
     loginTab: 'Sign in', signupTab: 'Sign up',
-    loginTitle: 'Welcome back!', signupTitle: 'Join FridgeChef',
+    loginTitle: 'Welcome back!', signupTitle: 'Join CheFridge',
     loginSub: 'Sign in to access your recipes',
     signupSub: 'Create your free account',
     emailLabel: 'Email', passwordLabel: 'Password',
@@ -413,8 +413,7 @@ function LandingPage({ t, onToggleLang, onGetStarted }) {
       <nav className="landing-nav">
         <div className="l-container l-nav-inner">
           <div className="landing-logo">
-            <span className="landing-logo-icon">🍳</span>
-            <span className="landing-logo-text">FridgeChef</span>
+            <img src="/logo.png" alt="CheFridge" className="landing-logo-img" />
           </div>
           <div className="landing-nav-right">
             <button className="lang-toggle" onClick={onToggleLang}>{t.langToggle}</button>
@@ -534,7 +533,7 @@ function AuthModal({ t, onClose, onSuccess }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose} aria-label="Fermer">×</button>
-        <div className="modal-logo">🍳</div>
+        <div className="modal-logo"><img src="/logo.png" alt="CheFridge" className="modal-logo-img" /></div>
         <h2 className="modal-title">{tab === 'login' ? t.loginTitle : t.signupTitle}</h2>
         <p className="modal-sub">{tab === 'login' ? t.loginSub : t.signupSub}</p>
         <div className="modal-tabs">
@@ -570,8 +569,7 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout }) {
     <header className="app-header">
       <div className="container header-inner">
         <button className="header-logo" onClick={() => onNavigate('app')}>
-          <span className="header-logo-icon">🍳</span>
-          <span className="header-logo-text">FridgeChef</span>
+          <img src="/logo.png" alt="CheFridge" className="header-logo-img" />
         </button>
         <nav className="header-nav">
           <button className={`header-nav-btn${view === 'app' ? ' active' : ''}`} onClick={() => onNavigate('app')}>{t.newRecipe}</button>
