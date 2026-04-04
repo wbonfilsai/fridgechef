@@ -186,6 +186,15 @@ const T = {
     mealPlanEmptyDesc: 'Entrez vos ingrédients et générez un menu 7 jours personnalisé avec macros.',
     mealPlanLoadingMsg: 'Chargement de vos plans...',
     mealPlanNoSaved: 'Aucun plan sauvegardé',
+    shoppingListNav: 'Courses',
+    shoppingListTitle: '🛒 Liste de courses',
+    addMissingBtn: 'Ajouter les manquants à la liste',
+    shoppingListClear: 'Vider la liste',
+    shoppingListEmpty: 'Votre liste est vide',
+    shoppingListAddPlaceholder: 'Ajouter un article...',
+    shoppingListAddBtn: '+ Ajouter',
+    shoppingListItemsLeft: (left, total) => left === 0 ? `Tout acheté (${total})` : `${left} restant${left > 1 ? 's' : ''} / ${total}`,
+    shoppingListDelete: 'Supprimer',
   },
   en: {
     cuisines: [
@@ -354,6 +363,15 @@ const T = {
     mealPlanEmptyDesc: 'Enter your ingredients and generate a personalized 7-day menu with macros.',
     mealPlanLoadingMsg: 'Loading your plans...',
     mealPlanNoSaved: 'No saved plans',
+    shoppingListNav: 'Shopping',
+    shoppingListTitle: '🛒 Shopping List',
+    addMissingBtn: 'Add missing items to list',
+    shoppingListClear: 'Clear list',
+    shoppingListEmpty: 'Your list is empty',
+    shoppingListAddPlaceholder: 'Add an item...',
+    shoppingListAddBtn: '+ Add',
+    shoppingListItemsLeft: (left, total) => left === 0 ? `All bought (${total})` : `${left} left / ${total}`,
+    shoppingListDelete: 'Delete',
   },
 }
 
@@ -713,9 +731,77 @@ function AuthModal({ t, onClose, onSuccess }) {
 }
 
 /* ════════════════════════════════════════════
+   SHOPPING LIST VIEW
+   ════════════════════════════════════════════ */
+function ShoppingListView({ t, shoppingList, setShoppingList }) {
+  const [newItem, setNewItem] = useState('')
+
+  const toggleItem = (idx) => setShoppingList(prev => prev.map((item, i) => i === idx ? { ...item, checked: !item.checked } : item))
+  const deleteItem = (idx) => setShoppingList(prev => prev.filter((_, i) => i !== idx))
+  const clearList  = () => setShoppingList([])
+  const addItem    = () => {
+    if (!newItem.trim()) return
+    setShoppingList(prev => [...prev, { name: newItem.trim(), checked: false }])
+    setNewItem('')
+  }
+
+  const unchecked = shoppingList.filter(i => !i.checked).length
+  const total     = shoppingList.length
+
+  return (
+    <main className="main">
+      <div className="container">
+        <section className="card shopping-card">
+          <div className="shopping-header">
+            <h2>{t.shoppingListTitle}</h2>
+            {total > 0 && (
+              <div className="shopping-meta">
+                <span className="shopping-counter">{t.shoppingListItemsLeft(unchecked, total)}</span>
+                <button className="shopping-clear-btn" onClick={clearList}>{t.shoppingListClear}</button>
+              </div>
+            )}
+          </div>
+
+          {total === 0 ? (
+            <p className="shopping-empty">{t.shoppingListEmpty}</p>
+          ) : (
+            <ul className="shopping-list">
+              {shoppingList.map((item, i) => (
+                <li key={i} className={`shopping-item${item.checked ? ' checked' : ''}`}>
+                  <label className="shopping-item-label">
+                    <span className="shopping-checkbox-wrap">
+                      <input type="checkbox" className="shopping-checkbox-input" checked={item.checked} onChange={() => toggleItem(i)} />
+                      <span className="shopping-checkbox-custom" />
+                    </span>
+                    <span className="shopping-item-name">{item.name}</span>
+                  </label>
+                  <button className="shopping-delete-btn" onClick={() => deleteItem(i)} aria-label={t.shoppingListDelete}>✕</button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="shopping-add-row">
+            <input
+              type="text"
+              className="inp shopping-add-input"
+              value={newItem}
+              onChange={e => setNewItem(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addItem()}
+              placeholder={t.shoppingListAddPlaceholder}
+            />
+            <button className="gen-btn secondary shopping-add-btn" onClick={addItem}>{t.shoppingListAddBtn}</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  )
+}
+
+/* ════════════════════════════════════════════
    APP HEADER
    ════════════════════════════════════════════ */
-function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout }) {
+function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, shoppingBadge }) {
   return (
     <header className="app-header">
       <div className="container header-inner">
@@ -731,6 +817,12 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout }) {
           </button>
           <button className={`header-nav-btn${view === 'meal-plan' ? ' active' : ''}`} onClick={() => onNavigate('meal-plan')}>
             {t.mealPlanNav}
+          </button>
+          <button className={`header-nav-btn${view === 'shopping' ? ' active' : ''}`} onClick={() => onNavigate('shopping')}>
+            <span className="nav-shopping-wrap">
+              🛒 {t.shoppingListNav}
+              {shoppingBadge > 0 && <span className="shopping-badge">{shoppingBadge}</span>}
+            </span>
           </button>
         </nav>
         <div className="header-user">
@@ -1270,6 +1362,11 @@ export default function App() {
   const [heartPop, setHeartPop]         = useState(false)
   const [loadingMore, setLoadingMore]   = useState(false)
 
+  /* Shopping List */
+  const [shoppingList, setShoppingList] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('chefridge_shopping') || '[]') } catch { return [] }
+  })
+
   const proposalsRef    = useRef(null)
   const checkRef        = useRef(null)
   const recipeRef       = useRef(null)
@@ -1292,6 +1389,24 @@ export default function App() {
   }, [])
 
   const handleLogout = () => supabase.auth.signOut()
+
+  /* Persist shopping list to localStorage */
+  useEffect(() => {
+    localStorage.setItem('chefridge_shopping', JSON.stringify(shoppingList))
+  }, [shoppingList])
+
+  /* Shopping list helpers */
+  const addMissingToShopping = () => {
+    const missing = checkIngredients
+      .filter(i => !i.checked)
+      .map(i => ({ name: i.name, checked: false }))
+    if (!missing.length) return
+    setShoppingList(prev => {
+      const existing = prev.map(p => p.name.toLowerCase())
+      const toAdd = missing.filter(m => !existing.includes(m.name.toLowerCase()))
+      return [...prev, ...toAdd]
+    })
+  }
 
   /* Ingredient helpers */
   const addIngredient = () => {
@@ -1563,12 +1678,14 @@ Exact markdown, short steps:
 
   return (
     <div className="app">
-      <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} />
+      <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
 
       {view === 'meal-plan' ? (
         <MealPlanView t={t} lang={lang} />
       ) : view === 'saved' ? (
         <SavedRecipesView t={t} onNavigate={setView} />
+      ) : view === 'shopping' ? (
+        <ShoppingListView t={t} shoppingList={shoppingList} setShoppingList={setShoppingList} />
       ) : view === 'mealPlan' ? (
         <MealPlanViewSaved t={t} user={user} people={people} selectedDiets={selectedDiets} cookingTime={cookingTime} />
       ) : (
@@ -1817,6 +1934,11 @@ Exact markdown, short steps:
                       <p className="check-empty">{t.checkEmpty}</p>
                     )}
                     {checkIngredients.some(i => !i.checked) && <p className="check-sub-note">{t.checkNote}</p>}
+                    {checkIngredients.some(i => !i.checked) && (
+                      <button className="gen-btn secondary add-missing-btn" onClick={addMissingToShopping}>
+                        🛒 {t.addMissingBtn}
+                      </button>
+                    )}
                     <button className="gen-btn check-gen-btn" onClick={generateFullRecipe}>
                       <span>👨‍🍳</span> {t.checkGenBtn.replace('👨‍🍳 ', '')}
                     </button>
