@@ -135,8 +135,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   align-items: center;
   gap: 0.6rem;
 }
-.landing-logo-icon { font-size: 1.75rem; line-height: 1; }
-.landing-logo-text { font-size: 1.25rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+.landing-logo-img { height: 2.5rem; width: auto; border-radius: 8px; display: block; }
 
 .landing-nav-right {
   display: flex;
@@ -408,7 +407,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .modal-close:hover { background: #FEE2E2; color: var(--danger); transform: rotate(90deg); }
 
-.modal-logo { font-size: 2.5rem; text-align: center; margin-bottom: 0.75rem; }
+.modal-logo { text-align: center; margin-bottom: 0.75rem; }
+.modal-logo-img { height: 3.5rem; width: auto; border-radius: 10px; display: inline-block; }
 .modal-title { font-size: 1.5rem; font-weight: 800; text-align: center; margin-bottom: 0.3rem; letter-spacing: -0.4px; }
 .modal-sub { color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-bottom: 1.5rem; }
 
@@ -591,8 +591,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: opacity var(--t);
 }
 .header-logo:hover { opacity: 0.8; }
-.header-logo-icon { font-size: 1.5rem; line-height: 1; }
-.header-logo-text { font-size: 1.1rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+.header-logo-img { height: 2rem; width: auto; border-radius: 6px; display: block; }
 
 .header-nav {
   display: flex;
