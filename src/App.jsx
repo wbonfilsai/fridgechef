@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart } from 'lucide-react'
 
 /* Claude prompt constraints */
 const COOKING_TIME_CONSTRAINTS = {
@@ -65,15 +66,11 @@ const T = {
       { emoji: '🛒', title: 'Ingrédients intelligents', desc: "Cochez les ingrédients complémentaires que vous avez. Les substitutions créatives s'occupent du reste." },
       { emoji: '📊', title: 'Macros nutritionnelles', desc: 'Calories, protéines, glucides et lipides estimés par portion — pour cuisiner sainement sans y penser.' },
     ],
-    hiwLabel: 'Comment ça marche',
-    hiwTitle: 'Cinq étapes, une recette parfaite',
-    hiwSteps: [
-      { n: '1', icon: '🥦', label: 'Listez vos ingrédients et le nombre de convives' },
-      { n: '2', icon: '🌍', label: 'Choisissez un style de cuisine et votre temps' },
-      { n: '3', icon: '🍽️', label: 'Sélectionnez parmi 3 propositions personnalisées' },
-      { n: '4', icon: '🛒', label: "Confirmez les ingrédients complémentaires que vous avez" },
-      { n: '5', icon: '📖', label: 'La recette complète avec macros et conseils du chef' },
-    ],
+    howItWorks: 'Comment ça marche',
+    step1Text: 'Ajoutez vos ingrédients',
+    step2Text: 'Choisissez votre cuisine',
+    step3Text: 'Recevez des recettes sur mesure',
+    step4Text: 'Liste de courses auto',
     ctaTitle: 'Prêt à transformer votre frigo ?',
     ctaSub: 'Gratuit, rapide et intelligent. Des recettes en 30 secondes.',
     ctaBtn: 'Créer mon compte',
@@ -234,15 +231,11 @@ const T = {
       { emoji: '🛒', title: 'Smart ingredients', desc: "Check off the complementary ingredients you have. Creative substitutions handle the rest." },
       { emoji: '📊', title: 'Nutritional macros', desc: 'Calories, proteins, carbs and fats estimated per serving — for healthy cooking without thinking about it.' },
     ],
-    hiwLabel: 'How it works',
-    hiwTitle: 'Five steps, one perfect recipe',
-    hiwSteps: [
-      { n: '1', icon: '🥦', label: 'List your ingredients and number of guests' },
-      { n: '2', icon: '🌍', label: 'Choose a cuisine style and your time' },
-      { n: '3', icon: '🍽️', label: 'Pick from 3 personalized proposals' },
-      { n: '4', icon: '🛒', label: "Confirm the complementary ingredients you have" },
-      { n: '5', icon: '📖', label: 'Full recipe with macros and chef tips' },
-    ],
+    howItWorks: 'How it works',
+    step1Text: 'Add your ingredients',
+    step2Text: 'Pick your cuisine style',
+    step3Text: 'Get custom recipes instantly',
+    step4Text: 'Auto shopping list',
     ctaTitle: 'Ready to transform your fridge?',
     ctaSub: 'Free, fast and smart. Recipes in 30 seconds.',
     ctaBtn: 'Create my account',
@@ -576,19 +569,20 @@ function LandingPage({ t, onToggleLang, onGetStarted }) {
       </section>
 
       <section className="hiw-section">
-        <div className="l-container">
-          <div className="section-eyebrow">{t.hiwLabel}</div>
-          <h2 className="section-title hiw-title">{t.hiwTitle}</h2>
-          <div className="hiw-steps">
-            {t.hiwSteps.map((s, i) => (
-              <div key={i} className="hiw-step">
-                <div className="hiw-num">{s.n}</div>
-                <div className="hiw-icon">{s.icon}</div>
-                <p className="hiw-label">{s.label}</p>
-                {i < t.hiwSteps.length - 1 && <div className="hiw-connector" />}
-              </div>
-            ))}
-          </div>
+        <h2 className="section-title">{t.howItWorks}</h2>
+        <div className="hiw-steps">
+          {[
+            { icon: <UtensilsCrossed size={20} color="#C2410C" />, text: t.step1Text },
+            { icon: <Globe size={20} color="#C2410C" />, text: t.step2Text },
+            { icon: <ChefHat size={20} color="#C2410C" />, text: t.step3Text },
+            { icon: <ShoppingCart size={20} color="#C2410C" />, text: t.step4Text },
+          ].map((step, i) => (
+            <div className="hiw-card" key={i}>
+              <div className="hiw-circle">{i + 1}</div>
+              <span className="hiw-icon">{step.icon}</span>
+              <p className="hiw-text">{step.text}</p>
+            </div>
+          ))}
         </div>
       </section>
 
