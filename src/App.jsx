@@ -108,6 +108,8 @@ const T = {
     proposalsSub: 'Cliquez sur la recette qui vous inspire',
     proposalsSubChange: 'Cliquez sur une autre carte pour changer de recette',
     proposalsLoadingMsg: 'Le chef imagine 3 recettes pour vous...',
+    loadMoreBtn: '🔄 Plus de recettes',
+    loadingMoreMsg: 'Nouvelles recettes en cours...',
     checkLoadingMsg: 'Analyse des ingrédients nécessaires...',
     recipeLoadingMsg: 'Le chef rédige la recette complète...',
     checkTitle: '🛒 Est-ce que tu as aussi ?',
@@ -237,10 +239,12 @@ const T = {
     step4DietSubSelected: (n) => `${n} restriction${n > 1 ? 's' : ''} selected`,
     step5Title: '⏱️ Available time', step5Sub: 'How much time do you have to cook?',
     generateBtn: '✨ Generate my recipes', stopBtn: '⏹ Stop', resetBtn: '🔄 New proposals',
-    proposalsTitle: '🍽️ Choose your recipe',
+    proposalsTitle: '🍽️ Pick your favorite',
     proposalsSub: 'Click on the recipe that inspires you',
     proposalsSubChange: 'Click another card to change recipe',
     proposalsLoadingMsg: 'The chef is imagining 3 recipes for you...',
+    loadMoreBtn: '🔄 Load more recipes',
+    loadingMoreMsg: 'Loading more recipes...',
     checkLoadingMsg: 'Analysing required ingredients...',
     recipeLoadingMsg: 'The chef is writing the full recipe...',
     checkTitle: '🛒 Do you also have?',
@@ -950,6 +954,7 @@ export default function App() {
   const [saved, setSaved]               = useState(false)
   const [saving, setSaving]             = useState(false)
   const [heartPop, setHeartPop]         = useState(false)
+  const [loadingMore, setLoadingMore]   = useState(false)
 
   const proposalsRef = useRef(null)
   const checkRef     = useRef(null)
@@ -1028,7 +1033,7 @@ export default function App() {
   const buildDietStr = () =>
     selectedDiets.map(id => t.dietOptions.find(d => d.id === id)?.label).filter(Boolean).join(', ')
 
-  const buildProposalsPrompt = (valid) => {
+  const buildProposalsPrompt = (valid, excludeNames = null) => {
     const ingList = buildIngList(valid)
     const cNames  = selectedCuisines.map(id => t.cuisines.find(c => c.id === id)?.label).filter(Boolean)
     const cText   = cNames.length ? cNames.join(', ') : 'any cuisine'
@@ -1038,7 +1043,7 @@ export default function App() {
 Ingredients: ${ingList}
 ${people} serving(s) · Style: ${cText} · Time: ${constraint}${diet ? `\nDietary: strictly ${diet}.` : ''}
 
-3 varied proposals. Strict format:
+3 varied proposals, different from: ${excludeNames || 'none'}. Strict format:
 [{"nom":"Name","emoji":"🍝","cuisine":"Style","description":"1-2 sentences.","tempsPrep":"10 min","tempsCuisson":"15 min","difficulte":"Easy","calories":420,"protein":28,"carbs":35,"fat":14}]${t.langPrompt}`
   }
 
@@ -1105,6 +1110,27 @@ Exact markdown, short steps:
       if (err.name !== 'AbortError') setError(`❌ ${err.message}`)
       setPhase('idle')
     } finally { abortRef.current = null }
+  }
+
+  /* Load more proposals (appended) */
+  const loadMoreProposals = async () => {
+    const valid = ingredients.filter(i => i.name.trim())
+    if (!valid.length) return
+    setLoadingMore(true)
+    const excludeNames = proposals.map(p => p.nom).join(', ')
+    let rawJson = ''
+    try {
+      await streamSSE(buildProposalsPrompt(valid, excludeNames), c => { rawJson += c }, undefined, 'claude-sonnet-4-6', 1000)
+      const match = rawJson.match(/\[[\s\S]*\]/)
+      if (!match) throw new Error(lang === 'fr' ? 'Format invalide. Réessayez.' : 'Invalid format. Please retry.')
+      const parsed = JSON.parse(match[0])
+      if (!Array.isArray(parsed) || !parsed.length) throw new Error(lang === 'fr' ? 'Réponse invalide. Réessayez.' : 'Invalid response. Please retry.')
+      setProposals(prev => [...prev, ...parsed])
+    } catch (err) {
+      if (err.name !== 'AbortError') setError(`❌ ${err.message}`)
+    } finally {
+      setLoadingMore(false)
+    }
   }
 
   /* Step 2: Select proposal → check ingredients */
@@ -1387,6 +1413,16 @@ Exact markdown, short steps:
                     </button>
                   ))}
                 </div>
+                {!isLoading && (
+                  <div className="load-more-container">
+                    <button className="load-more-btn" onClick={loadMoreProposals} disabled={loadingMore}>
+                      {loadingMore
+                        ? <><span className="load-more-spinner" /><span>{t.loadingMoreMsg}</span></>
+                        : t.loadMoreBtn
+                      }
+                    </button>
+                  </div>
+                )}
               </section>
             )}
 
