@@ -114,6 +114,26 @@ const T = {
     savedDeleteTip: 'Supprimer', savedDeleteConfirm: 'Supprimer ?',
     savedDeleteYes: 'Oui', savedDeleteNo: 'Non',
     savedClose: 'Fermer',
+    dietaryTitle: '🥗 Restrictions alimentaires',
+    dietarySub: 'Sélectionnez vos restrictions (facultatif)',
+    dietaryFilters: [
+      { id: 'vegetarian', label: 'Végétarien', emoji: '🥦' },
+      { id: 'vegan',      label: 'Vegan',       emoji: '🌱' },
+      { id: 'gluten-free', label: 'Sans gluten', emoji: '🌾' },
+      { id: 'keto',       label: 'Kéto',         emoji: '🥑' },
+      { id: 'lactose-free', label: 'Sans lactose', emoji: '🥛' },
+      { id: 'halal',      label: 'Halal',         emoji: '☪️' },
+      { id: 'kosher',     label: 'Casher',        emoji: '✡️' },
+    ],
+    mealPlanNav: '📅 Plan',
+    mealPlanTitle: '📅 Plan de repas 7 jours',
+    mealPlanSub: 'Générez un plan de repas équilibré pour toute la semaine',
+    mealPlanPeopleLabel: 'Pour combien de personnes ?',
+    mealPlanGenerateBtn: '✨ Générer mon plan',
+    mealPlanStopBtn: '⏹ Arrêter',
+    mealPlanResetBtn: '🔄 Nouveau plan',
+    mealPlanLoadingMsg: 'Le chef prépare votre semaine...',
+    mealPlanDays: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
     dateLocale: 'fr-FR',
     langPrompt: '',
   },
@@ -215,6 +235,26 @@ const T = {
     savedDeleteTip: 'Delete', savedDeleteConfirm: 'Delete?',
     savedDeleteYes: 'Yes', savedDeleteNo: 'No',
     savedClose: 'Close',
+    dietaryTitle: '🥗 Dietary Restrictions',
+    dietarySub: 'Select your restrictions (optional)',
+    dietaryFilters: [
+      { id: 'vegetarian',  label: 'Vegetarian',    emoji: '🥦' },
+      { id: 'vegan',       label: 'Vegan',          emoji: '🌱' },
+      { id: 'gluten-free', label: 'Gluten-free',    emoji: '🌾' },
+      { id: 'keto',        label: 'Keto',            emoji: '🥑' },
+      { id: 'lactose-free', label: 'Lactose-free',  emoji: '🥛' },
+      { id: 'halal',       label: 'Halal',           emoji: '☪️' },
+      { id: 'kosher',      label: 'Kosher',          emoji: '✡️' },
+    ],
+    mealPlanNav: '📅 Meal Plan',
+    mealPlanTitle: '📅 7-Day Meal Plan',
+    mealPlanSub: 'Generate a balanced meal plan for the whole week',
+    mealPlanPeopleLabel: 'How many people?',
+    mealPlanGenerateBtn: '✨ Generate my plan',
+    mealPlanStopBtn: '⏹ Stop',
+    mealPlanResetBtn: '🔄 New plan',
+    mealPlanLoadingMsg: 'The chef is planning your week...',
+    mealPlanDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
     dateLocale: 'en-US',
     langPrompt: '\nRespond entirely in English.',
   },
@@ -488,6 +528,9 @@ function AppHeader({ t, lang, onToggleLang, user, view, onNavigate, onLogout }) 
           <button className={`header-nav-btn${view === 'saved' ? ' active' : ''}`} onClick={() => onNavigate('saved')}>
             {t.myRecipes}
           </button>
+          <button className={`header-nav-btn${view === 'meal-plan' ? ' active' : ''}`} onClick={() => onNavigate('meal-plan')}>
+            {t.mealPlanNav}
+          </button>
         </nav>
         <div className="header-user">
           <button className="lang-toggle lang-toggle-sm" onClick={onToggleLang}>{t.langToggle}</button>
@@ -630,6 +673,169 @@ function SavedRecipesView({ t, onNavigate }) {
 }
 
 /* ════════════════════════════════════════════
+   MEAL PLAN VIEW
+   ════════════════════════════════════════════ */
+function MealPlanView({ t, lang }) {
+  const [people, setPeople]       = useState(2)
+  const [filters, setFilters]     = useState([])
+  const [planText, setPlanText]   = useState('')
+  const [phase, setPhase]         = useState('idle')
+  const [error, setError]         = useState('')
+  const abortRef                  = useRef(null)
+
+  const toggleFilter = (id) =>
+    setFilters(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
+
+  const generatePlan = async () => {
+    setPhase('loading'); setPlanText(''); setError('')
+    const ctrl = new AbortController(); abortRef.current = ctrl
+
+    const dietText  = filters.length ? `Dietary restrictions: ${filters.join(', ')}.` : ''
+    const langNote  = lang === 'en' ? '\nRespond entirely in English.' : ''
+    const days      = t.mealPlanDays
+    const breakfast = lang === 'fr' ? 'Petit-déjeuner' : 'Breakfast'
+    const lunch     = lang === 'fr' ? 'Déjeuner'       : 'Lunch'
+    const dinner    = lang === 'fr' ? 'Dîner'          : 'Dinner'
+    const snack     = lang === 'fr' ? 'Collation'      : 'Snack'
+    const shopping  = lang === 'fr' ? 'Liste de courses' : 'Shopping List'
+
+    const prompt = `Create a balanced, varied 7-day meal plan for ${people} person(s). ${dietText}
+Format exactly as follows for each of the 7 days:
+## 📅 ${days[0]}
+- **${breakfast}:** [meal with brief description]
+- **${lunch}:** [meal with brief description]
+- **${dinner}:** [meal with brief description]
+- **${snack}:** [snack]
+
+Then continue for ${days[1]}, ${days[2]}, ${days[3]}, ${days[4]}, ${days[5]}, ${days[6]}.
+After all 7 days, add:
+### 🛒 ${shopping}
+List 15-20 key ingredients needed for the week.${langNote}`
+
+    let accumulated = ''
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, model: 'claude-sonnet-4-6', maxTokens: 3000 }),
+        signal: ctrl.signal,
+      })
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || `Error ${res.status}`) }
+      const reader = res.body.getReader()
+      const dec    = new TextDecoder()
+      let buf      = ''
+      setPhase('streaming')
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += dec.decode(value, { stream: true })
+        const lines = buf.split('\n'); buf = lines.pop()
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const raw = line.slice(6).trim()
+          if (raw === '[DONE]') { setPhase('done'); return }
+          let p; try { p = JSON.parse(raw) } catch { continue }
+          if (p.text)  { accumulated += p.text; setPlanText(prev => prev + p.text) }
+          if (p.error) throw new Error(p.error)
+        }
+      }
+      setPhase('done')
+    } catch (err) {
+      if (err.name !== 'AbortError') { setError(`❌ ${err.message}`); setPhase('idle') }
+      else setPhase(accumulated ? 'done' : 'idle')
+    } finally { abortRef.current = null }
+  }
+
+  const stop  = () => { abortRef.current?.abort(); setPhase(planText ? 'done' : 'idle') }
+  const reset = () => { abortRef.current?.abort(); setPlanText(''); setPhase('idle'); setError('') }
+  const isLoading = phase === 'loading' || phase === 'streaming'
+
+  return (
+    <main className="main">
+      <div className="container">
+        <div className="meal-plan-header">
+          <h1 className="meal-plan-title">{t.mealPlanTitle}</h1>
+          <p className="meal-plan-sub">{t.mealPlanSub}</p>
+        </div>
+
+        <section className="card">
+          <div className="step-header">
+            <div className="step-badge">👥</div>
+            <div>
+              <h2>{t.mealPlanPeopleLabel}</h2>
+            </div>
+          </div>
+          <div className="people-wrap">
+            <button className="people-ctrl" onClick={() => setPeople(p => Math.max(1, p - 1))}>−</button>
+            <div className="people-display">
+              <span className="people-num">{people}</span>
+              <span className="people-lbl">{people > 1 ? t.persons : t.person}</span>
+            </div>
+            <button className="people-ctrl" onClick={() => setPeople(p => Math.min(20, p + 1))}>＋</button>
+            <div className="people-avatars">
+              {Array.from({ length: Math.min(people, 8) }).map((_, i) => <span key={i} className="avatar">👤</span>)}
+              {people > 8 && <span className="avatar-more">+{people - 8}</span>}
+            </div>
+          </div>
+        </section>
+
+        <section className="card">
+          <div className="step-header">
+            <div className="step-badge">🥗</div>
+            <div>
+              <h2>{t.dietaryTitle}</h2>
+              <p>{t.dietarySub}</p>
+            </div>
+          </div>
+          <div className="dietary-grid">
+            {t.dietaryFilters.map(f => (
+              <button key={f.id}
+                className={`dietary-btn${filters.includes(f.id) ? ' active' : ''}`}
+                onClick={() => toggleFilter(f.id)}>
+                <span>{f.emoji}</span> {f.label}
+                {filters.includes(f.id) && <span className="dietary-check">✓</span>}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {error && <div className="error-msg" role="alert">{error}</div>}
+
+        <div className="gen-wrap">
+          {isLoading ? (
+            <button className="gen-btn stop" onClick={stop}>
+              <span>⏹</span> {t.mealPlanStopBtn.replace('⏹ ', '')}
+            </button>
+          ) : planText ? (
+            <button className="gen-btn secondary" onClick={reset}>
+              <span>🔄</span> {t.mealPlanResetBtn.replace('🔄 ', '')}
+            </button>
+          ) : (
+            <button className="gen-btn" onClick={generatePlan}>
+              <span>✨</span> {t.mealPlanGenerateBtn.replace('✨ ', '')}
+            </button>
+          )}
+        </div>
+
+        {isLoading && !planText && (
+          <div className="loading-state">
+            <span className="chef-anim">📅</span>
+            <p>{t.mealPlanLoadingMsg}</p>
+            <div className="dots"><span /><span /><span /></div>
+          </div>
+        )}
+
+        {planText && (
+          <div className="meal-plan-result card">
+            <RecipeContent text={planText} isStreaming={isLoading} />
+          </div>
+        )}
+      </div>
+    </main>
+  )
+}
+
+/* ════════════════════════════════════════════
    MAIN APP
    ════════════════════════════════════════════ */
 export default function App() {
@@ -649,6 +855,7 @@ export default function App() {
   const [people, setPeople]           = useState(2)
   const [selectedCuisines, setSelectedCuisines] = useState([])
   const [cookingTime, setCookingTime] = useState('normal')
+  const [activeDietaryFilters, setActiveDietaryFilters] = useState([])
 
   /* Flow */
   const [phase, setPhase]               = useState('idle')
@@ -662,10 +869,11 @@ export default function App() {
   const [saving, setSaving]             = useState(false)
   const [heartPop, setHeartPop]         = useState(false)
 
-  const proposalsRef = useRef(null)
-  const checkRef     = useRef(null)
-  const recipeRef    = useRef(null)
-  const abortRef     = useRef(null)
+  const proposalsRef    = useRef(null)
+  const checkRef        = useRef(null)
+  const recipeRef       = useRef(null)
+  const abortRef        = useRef(null)
+  const recognitionRef  = useRef(null)
 
   /* Auth setup */
   useEffect(() => {
@@ -698,6 +906,25 @@ export default function App() {
   const handleIngKeyDown = (e) => { if (e.key === 'Enter') { e.preventDefault(); addIngredient() } }
   const toggleCuisine    = (id) => setSelectedCuisines(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
   const toggleCheckIng   = (idx) => setCheckIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, checked: !ing.checked } : ing))
+  const toggleDietaryFilter = (id) => setActiveDietaryFilters(prev =>
+    prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
+
+  const [listeningId, setListeningId] = useState(null)
+  const startVoiceInput = (id) => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SR) return
+    if (recognitionRef.current) { recognitionRef.current.abort(); recognitionRef.current = null }
+    const rec = new SR()
+    rec.lang = lang === 'fr' ? 'fr-FR' : 'en-US'
+    rec.interimResults = false
+    rec.maxAlternatives = 1
+    rec.onstart  = () => setListeningId(id)
+    rec.onresult = (e) => { updateIngredient(id, 'name', e.results[0][0].transcript) }
+    rec.onend    = () => { setListeningId(null); recognitionRef.current = null }
+    rec.onerror  = () => { setListeningId(null); recognitionRef.current = null }
+    rec.start()
+    recognitionRef.current = rec
+  }
 
   /* SSE helper */
   const streamSSE = async (prompt, onChunk, signal, model = 'claude-sonnet-4-6', maxTokens = 2000) => {
@@ -739,9 +966,10 @@ export default function App() {
     const cNames  = selectedCuisines.map(id => t.cuisines.find(c => c.id === id)?.label).filter(Boolean)
     const cText   = cNames.length ? cNames.join(', ') : 'any cuisine'
     const constraint = COOKING_TIME_CONSTRAINTS[cookingTime]
+    const dietText   = activeDietaryFilters.length ? `\nDietary: ${activeDietaryFilters.join(', ')}` : ''
     return `JSON only, no text, no backticks.
 Ingredients: ${ingList}
-${people} serving(s) · Style: ${cText} · Time: ${constraint}
+${people} serving(s) · Style: ${cText} · Time: ${constraint}${dietText}
 
 3 varied proposals. Strict format:
 [{"nom":"Name","emoji":"🍝","cuisine":"Style","description":"1-2 sentences.","tempsPrep":"10 min","tempsCuisson":"15 min","difficulte":"Easy","calories":420,"protein":28,"carbs":35,"fat":14}]${t.langPrompt}`
@@ -757,7 +985,8 @@ ${people} serving(s) · Style: ${cText} · Time: ${constraint}
     if (available.length)   extras += `\nIngrédients complémentaires disponibles :\n${available.map(i => `- ${i.name}${i.note ? ` (${i.note})` : ''}`).join('\n')}\n`
     if (unavailable.length) extras += `\nIngrédients NON disponibles (propose une substitution pour chacun) :\n${unavailable.map(i => `- ${i.name}`).join('\n')}\n`
 
-    return `Chef expert. Recette concise pour "${proposal.nom}" (${proposal.cuisine}).
+    const dietNote = activeDietaryFilters.length ? `\nRestrictions alimentaires : ${activeDietaryFilters.join(', ')}.` : ''
+    return `Chef expert. Recette concise pour "${proposal.nom}" (${proposal.cuisine}).${dietNote}
 Ingrédients : ${ingList}${extras}
 ${people} pers. · ${constraint}.
 
@@ -925,7 +1154,9 @@ Markdown exact, étapes courtes et précises :
     <div className="app">
       <AppHeader t={t} lang={lang} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} />
 
-      {view === 'saved' ? (
+      {view === 'meal-plan' ? (
+        <MealPlanView t={t} lang={lang} />
+      ) : view === 'saved' ? (
         <SavedRecipesView t={t} onNavigate={setView} />
       ) : (
         <main className="main">
@@ -948,6 +1179,16 @@ Markdown exact, étapes courtes et précises :
                       onChange={e => updateIngredient(ing.id, 'name', e.target.value)}
                       onKeyDown={handleIngKeyDown}
                       placeholder={idx === 0 ? t.ing1Placeholder : t.ingPlaceholder} />
+                    {(window.SpeechRecognition || window.webkitSpeechRecognition) && (
+                      <button
+                        type="button"
+                        className={`voice-btn${listeningId === ing.id ? ' listening' : ''}`}
+                        onClick={() => startVoiceInput(ing.id)}
+                        title={lang === 'fr' ? 'Dicter' : 'Dictate'}
+                        aria-label={lang === 'fr' ? 'Dicter un ingrédient' : 'Dictate ingredient'}>
+                        {listeningId === ing.id ? '🔴' : '🎤'}
+                      </button>
+                    )}
                     <input type="text" className="inp ing-qty" value={ing.qty}
                       onChange={e => updateIngredient(ing.id, 'qty', e.target.value)}
                       placeholder="250" inputMode="decimal" />
@@ -1007,6 +1248,27 @@ Markdown exact, étapes courtes et précises :
                     <span className="c-flag">{c.emoji}</span>
                     <span className="c-name">{c.label}</span>
                     {selectedCuisines.includes(c.id) && <span className="c-check">✓</span>}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Dietary filters */}
+            <section className="card">
+              <div className="step-header">
+                <div className="step-badge">🥗</div>
+                <div>
+                  <h2>{t.dietaryTitle}</h2>
+                  <p>{t.dietarySub}</p>
+                </div>
+              </div>
+              <div className="dietary-grid">
+                {t.dietaryFilters.map(f => (
+                  <button key={f.id}
+                    className={`dietary-btn${activeDietaryFilters.includes(f.id) ? ' active' : ''}`}
+                    onClick={() => toggleDietaryFilter(f.id)}>
+                    <span>{f.emoji}</span> {f.label}
+                    {activeDietaryFilters.includes(f.id) && <span className="dietary-check">✓</span>}
                   </button>
                 ))}
               </div>
