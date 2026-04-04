@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart } from 'lucide-react'
 
 /* Claude prompt constraints */
 const COOKING_TIME_CONSTRAINTS = {
@@ -66,13 +67,12 @@ const T = {
       { emoji: '📊', title: 'Macros nutritionnelles', desc: 'Calories, protéines, glucides et lipides estimés par portion — pour cuisiner sainement sans y penser.' },
     ],
     hiwLabel: 'Comment ça marche',
-    hiwTitle: 'Cinq étapes, une recette parfaite',
+    hiwTitle: 'Quatre étapes, une recette parfaite',
     hiwSteps: [
-      { n: '1', icon: '🥦', label: 'Listez vos ingrédients et le nombre de convives' },
-      { n: '2', icon: '🌍', label: 'Choisissez un style de cuisine et votre temps' },
-      { n: '3', icon: '🍽️', label: 'Sélectionnez parmi 3 propositions personnalisées' },
-      { n: '4', icon: '🛒', label: "Confirmez les ingrédients complémentaires que vous avez" },
-      { n: '5', icon: '📖', label: 'La recette complète avec macros et conseils du chef' },
+      { n: '1', label: 'Listez vos ingrédients\net le nombre de convives' },
+      { n: '2', label: 'Choisissez votre style\nde cuisine et votre temps' },
+      { n: '3', label: 'Choisissez parmi 3\npropositions personnalisées' },
+      { n: '4', label: 'Recette complète avec\nmacros et conseils du chef' },
     ],
     ctaTitle: 'Prêt à transformer votre frigo ?',
     ctaSub: 'Gratuit, rapide et intelligent. Des recettes en 30 secondes.',
@@ -235,13 +235,12 @@ const T = {
       { emoji: '📊', title: 'Nutritional macros', desc: 'Calories, proteins, carbs and fats estimated per serving — for healthy cooking without thinking about it.' },
     ],
     hiwLabel: 'How it works',
-    hiwTitle: 'Five steps, one perfect recipe',
+    hiwTitle: 'Four steps, one perfect recipe',
     hiwSteps: [
-      { n: '1', icon: '🥦', label: 'List your ingredients and number of guests' },
-      { n: '2', icon: '🌍', label: 'Choose a cuisine style and your time' },
-      { n: '3', icon: '🍽️', label: 'Pick from 3 personalized proposals' },
-      { n: '4', icon: '🛒', label: "Confirm the complementary ingredients you have" },
-      { n: '5', icon: '📖', label: 'Full recipe with macros and chef tips' },
+      { n: '1', label: 'List your ingredients\nand number of guests' },
+      { n: '2', label: 'Choose a cuisine style\nand your available time' },
+      { n: '3', label: 'Pick from 3\npersonalized proposals' },
+      { n: '4', label: 'Full recipe with macros\nand chef tips' },
     ],
     ctaTitle: 'Ready to transform your fridge?',
     ctaSub: 'Free, fast and smart. Recipes in 30 seconds.',
@@ -580,14 +579,17 @@ function LandingPage({ t, onToggleLang, onGetStarted }) {
           <div className="section-eyebrow">{t.hiwLabel}</div>
           <h2 className="section-title hiw-title">{t.hiwTitle}</h2>
           <div className="hiw-steps">
-            {t.hiwSteps.map((s, i) => (
-              <div key={i} className="hiw-step">
-                <div className="hiw-num">{s.n}</div>
-                <div className="hiw-icon">{s.icon}</div>
-                <p className="hiw-label">{s.label}</p>
-                {i < t.hiwSteps.length - 1 && <div className="hiw-connector" />}
-              </div>
-            ))}
+            {t.hiwSteps.map((s, i) => {
+              const icons = [UtensilsCrossed, Globe, ChefHat, ShoppingCart]
+              const Icon = icons[i]
+              return (
+                <div key={i} className="hiw-step">
+                  <div className="hiw-num">{s.n}</div>
+                  <div className="hiw-icon"><Icon size={20} color="#C2410C" strokeWidth={2} /></div>
+                  <p className="hiw-label">{s.label}</p>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
