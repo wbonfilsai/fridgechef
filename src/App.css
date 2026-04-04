@@ -885,6 +885,41 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .proposal-card.selected.disabled { opacity: 1; cursor: default; }
 .proposal-card:active:not(:disabled) { transform: scale(0.98); }
 
+.proposal-img-wrap {
+  width: calc(100% + 3rem);
+  margin: -1.5rem -1.5rem 0.75rem;
+  height: 160px;
+  border-radius: calc(var(--r) - 2px) calc(var(--r) - 2px) 0 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f0ede8, #e8e0d6);
+  position: relative;
+  flex-shrink: 0;
+}
+.proposal-img-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+  pointer-events: none;
+}
+.proposal-img-wrap.img-loaded::before,
+.proposal-img-wrap.img-error::before { display: none; }
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.proposal-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  display: block;
+}
+.proposal-img.loaded { opacity: 1; }
+
 .proposal-emoji { font-size: 2.25rem; line-height: 1; margin-bottom: 0.15rem; transition: transform var(--t); }
 .proposal-card:hover .proposal-emoji { transform: scale(1.12) rotate(-3deg); }
 .proposal-nom   { font-size: 0.98rem; font-weight: 700; color: var(--text); line-height: 1.3; margin: 0; }
