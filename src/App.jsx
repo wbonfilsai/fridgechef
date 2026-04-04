@@ -846,7 +846,7 @@ function SavedRecipesView({ t, onNavigate }) {
 /* ════════════════════════════════════════════
    MEAL PLAN VIEW
    ════════════════════════════════════════════ */
-function MealPlanView({ t, user, people, selectedDiets, cookingTime }) {
+function MealPlanViewSaved({ t, user, people, selectedDiets, cookingTime }) {
   const [weekIngredients, setWeekIngredients] = useState('')
   const [plan, setPlan]                       = useState(null)
   const [loading, setLoading]                 = useState(false)
@@ -1568,7 +1568,7 @@ Exact markdown, short steps:
       ) : view === 'saved' ? (
         <SavedRecipesView t={t} onNavigate={setView} />
       ) : view === 'mealPlan' ? (
-        <MealPlanView t={t} user={user} people={people} selectedDiets={selectedDiets} cookingTime={cookingTime} />
+        <MealPlanViewSaved t={t} user={user} people={people} selectedDiets={selectedDiets} cookingTime={cookingTime} />
       ) : (
         <main className="main">
           <div className="container">
