@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 70" role="img" aria-label="CheFridge">
+  <!-- Toque blanche (chef hat) -->
+  <rect x="3" y="46" width="56" height="16" rx="5" fill="#C2410C"/>
+  <path d="M 8 48 C 4 48 2 10 31 7 C 60 10 58 48 54 48 Z" fill="#C2410C"/>
+  <!-- Hat crease detail -->
+  <path d="M 10 48 C 9 22 18 12 31 10 C 44 12 53 22 52 48"
+    stroke="rgba(255,255,255,0.18)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Hat brim highlight -->
+  <rect x="3" y="46" width="56" height="4" rx="2" fill="rgba(255,255,255,0.12)"/>
+
+  <!-- CheFridge wordmark -->
+  <text x="72" y="52"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-style="italic"
+    font-weight="bold"
+    font-size="40"
+    fill="#C2410C"
+    letter-spacing="-0.5">CheFridge</text>
+
+  <!-- Decorative swash underline -->
+  <path d="M 72 59 Q 178 68 258 59"
+    stroke="#C2410C" stroke-width="2.2" fill="none"
+    stroke-linecap="round" opacity="0.45"/>
+</svg>
