@@ -555,22 +555,72 @@ function useSpeechRecognition(lang) {
    LANDING PAGE
    ════════════════════════════════════════════ */
 const GALLERY_ITEMS = [
-  { id: 1, k: 'pasta,italian' },
-  { id: 2, k: 'salad,healthy' },
-  { id: 3, k: 'steak,grill' },
-  { id: 4, k: 'sushi,japanese' },
-  { id: 5, k: 'pizza,cheese' },
-  { id: 6, k: 'soup,vegetable' },
+  { id: 1, src: '/homemade1.jpg' },
+  { id: 2, src: '/repas-equilibres-semaine-maison.webp' },
+  { id: 3, src: '/porc.jpg' },
+  { id: 4, src: '/petit-dejeune.jpg' },
+  { id: 5, src: '/homemade2.jpg' },
+  { id: 6, src: '/pain.jpeg' },
 ]
 
 const FOOD_STRIP_ITEMS = [
-  { id: 11, k: 'pasta,food' },
-  { id: 22, k: 'salad,food' },
-  { id: 33, k: 'sushi,food' },
-  { id: 44, k: 'pizza,food' },
-  { id: 55, k: 'steak,food' },
-  { id: 66, k: 'cake,dessert' },
+  { id: 11, src: '/homemade1.jpg' },
+  { id: 22, src: '/repas-equilibres-semaine-maison.webp' },
+  { id: 33, src: '/porc.jpg' },
+  { id: 44, src: '/petit-dejeune.jpg' },
+  { id: 55, src: '/homemade2.jpg' },
+  { id: 66, src: '/pain.jpeg' },
 ]
+
+/* ── Reviews Carousel ── */
+function ReviewsCarousel({ reviews, label, title }) {
+  const [current, setCurrent] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const touchStartX = useRef(0)
+  const total = reviews.length
+
+  const next = () => setCurrent(c => (c + 1) % total)
+  const prev = () => setCurrent(c => (c - 1 + total) % total)
+
+  useEffect(() => {
+    if (paused) return
+    const timer = setInterval(next, 4000)
+    return () => clearInterval(timer)
+  }, [paused, total])
+
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; setPaused(true) }
+  const onTouchEnd = (e) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 50) { diff > 0 ? next() : prev() }
+  }
+
+  return (
+    <section className="reviews-section" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <div className="l-container">
+        <div className="section-eyebrow">{label}</div>
+        <h2 className="section-title">{title}</h2>
+        <div className="carousel-wrap">
+          <button className="carousel-arrow carousel-arrow-left" onClick={() => { prev(); setPaused(true) }} aria-label="Previous">‹</button>
+          <div className="carousel-track" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+            {reviews.map((r, i) => (
+              <div key={i} className={`review-card carousel-card${i === current ? ' active' : ''}${i === (current - 1 + total) % total ? ' prev' : ''}${i === (current + 1) % total ? ' next' : ''}`}>
+                <div className="review-stars">★★★★★</div>
+                <p className="review-text">"{r.text}"</p>
+                <div className="review-author">— {r.name}</div>
+              </div>
+            ))}
+          </div>
+          <button className="carousel-arrow carousel-arrow-right" onClick={() => { next(); setPaused(true) }} aria-label="Next">›</button>
+        </div>
+        <div className="carousel-dots">
+          {reviews.map((_, i) => (
+            <button key={i} className={`carousel-dot${i === current ? ' active' : ''}`} onClick={() => { setCurrent(i); setPaused(true) }} aria-label={`Review ${i + 1}`} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
 
 function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
   return (
@@ -629,7 +679,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
       <div className="food-strip">
         {FOOD_STRIP_ITEMS.map(item => (
           <div key={item.id} className="food-strip-item">
-            <img src={`https://loremflickr.com/220/220/${item.k}?lock=${item.id}`} alt="" loading="lazy" />
+            <img src={item.src} alt="" loading="lazy" />
           </div>
         ))}
       </div>
@@ -670,21 +720,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
         </div>
       </section>
 
-      <section className="reviews-section">
-        <div className="l-container">
-          <div className="section-eyebrow">{t.reviewsLabel}</div>
-          <h2 className="section-title">{t.reviewsTitle}</h2>
-          <div className="reviews-grid">
-            {t.reviews.map((r, i) => (
-              <div key={i} className="review-card">
-                <div className="review-stars">★★★★★</div>
-                <p className="review-text">"{r.text}"</p>
-                <div className="review-author">— {r.name}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ReviewsCarousel reviews={t.reviews} label={t.reviewsLabel} title={t.reviewsTitle} />
 
       <section className="gallery-section">
         <div className="l-container">
@@ -693,11 +729,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
           <div className="gallery-grid">
             {GALLERY_ITEMS.map(img => (
               <div key={img.id} className="gallery-item">
-                <img
-                  src={`https://loremflickr.com/400/300/${img.k}?lock=${img.id * 7}`}
-                  alt=""
-                  loading="lazy"
-                />
+                <img src={img.src} alt="" loading="lazy" />
               </div>
             ))}
           </div>
