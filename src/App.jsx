@@ -935,7 +935,7 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAu
   return (
     <header className="app-header">
       <div className="container header-inner">
-        <button className="header-logo" onClick={() => onNavigate('app')}>
+        <button className="header-logo" onClick={() => onNavigate('landing')}>
           <img src="/logo.png" alt="Chefridge" className="header-logo-img" />
         </button>
         <nav className="header-nav">
@@ -978,19 +978,19 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAu
 /* ════════════════════════════════════════════
    BOTTOM TAB BAR (Mobile)
    ════════════════════════════════════════════ */
-function BottomTabBar({ lang, view, onNavigate, user, onShowAuth, shoppingBadge }) {
+function BottomTabBar({ lang, view, onNavigate, user, onShowAuth, onLogout, shoppingBadge }) {
   const tabs = [
     { id: 'landing', icon: Home, label: lang === 'fr' ? 'Accueil' : 'Home' },
     { id: 'app', icon: ChefHat, label: lang === 'fr' ? 'Générer' : 'Generate' },
     ...(user ? [{ id: 'saved', icon: Bookmark, label: lang === 'fr' ? 'Recettes' : 'Recipes' }] : []),
     { id: 'shopping', icon: ShoppingCart, label: lang === 'fr' ? 'Courses' : 'Shopping', badge: shoppingBadge },
-    { id: user ? 'profile' : 'auth', icon: User, label: lang === 'fr' ? 'Profil' : 'Profile' },
+    { id: user ? 'logout' : 'auth', icon: User, label: user ? (lang === 'fr' ? 'Déconnexion' : 'Sign out') : (lang === 'fr' ? 'Connexion' : 'Sign in') },
   ]
 
   const handleTap = (id) => {
     if (typeof navigator.vibrate === 'function') navigator.vibrate(10)
     if (id === 'auth') { onShowAuth(); return }
-    if (id === 'profile') return
+    if (id === 'logout') { onLogout(); return }
     onNavigate(id)
   }
 
@@ -2232,7 +2232,7 @@ Exact markdown, short steps:
                 <div className="recipes-header">
                   <h2>{t.recipeTitle}</h2>
                   <div className="recipe-actions">
-                    {phase === 'recipe' && !saved && (
+                    {phase === 'recipe' && !saved && user && (
                       <button className={`save-btn${heartPop ? ' heart-pop' : ''}`} onClick={saveRecipe} disabled={saving}>
                         {saving ? '…' : t.saveBtn}
                       </button>
@@ -2270,7 +2270,7 @@ Exact markdown, short steps:
         </div>
       </footer>
 
-      <BottomTabBar lang={lang} view={view} onNavigate={setView} user={user} onShowAuth={() => setShowAuth(true)} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
+      <BottomTabBar lang={lang} view={view} onNavigate={setView} user={user} onShowAuth={() => setShowAuth(true)} onLogout={handleLogout} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
 
       {showAuth && <AuthModal t={t} initialTab={authInitTab} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
       {showGate && (
