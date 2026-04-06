@@ -326,7 +326,6 @@ const T = {
       { id: 'halal',       label: 'Halal',           emoji: '☪️' },
       { id: 'kosher',      label: 'Kosher',          emoji: '✡️' },
     ],
-    mealPlanNav: '📅 Meal Plan',
     mealPlanPeopleLabel: 'How many people?',
     mealPlanStopBtn: '⏹ Stop',
     mealPlanResetBtn: '🔄 New plan',
@@ -509,7 +508,7 @@ function LandingPage({ t, onToggleLang, onGetStarted }) {
       <nav className="landing-nav">
         <div className="l-container l-nav-inner">
           <div className="landing-logo">
-            <img src="/logo.svg" alt="Chefridge" className="landing-logo-img" />
+            <img src="/logo.png" alt="Chefridge" className="landing-logo-img" />
           </div>
           <div className="landing-nav-right">
             <button className="lang-toggle" onClick={onToggleLang}>{t.langToggle}</button>
@@ -691,7 +690,7 @@ function AuthModal({ t, onClose, onSuccess }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose} aria-label="Fermer">×</button>
-        <div className="modal-logo"><img src="/logo.svg" alt="Chefridge" className="modal-logo-img" /></div>
+        <div className="modal-logo"><img src="/logo.png" alt="Chefridge" className="modal-logo-img" /></div>
         <h2 className="modal-title">{tab === 'login' ? t.loginTitle : t.signupTitle}</h2>
         <p className="modal-sub">{tab === 'login' ? t.loginSub : t.signupSub}</p>
         <div className="modal-tabs">
@@ -795,7 +794,7 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, shopping
     <header className="app-header">
       <div className="container header-inner">
         <button className="header-logo" onClick={() => onNavigate('app')}>
-          <img src="/logo.svg" alt="Chefridge" className="header-logo-img" />
+          <img src="/logo.png" alt="Chefridge" className="header-logo-img" />
         </button>
         <nav className="header-nav">
           <button className={`header-nav-btn${view === 'app' ? ' active' : ''}`} onClick={() => onNavigate('app')}>
@@ -1361,12 +1360,16 @@ export default function App() {
   const recipeRef       = useRef(null)
   const abortRef        = useRef(null)
   const recognitionRef  = useRef(null)
+  const newIngIdRef     = useRef(null)
 
   /* Auth setup */
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       setView(session?.user ? 'app' : 'landing')
+    }).catch(() => {
+      setView('landing')
+    }).finally(() => {
       setAuthLoading(false)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -1410,6 +1413,8 @@ export default function App() {
   const toggleCheckIng   = (idx) => setCheckIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, checked: !ing.checked } : ing))
   const toggleDietaryFilter = (id) => setActiveDietaryFilters(prev =>
     prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
+  const selectedDiets = activeDietaryFilters
+  const toggleDiet    = toggleDietaryFilter
 
   const [listeningId, setListeningId] = useState(null)
   const startVoiceInput = (id) => {
@@ -1755,27 +1760,6 @@ Exact markdown, short steps:
                     <span className="c-flag">{c.emoji}</span>
                     <span className="c-name">{c.label}</span>
                     {selectedCuisines.includes(c.id) && <span className="c-check">✓</span>}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* Dietary filters */}
-            <section className="card">
-              <div className="step-header">
-                <div className="step-badge">🥗</div>
-                <div>
-                  <h2>{t.dietaryTitle}</h2>
-                  <p>{t.dietarySub}</p>
-                </div>
-              </div>
-              <div className="dietary-grid">
-                {t.dietaryFilters.map(f => (
-                  <button key={f.id}
-                    className={`dietary-btn${activeDietaryFilters.includes(f.id) ? ' active' : ''}`}
-                    onClick={() => toggleDietaryFilter(f.id)}>
-                    <span>{f.emoji}</span> {f.label}
-                    {activeDietaryFilters.includes(f.id) && <span className="dietary-check">✓</span>}
                   </button>
                 ))}
               </div>
