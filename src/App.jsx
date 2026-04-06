@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
-import { UtensilsCrossed, Globe, ChefHat, ShoppingCart } from 'lucide-react'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User } from 'lucide-react'
 
 /* Claude prompt constraints */
 const COOKING_TIME_CONSTRAINTS = {
@@ -32,6 +32,8 @@ const T = {
       { id: 'marocaine',  label: 'Marocaine',    emoji: '🇲🇦' },
       { id: 'americaine', label: 'Américaine',   emoji: '🇺🇸' },
       { id: 'espagnole',  label: 'Espagnole',    emoji: '🇪🇸' },
+      { id: 'creole',     label: 'Créole',       emoji: '🌴' },
+      { id: 'canadienne', label: 'Canadienne',   emoji: '🇨🇦' },
       { id: 'surprise',   label: 'Surprise !',   emoji: '🌍' },
     ],
     cookingTimes: [
@@ -106,7 +108,8 @@ const T = {
     },
     newRecipe: '✨ Nouvelle recette', myRecipes: '❤️ Mes recettes', mealPlanNav: '📅 Plan semaine', logout: 'Déconnexion',
     step1Title: '🥦 Mes ingrédients', step1Sub: "Qu'est-ce qu'il y a dans votre frigo ?",
-    ing1Placeholder: 'Ex: poulet, tomates, œufs...', ingPlaceholder: 'Ingrédient...',
+    ing1Placeholder: 'Ex: poulet, tomates, riz...', ingPlaceholder: 'Ingrédient...',
+    ingHint: '💡 Les quantités sont optionnelles — écris juste le nom de l\'ingrédient ou ajoute-les si tu veux plus de précision (ex: 300g de farine, 2 œufs)',
     addIngredient: '＋ Ajouter un ingrédient', removeIng: 'Supprimer',
     step2Title: '👥 Nombre de convives', step2Sub: 'Pour combien de personnes cuisinez-vous ?',
     person: 'personne', persons: 'personnes',
@@ -189,6 +192,30 @@ const T = {
     shoppingListAddBtn: '+ Ajouter',
     shoppingListItemsLeft: (left, total) => left === 0 ? `Tout acheté (${total})` : `${left} restant${left > 1 ? 's' : ''} / ${total}`,
     shoppingListDelete: 'Supprimer',
+    // Feature 1: Signup gate
+    gateTitle: 'Continue à cuisiner gratuitement',
+    gateSub: 'Tu as utilisé tes 3 recettes offertes. Crée un compte — c\'est gratuit.',
+    gateSignup: 'Créer mon compte',
+    gateLogin: 'Se connecter',
+    // Feature 2: Pantry
+    clearPantry: 'Effacer le frigo',
+    pantryCleared: 'Frigo vidé !',
+    // Feature 3: Skill level
+    skillTitle: '🎯 Niveau culinaire',
+    skillSub: 'Adaptez la complexité de la recette à votre niveau',
+    skillLevels: [
+      { id: 'beginner', label: 'Débutant', icon: 'Baby' },
+      { id: 'intermediate', label: 'Intermédiaire', icon: 'ChefHat' },
+      { id: 'expert', label: 'Expert', icon: 'Flame' },
+    ],
+    // Feature 4: Cooking mode
+    cookingModeBtn: 'Mode cuisine',
+    cookingModeExit: 'Quitter',
+    cookingModePrev: '← Précédent',
+    cookingModeNext: 'Suivant →',
+    cookingModeStep: (n, total) => `Étape ${n} / ${total}`,
+    // Anonymous CTA
+    tryFree: 'Essayer gratuitement',
   },
   en: {
     cuisines: [
@@ -203,6 +230,8 @@ const T = {
       { id: 'marocaine',  label: 'Moroccan',  emoji: '🇲🇦' },
       { id: 'americaine', label: 'American',  emoji: '🇺🇸' },
       { id: 'espagnole',  label: 'Spanish',   emoji: '🇪🇸' },
+      { id: 'creole',     label: 'Creole',    emoji: '🌴' },
+      { id: 'canadienne', label: 'Canadian',  emoji: '🇨🇦' },
       { id: 'surprise',   label: 'Surprise!', emoji: '🌍' },
     ],
     cookingTimes: [
@@ -277,7 +306,8 @@ const T = {
     },
     newRecipe: '✨ New recipe', myRecipes: '❤️ My recipes', mealPlanNav: '📅 Meal Plan', logout: 'Sign out',
     step1Title: '🥦 My ingredients', step1Sub: "What's in your fridge?",
-    ing1Placeholder: 'E.g. chicken, tomatoes, eggs...', ingPlaceholder: 'Ingredient...',
+    ing1Placeholder: 'E.g. chicken, tomatoes, rice...', ingPlaceholder: 'Ingredient...',
+    ingHint: '💡 Quantities are optional — just type the ingredient name or add amounts for more precision (ex: 2 cups flour, 3 eggs)',
     addIngredient: '＋ Add an ingredient', removeIng: 'Remove',
     step2Title: '👥 Number of guests', step2Sub: 'How many people are you cooking for?',
     person: 'person', persons: 'people',
@@ -360,6 +390,30 @@ const T = {
     shoppingListAddBtn: '+ Add',
     shoppingListItemsLeft: (left, total) => left === 0 ? `All bought (${total})` : `${left} left / ${total}`,
     shoppingListDelete: 'Delete',
+    // Feature 1: Signup gate
+    gateTitle: 'Keep cooking for free',
+    gateSub: 'You\'ve used your 3 free recipes. Create an account — it\'s free.',
+    gateSignup: 'Create my account',
+    gateLogin: 'Sign in',
+    // Feature 2: Pantry
+    clearPantry: 'Clear fridge',
+    pantryCleared: 'Fridge cleared!',
+    // Feature 3: Skill level
+    skillTitle: '🎯 Cooking level',
+    skillSub: 'Adjust recipe complexity to your skill level',
+    skillLevels: [
+      { id: 'beginner', label: 'Beginner', icon: 'Baby' },
+      { id: 'intermediate', label: 'Intermediate', icon: 'ChefHat' },
+      { id: 'expert', label: 'Expert', icon: 'Flame' },
+    ],
+    // Feature 4: Cooking mode
+    cookingModeBtn: 'Cooking mode',
+    cookingModeExit: 'Exit',
+    cookingModePrev: '← Previous',
+    cookingModeNext: 'Next →',
+    cookingModeStep: (n, total) => `Step ${n} / ${total}`,
+    // Anonymous CTA
+    tryFree: 'Try for free',
   },
 }
 
@@ -415,11 +469,22 @@ function RecipeContent({ text, isStreaming }) {
 
 /* ── Recipe Modal ── */
 function RecipeModal({ recipe, onClose, t }) {
+  const [showCookMode, setShowCookMode] = useState(false)
+
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    const onKey = (e) => { if (e.key === 'Escape') { showCookMode ? setShowCookMode(false) : onClose() } }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [onClose, showCookMode])
+
+  const steps = recipe.full_text
+    .split('\n')
+    .filter(l => /^\d+\.[ \t]/.test(l))
+    .map(l => l.replace(/^\d+\.[ \t]*/, ''))
+
+  if (showCookMode && steps.length) {
+    return <CookingMode steps={steps} t={t} onExit={() => setShowCookMode(false)} />
+  }
 
   return (
     <div className="recipe-modal-overlay" onClick={onClose}>
@@ -441,6 +506,11 @@ function RecipeModal({ recipe, onClose, t }) {
         </div>
         <div className="recipe-modal-body">
           <RecipeContent text={recipe.full_text} isStreaming={false} />
+          {steps.length > 0 && (
+            <button className="cooking-mode-trigger" onClick={() => setShowCookMode(true)}>
+              <CookingPot size={20} /> {t.cookingModeBtn}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -502,7 +572,7 @@ const FOOD_STRIP_ITEMS = [
   { id: 66, k: 'cake,dessert' },
 ]
 
-function LandingPage({ t, onToggleLang, onGetStarted }) {
+function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
   return (
     <div className="landing">
       <nav className="landing-nav">
@@ -528,7 +598,7 @@ function LandingPage({ t, onToggleLang, onGetStarted }) {
                 <span className="hero-accent">{t.heroTitle2}</span>
               </h1>
               <p className="hero-sub">{t.heroSub}</p>
-              <button className="btn-hero" onClick={onGetStarted}>
+              <button className="btn-hero" onClick={onTryFree}>
                 {t.heroCta} <span className="btn-arrow">→</span>
               </button>
               <div className="hero-stats">
@@ -542,7 +612,7 @@ function LandingPage({ t, onToggleLang, onGetStarted }) {
             <div className="hero-visual">
               <div className="hero-img-frame">
                 <img
-                  src="https://loremflickr.com/500/400/food,gourmet,cooking?lock=42"
+                  src="/hero.jpg"
                   alt=""
                   loading="eager"
                 />
@@ -639,7 +709,7 @@ function LandingPage({ t, onToggleLang, onGetStarted }) {
           <div className="cta-inner">
             <h2>{t.ctaTitle}</h2>
             <p>{t.ctaSub}</p>
-            <button className="btn-hero btn-hero-white" onClick={onGetStarted}>
+            <button className="btn-hero btn-hero-white" onClick={onTryFree}>
               {t.ctaBtn} <span className="btn-arrow">→</span>
             </button>
           </div>
@@ -658,8 +728,8 @@ function LandingPage({ t, onToggleLang, onGetStarted }) {
 /* ════════════════════════════════════════════
    AUTH MODAL
    ════════════════════════════════════════════ */
-function AuthModal({ t, onClose, onSuccess }) {
-  const [tab, setTab]           = useState('login')
+function AuthModal({ t, onClose, onSuccess, initialTab }) {
+  const [tab, setTab]           = useState(initialTab || 'login')
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading]   = useState(false)
@@ -713,6 +783,78 @@ function AuthModal({ t, onClose, onSuccess }) {
             {loading ? <span className="modal-spinner" /> : (tab === 'login' ? t.loginBtn : t.signupBtn)}
           </button>
         </form>
+      </div>
+    </div>
+  )
+}
+
+/* ════════════════════════════════════════════
+   SIGNUP GATE MODAL (Feature 1)
+   ════════════════════════════════════════════ */
+function SignupGateModal({ t, onClose, onSignup, onLogin }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card gate-modal" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose} aria-label="Fermer">×</button>
+        <div className="gate-illustration">🔒</div>
+        <h2 className="modal-title">{t.gateTitle}</h2>
+        <p className="modal-sub">{t.gateSub}</p>
+        <div className="gate-actions">
+          <button className="modal-submit" onClick={onSignup}>{t.gateSignup}</button>
+          <button className="gate-login-btn" onClick={onLogin}>{t.gateLogin}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ════════════════════════════════════════════
+   COOKING MODE (Feature 4)
+   ════════════════════════════════════════════ */
+function CookingMode({ steps, t, onExit }) {
+  const [current, setCurrent] = useState(0)
+  const total = steps.length
+  const progress = ((current + 1) / total) * 100
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); setCurrent(c => Math.min(c + 1, total - 1)) }
+      if (e.key === 'ArrowLeft') setCurrent(c => Math.max(c - 1, 0))
+      if (e.key === 'Escape') onExit()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [total, onExit])
+
+  return (
+    <div className="cooking-mode">
+      <div className="cooking-mode-progress">
+        <div className="cooking-mode-progress-bar" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="cooking-mode-header">
+        <span className="cooking-mode-counter">{t.cookingModeStep(current + 1, total)}</span>
+        <button className="cooking-mode-exit" onClick={onExit}>
+          <X size={20} /> {t.cookingModeExit}
+        </button>
+      </div>
+      <div className="cooking-mode-body">
+        <p className="cooking-mode-step-text">{steps[current]}</p>
+      </div>
+      <div className="cooking-mode-nav">
+        <button
+          className="cooking-mode-btn"
+          onClick={() => { if (typeof navigator.vibrate === 'function') navigator.vibrate(10); setCurrent(c => Math.max(c - 1, 0)) }}
+          disabled={current === 0}
+        >
+          {t.cookingModePrev}
+        </button>
+        <button
+          className="cooking-mode-btn primary"
+          onClick={() => { if (typeof navigator.vibrate === 'function') navigator.vibrate(10); setCurrent(c => Math.min(c + 1, total - 1)) }}
+          disabled={current === total - 1}
+        >
+          {t.cookingModeNext}
+        </button>
       </div>
     </div>
   )
@@ -789,7 +931,7 @@ function ShoppingListView({ t, shoppingList, setShoppingList }) {
 /* ════════════════════════════════════════════
    APP HEADER
    ════════════════════════════════════════════ */
-function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, shoppingBadge }) {
+function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAuth, shoppingBadge }) {
   return (
     <header className="app-header">
       <div className="container header-inner">
@@ -800,12 +942,16 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, shopping
           <button className={`header-nav-btn${view === 'app' ? ' active' : ''}`} onClick={() => onNavigate('app')}>
             {t.newRecipe}
           </button>
-          <button className={`header-nav-btn${view === 'saved' ? ' active' : ''}`} onClick={() => onNavigate('saved')}>
-            {t.myRecipes}
-          </button>
-          <button className={`header-nav-btn${view === 'meal-plan' ? ' active' : ''}`} onClick={() => onNavigate('meal-plan')}>
-            {t.mealPlanNav}
-          </button>
+          {user && (
+            <>
+              <button className={`header-nav-btn${view === 'saved' ? ' active' : ''}`} onClick={() => onNavigate('saved')}>
+                {t.myRecipes}
+              </button>
+              <button className={`header-nav-btn${view === 'meal-plan' ? ' active' : ''}`} onClick={() => onNavigate('meal-plan')}>
+                {t.mealPlanNav}
+              </button>
+            </>
+          )}
           <button className={`header-nav-btn${view === 'shopping' ? ' active' : ''}`} onClick={() => onNavigate('shopping')}>
             <span className="nav-shopping-wrap">
               🛒 {t.shoppingListNav}
@@ -815,11 +961,55 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, shopping
         </nav>
         <div className="header-user">
           <button className="lang-toggle lang-toggle-sm" onClick={onToggleLang}>{t.langToggle}</button>
-          <span className="header-email">{user.email}</span>
-          <button className="btn-logout" onClick={onLogout}>{t.logout}</button>
+          {user ? (
+            <>
+              <span className="header-email">{user.email}</span>
+              <button className="btn-logout" onClick={onLogout}>{t.logout}</button>
+            </>
+          ) : (
+            <button className="btn-outline-sm" onClick={onShowAuth}>{t.connect}</button>
+          )}
         </div>
       </div>
     </header>
+  )
+}
+
+/* ════════════════════════════════════════════
+   BOTTOM TAB BAR (Mobile)
+   ════════════════════════════════════════════ */
+function BottomTabBar({ lang, view, onNavigate, user, onShowAuth, shoppingBadge }) {
+  const tabs = [
+    { id: 'landing', icon: Home, label: lang === 'fr' ? 'Accueil' : 'Home' },
+    { id: 'app', icon: ChefHat, label: lang === 'fr' ? 'Générer' : 'Generate' },
+    ...(user ? [{ id: 'saved', icon: Bookmark, label: lang === 'fr' ? 'Recettes' : 'Recipes' }] : []),
+    { id: 'shopping', icon: ShoppingCart, label: lang === 'fr' ? 'Courses' : 'Shopping', badge: shoppingBadge },
+    { id: user ? 'profile' : 'auth', icon: User, label: lang === 'fr' ? 'Profil' : 'Profile' },
+  ]
+
+  const handleTap = (id) => {
+    if (typeof navigator.vibrate === 'function') navigator.vibrate(10)
+    if (id === 'auth') { onShowAuth(); return }
+    if (id === 'profile') return
+    onNavigate(id)
+  }
+
+  return (
+    <nav className="bottom-tab-bar">
+      {tabs.map(tab => {
+        const Icon = tab.icon
+        const active = view === tab.id
+        return (
+          <button key={tab.id} className={`tab-item${active ? ' active' : ''}`} onClick={() => handleTap(tab.id)}>
+            <span className="tab-icon-wrap">
+              <Icon size={22} strokeWidth={active ? 2.5 : 1.8} />
+              {tab.badge > 0 && <span className="tab-badge">{tab.badge}</span>}
+            </span>
+            <span className="tab-label">{tab.label}</span>
+          </button>
+        )
+      })}
+    </nav>
   )
 }
 
@@ -1329,6 +1519,8 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true)
   const [view, setView]               = useState('landing')
   const [showAuth, setShowAuth]       = useState(false)
+  const [showGate, setShowGate]       = useState(false)
+  const [authInitTab, setAuthInitTab] = useState('login')
 
   /* Form */
   const [ingredients, setIngredients]       = useState([{ id: 1, name: '', qty: '', unit: 'g' }])
@@ -1336,6 +1528,10 @@ export default function App() {
   const [selectedCuisines, setSelectedCuisines] = useState([])
   const [cookingTime, setCookingTime] = useState('normal')
   const [activeDietaryFilters, setActiveDietaryFilters] = useState([])
+  const [skillLevel, setSkillLevel]         = useState('intermediate')
+
+  /* Cooking mode (Feature 4) */
+  const [cookingMode, setCookingMode] = useState(false)
 
   /* Flow */
   const [phase, setPhase]               = useState('idle')
@@ -1373,14 +1569,71 @@ export default function App() {
       setAuthLoading(false)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const prevUser = user
       setUser(session?.user ?? null)
-      if (session?.user) { setView('app'); setShowAuth(false) }
-      else setView('landing')
+      if (session?.user) {
+        setView('app'); setShowAuth(false); setShowGate(false)
+        // Reset anonymous generation counter on signup
+        if (!prevUser) localStorage.setItem('chefridge_gen_count', '0')
+      } else {
+        setView('landing')
+      }
     })
     return () => subscription.unsubscribe()
   }, [])
 
-  const handleLogout = () => supabase.auth.signOut()
+  const handleLogout = () => { supabase.auth.signOut(); setView('landing') }
+
+  /* Anonymous generation counter (Feature 1) */
+  const getGenCount = () => parseInt(localStorage.getItem('chefridge_gen_count') || '0', 10)
+  const incrementGenCount = () => localStorage.setItem('chefridge_gen_count', String(getGenCount() + 1))
+
+  /* Pantry persistence (Feature 2) */
+  const savePantryToSupabase = async (validIngredients) => {
+    if (!user) {
+      localStorage.setItem('chefridge_pantry', JSON.stringify(validIngredients))
+      return
+    }
+    const rows = validIngredients.map(i => ({
+      user_id: user.id,
+      ingredient_name: i.name.trim(),
+      quantity: i.qty || null,
+      unit: i.unit || 'g',
+      updated_at: new Date().toISOString(),
+    }))
+    for (const row of rows) {
+      await supabase.from('user_pantry').upsert(row, { onConflict: 'user_id,ingredient_name' })
+    }
+  }
+
+  const loadPantry = async () => {
+    if (user) {
+      const { data } = await supabase.from('user_pantry').select('*').eq('user_id', user.id).order('updated_at', { ascending: false })
+      if (data?.length) {
+        setIngredients(data.map((p, i) => ({ id: Date.now() + i, name: p.ingredient_name, qty: p.quantity || '', unit: p.unit || 'g' })))
+      }
+    } else {
+      try {
+        const stored = JSON.parse(localStorage.getItem('chefridge_pantry') || '[]')
+        if (stored.length) {
+          setIngredients(stored.map((p, i) => ({ id: Date.now() + i, name: p.name || '', qty: p.qty || '', unit: p.unit || 'g' })))
+        }
+      } catch { /* ignore */ }
+    }
+  }
+
+  const clearPantry = async () => {
+    if (user) {
+      await supabase.from('user_pantry').delete().eq('user_id', user.id)
+    }
+    localStorage.removeItem('chefridge_pantry')
+    setIngredients([{ id: Date.now(), name: '', qty: '', unit: 'g' }])
+  }
+
+  // Load pantry when user changes or view becomes 'app'
+  useEffect(() => {
+    if (view === 'app') loadPantry()
+  }, [user, view])
 
   /* Persist shopping list to localStorage */
   useEffect(() => {
@@ -1391,7 +1644,14 @@ export default function App() {
   const addMissingToShopping = () => {
     const missing = checkIngredients
       .filter(i => !i.checked)
-      .map(i => ({ name: i.name, checked: false }))
+      .map(i => {
+        // Use purchase_unit format if available: "1 sac de farine (1kg)"
+        if (i.purchase_unit) {
+          const qty = i.purchase_qty || 1
+          return { name: `${qty} ${i.purchase_unit} de ${i.name}`, checked: false }
+        }
+        return { name: i.note ? `${i.name} (${i.note})` : i.name, checked: false }
+      })
     if (!missing.length) return
     setShoppingList(prev => {
       const existing = prev.map(p => p.name.toLowerCase())
@@ -1465,6 +1725,12 @@ export default function App() {
   }
 
   /* Prompt builders */
+  const SKILL_PROMPTS = {
+    beginner: 'Niveau débutant : étapes simples, techniques de base, temps de préparation court, explique chaque geste.',
+    intermediate: 'Niveau intermédiaire : techniques classiques, quelques étapes de préparation.',
+    expert: 'Niveau expert : techniques avancées acceptées, optimise pour le goût, pas besoin d\'expliquer les techniques de base.',
+  }
+
   const buildIngList = (valid) =>
     valid.map(i => `- ${i.name.trim()}${i.qty ? ` : ${i.qty} ${i.unit}` : ''}`).join('\n')
 
@@ -1477,9 +1743,11 @@ export default function App() {
     const cText   = cNames.length ? cNames.join(', ') : 'any cuisine'
     const constraint = COOKING_TIME_CONSTRAINTS[cookingTime]
     const dietText   = activeDietaryFilters.length ? `\nDietary: ${activeDietaryFilters.join(', ')}` : ''
+    const skillText  = SKILL_PROMPTS[skillLevel]
     return `JSON only, no text, no backticks.
 Ingredients: ${ingList}
 ${people} serving(s) · Style: ${cText} · Time: ${constraint}${dietText}
+${skillText}
 
 3 varied proposals, different from: ${excludeNames || 'none'}. Strict format:
 [{"nom":"Name","emoji":"🍝","cuisine":"Style","description":"1-2 sentences.","tempsPrep":"10 min","tempsCuisson":"15 min","difficulte":"Easy","calories":420,"protein":28,"carbs":35,"fat":14}]${t.langPrompt}`
@@ -1497,7 +1765,9 @@ ${people} serving(s) · Style: ${cText} · Time: ${constraint}${dietText}
     if (unavailable.length) extras += `\nMissing (substitute each): ${unavailable.map(i => i.name).join(', ')}`
 
     const dietNote = activeDietaryFilters.length ? `\nRestrictions alimentaires : ${activeDietaryFilters.join(', ')}.` : ''
+    const skillText = SKILL_PROMPTS[skillLevel]
     return `Chef expert. Recette concise pour "${proposal.nom}" (${proposal.cuisine}).${dietNote}
+${skillText}
 Ingrédients : ${ingList}${extras}
 ${people} pers. · ${constraint}.
 
@@ -1530,6 +1800,9 @@ Exact markdown, short steps:
     const valid = ingredients.filter(i => i.name.trim())
     if (!valid.length) { setError(lang === 'fr' ? 'Veuillez ajouter au moins un ingrédient !' : 'Please add at least one ingredient!'); return }
 
+    // Feature 1: Anonymous generation gate
+    if (!user && getGenCount() >= 3) { setShowGate(true); return }
+
     setError(''); setSaved(false)
     setPhase('proposals-loading')
     setProposals([]); setSelectedIdx(null); setSelectedProposal(null)
@@ -1544,6 +1817,10 @@ Exact markdown, short steps:
       const parsed = JSON.parse(match[0])
       if (!Array.isArray(parsed) || !parsed.length) throw new Error(lang === 'fr' ? 'Réponse invalide. Réessayez.' : 'Invalid response. Please retry.')
       setProposals(parsed); setPhase('proposals')
+      // Increment anonymous counter after success
+      if (!user) incrementGenCount()
+      // Save pantry (Feature 2)
+      savePantryToSupabase(valid)
       setTimeout(() => proposalsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch (err) {
       if (err.name !== 'AbortError') setError(`❌ ${err.message}`)
@@ -1665,14 +1942,14 @@ Exact markdown, short steps:
 
   if (view === 'landing') return (
     <>
-      <LandingPage t={t} onToggleLang={toggleLang} onGetStarted={() => setShowAuth(true)} />
-      {showAuth && <AuthModal t={t} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
+      <LandingPage t={t} onToggleLang={toggleLang} onGetStarted={() => setShowAuth(true)} onTryFree={() => setView('app')} />
+      {showAuth && <AuthModal t={t} initialTab={authInitTab} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
     </>
   )
 
   return (
     <div className="app">
-      <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
+      <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} onShowAuth={() => setShowAuth(true)} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
 
       {view === 'meal-plan' ? (
         <MealPlanView t={t} lang={lang} />
@@ -1722,7 +1999,13 @@ Exact markdown, short steps:
                   </div>
                 ))}
               </div>
-              <button className="add-btn" onClick={addIngredient}>{t.addIngredient}</button>
+              <p className="ing-hint">{t.ingHint}</p>
+              <div className="ing-actions">
+                <button className="add-btn" onClick={addIngredient}>{t.addIngredient}</button>
+                {ingredients.some(i => i.name.trim()) && (
+                  <button className="clear-pantry-btn" onClick={clearPantry}>{t.clearPantry}</button>
+                )}
+              </div>
             </section>
 
             {/* Step 2: People */}
@@ -1785,10 +2068,34 @@ Exact markdown, short steps:
               </div>
             </section>
 
-            {/* Step 5: Cooking time */}
+            {/* Step 5: Skill level (Feature 3) */}
             <section className="card">
               <div className="step-header">
                 <div className="step-badge">5</div>
+                <div>
+                  <h2>{t.skillTitle}</h2>
+                  <p>{t.skillSub}</p>
+                </div>
+              </div>
+              <div className="skill-grid">
+                {t.skillLevels.map(s => {
+                  const IconMap = { Baby, ChefHat, Flame }
+                  const Icon = IconMap[s.icon]
+                  return (
+                    <button key={s.id} className={`skill-card${skillLevel === s.id ? ' selected' : ''}`} onClick={() => setSkillLevel(s.id)}>
+                      <Icon size={24} className="skill-icon" />
+                      <span className="skill-label">{s.label}</span>
+                      {skillLevel === s.id && <span className="c-check">✓</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+
+            {/* Step 6: Cooking time */}
+            <section className="card">
+              <div className="step-header">
+                <div className="step-badge">6</div>
                 <div><h2>{t.step5Title}</h2><p>{t.step5Sub}</p></div>
               </div>
               <div className="time-grid">
@@ -1809,7 +2116,7 @@ Exact markdown, short steps:
               {isLoading ? (
                 <button className="gen-btn stop" onClick={stopGeneration}><span>⏹</span> {t.stopBtn.replace('⏹ ', '')}</button>
               ) : phase === 'idle' ? (
-                <button className="gen-btn" onClick={generateProposals}><span>✨</span> {t.generateBtn.replace('✨ ', '')}</button>
+                <button className="gen-btn" onClick={() => { if (typeof navigator.vibrate === 'function') navigator.vibrate(10); generateProposals() }}><span>✨</span> {t.generateBtn.replace('✨ ', '')}</button>
               ) : (
                 <button className="gen-btn secondary" onClick={resetProposals}><span>🔄</span> {t.resetBtn.replace('🔄 ', '')}</button>
               )}
@@ -1945,6 +2252,11 @@ Exact markdown, short steps:
                     <RecipeContent text={recipeText} isStreaming={phase === 'recipe-loading'} />
                   </div>
                 )}
+                {phase === 'recipe' && recipeText && (
+                  <button className="cooking-mode-trigger" onClick={() => setCookingMode(true)}>
+                    <CookingPot size={20} /> {t.cookingModeBtn}
+                  </button>
+                )}
               </section>
             )}
 
@@ -1957,6 +2269,25 @@ Exact markdown, short steps:
           <p>{t.footerText}</p>
         </div>
       </footer>
+
+      <BottomTabBar lang={lang} view={view} onNavigate={setView} user={user} onShowAuth={() => setShowAuth(true)} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
+
+      {showAuth && <AuthModal t={t} initialTab={authInitTab} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
+      {showGate && (
+        <SignupGateModal
+          t={t}
+          onClose={() => setShowGate(false)}
+          onSignup={() => { setShowGate(false); setShowAuth(true); setAuthInitTab('signup') }}
+          onLogin={() => { setShowGate(false); setShowAuth(true); setAuthInitTab('login') }}
+        />
+      )}
+      {cookingMode && recipeText && (
+        <CookingMode
+          steps={recipeText.split('\n').filter(l => /^\d+\.[ \t]/.test(l)).map(l => l.replace(/^\d+\.[ \t]*/, ''))}
+          t={t}
+          onExit={() => setCookingMode(false)}
+        />
+      )}
     </div>
   )
 }

@@ -33,7 +33,16 @@ Ingrédients déjà disponibles :
 ${userIngList}
 
 Réponds UNIQUEMENT avec un JSON — max 6 ingrédients complémentaires manquants. Si rien ne manque : [].
-[{"name":"Ail","emoji":"🧄","note":"3 gousses"}]`
+Pour chaque ingrédient, indique :
+- name : nom de l'ingrédient
+- emoji : un emoji représentatif
+- note : quantité nécessaire pour la recette (ex: "3 gousses", "300g")
+- recipe_quantity : quantité nécessaire pour la recette (ex: "300g", "3 gousses")
+- purchase_unit : unité d'achat réaliste en épicerie (ex: "sac 1kg", "boîte 400ml", "filet de 4", "bloc 250g", "bouteille 1L", "pot 200g")
+- purchase_qty : nombre d'unités à acheter (presque toujours 1)
+
+Format strict :
+[{"name":"Farine","emoji":"🌾","note":"300g","recipe_quantity":"300g","purchase_unit":"sac 1kg","purchase_qty":1}]`
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   try {
