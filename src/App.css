@@ -144,9 +144,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 0.6rem;
 }
 .landing-logo-img {
-  height: 56px;
+  height: 156px;
   width: auto;
-  border-radius: 8px;
+  border-radius: 12px;
   display: block;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
 }
@@ -203,6 +203,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .hero .l-container { position: relative; z-index: 1; }
 
 .hero-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -213,9 +217,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   border-radius: 99px;
   font-size: 0.77rem;
   font-weight: 600;
-  margin-bottom: 1.75rem;
   letter-spacing: 0.2px;
   animation: fadeInUp 0.5s ease both;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .hero-title {
@@ -936,7 +941,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: opacity var(--t);
 }
 .header-logo:hover { opacity: 0.8; }
-.header-logo-img { height: 56px; width: auto; border-radius: 8px; display: block; }
+.header-logo-img { height: 156px; width: auto; border-radius: 12px; display: block; }
 
 .header-nav {
   display: flex;
@@ -2036,7 +2041,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     letter-spacing: 0.3px;
   }
   .hero-badge { font-size: 0.72rem; }
-  .landing-logo-img { height: 48px; }
+  .landing-logo-img { height: 156px; }
 
   /* Landing sections */
   .features-section, .hiw-section, .cta-section, .reviews-section, .gallery-section { padding: 3.5rem 0; }
@@ -2077,7 +2082,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .header-email   { display: none; }
   .header-nav     { display: none; }
   .lang-toggle-sm { display: none; }
-  .header-logo-img { height: 48px; }
+  .header-logo-img { height: 156px; }
   .btn-logout { font-size: 0.75rem; padding: 0.4rem 0.75rem; min-height: 44px; display: flex; align-items: center; }
 
   /* Main content offset for fixed header */

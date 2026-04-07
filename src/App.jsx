@@ -650,7 +650,6 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
         <div className="l-container">
           <div className="hero-layout">
             <div className="hero-content">
-              <div className="hero-badge">{t.heroBadge}</div>
               <h1 className="hero-title">
                 {t.heroTitle1}<br />
                 <span className="hero-accent">{t.heroTitle2}</span>
@@ -669,6 +668,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
             </div>
             <div className="hero-visual">
               <div className="hero-img-frame">
+                <div className="hero-badge">{t.heroBadge}</div>
                 <img
                   src="/hero.jpg"
                   alt=""
