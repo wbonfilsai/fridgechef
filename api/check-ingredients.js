@@ -36,13 +36,16 @@ Réponds UNIQUEMENT avec un JSON — max 6 ingrédients complémentaires manquan
 Pour chaque ingrédient, indique :
 - name : nom de l'ingrédient
 - emoji : un emoji représentatif
-- note : quantité nécessaire pour la recette (ex: "3 gousses", "300g")
-- recipe_quantity : quantité nécessaire pour la recette (ex: "300g", "3 gousses")
-- purchase_unit : unité d'achat réaliste en épicerie (ex: "sac 1kg", "boîte 400ml", "filet de 4", "bloc 250g", "bouteille 1L", "pot 200g")
+- note : quantité nécessaire pour la recette
+- recipe_quantity : quantité exacte pour la recette (ex: "300g", "1 gousse")
+- purchase_unit : ce qu'on achète réellement en épicerie (ex: "1 sac (1kg)", "1 tête d'ail", "1 contenant (250ml)", "1 bloc (250g)", "1 filet de citrons", "1 douzaine d'oeufs")
 - purchase_qty : nombre d'unités à acheter (presque toujours 1)
+- importance : "essentiel" si la recette ne fonctionne pas sans, "recommandé" si ça améliore beaucoup, "optionnel" si c'est un plus
+
+Classe par importance : essentiel en premier, optionnel en dernier.
 
 Format strict :
-[{"name":"Farine","emoji":"🌾","note":"300g","recipe_quantity":"300g","purchase_unit":"sac 1kg","purchase_qty":1}]`
+[{"name":"Farine","emoji":"🌾","note":"300g","recipe_quantity":"300g","purchase_unit":"1 sac (1kg)","purchase_qty":1,"importance":"essentiel"}]`
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   try {

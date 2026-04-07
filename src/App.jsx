@@ -1010,13 +1010,14 @@ function ShoppingListView({ t, shoppingList, setShoppingList }) {
           ) : (
             <ul className="shopping-list">
               {shoppingList.map((item, i) => (
-                <li key={i} className={`shopping-item${item.checked ? ' checked' : ''}`}>
+                <li key={i} className={`shopping-item${item.checked ? ' checked' : ''}${item.importance === 'optionnel' ? ' optional' : ''}`}>
                   <label className="shopping-item-label">
                     <span className="shopping-checkbox-wrap">
                       <input type="checkbox" className="shopping-checkbox-input" checked={item.checked} onChange={() => toggleItem(i)} />
                       <span className="shopping-checkbox-custom" />
                     </span>
-                    <span className="shopping-item-name">{item.name}</span>
+                    <span className={`shopping-item-name${item.importance === 'essentiel' ? ' essential' : ''}`}>{item.name}</span>
+                    {item.importance === 'optionnel' && <span className="shopping-optional-tag">Optionnel</span>}
                   </label>
                   <button className="shopping-delete-btn" onClick={() => deleteItem(i)} aria-label={t.shoppingListDelete}>✕</button>
                 </li>
@@ -1753,14 +1754,15 @@ export default function App() {
     const missing = checkIngredients
       .filter(i => !i.checked)
       .map(i => {
-        // Use purchase_unit format if available: "1 sac de farine (1kg)"
-        if (i.purchase_unit) {
-          const qty = i.purchase_qty || 1
-          return { name: `${qty} ${i.purchase_unit} de ${i.name}`, checked: false }
-        }
-        return { name: i.note ? `${i.name} (${i.note})` : i.name, checked: false }
+        const label = i.purchase_unit
+          ? `${i.purchase_qty || 1} ${i.purchase_unit} — ${i.name}`
+          : i.note ? `${i.name} (${i.note})` : i.name
+        return { name: label, checked: false, importance: i.importance || 'essentiel' }
       })
     if (!missing.length) return
+    // Sort: essentiel first, then recommandé, then optionnel
+    const order = { essentiel: 0, recommandé: 1, optionnel: 2 }
+    missing.sort((a, b) => (order[a.importance] ?? 1) - (order[b.importance] ?? 1))
     setShoppingList(prev => {
       const existing = prev.map(p => p.name.toLowerCase())
       const toAdd = missing.filter(m => !existing.includes(m.name.toLowerCase()))

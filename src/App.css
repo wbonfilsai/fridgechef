@@ -2407,6 +2407,16 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: all var(--t);
 }
 .shopping-item.checked .shopping-item-name { text-decoration: line-through; color: var(--text-muted); }
+.shopping-item.optional { opacity: 0.6; }
+.shopping-item-name.essential { font-weight: 600; }
+.shopping-optional-tag {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-alt);
+  padding: 1px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
 
 .shopping-delete-btn {
   flex-shrink: 0;
