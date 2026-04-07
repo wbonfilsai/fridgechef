@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
-import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3 } from 'lucide-react'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail } from 'lucide-react'
 
 /* Claude prompt constraints */
 const COOKING_TIME_CONSTRAINTS = {
@@ -99,6 +99,10 @@ const T = {
     emailLabel: 'Email', passwordLabel: 'Mot de passe',
     passwordHint: 'Minimum 6 caractères', passwordDots: '••••••••',
     loginBtn: 'Se connecter', signupBtn: 'Créer mon compte',
+    googleBtn: 'Continuer avec Google',
+    magicLinkBtn: 'Recevoir un lien de connexion',
+    magicLinkSent: 'Vérifie ta boîte mail, un lien de connexion t\'a été envoyé.',
+    orSeparator: 'ou',
     signupSuccess: 'Compte créé ! Vérifiez votre email pour confirmer votre adresse, puis connectez-vous.',
     authErrors: {
       'Invalid login credentials': 'Email ou mot de passe incorrect.',
@@ -301,6 +305,10 @@ const T = {
     emailLabel: 'Email', passwordLabel: 'Password',
     passwordHint: 'At least 6 characters', passwordDots: '••••••••',
     loginBtn: 'Sign in', signupBtn: 'Create account',
+    googleBtn: 'Continue with Google',
+    magicLinkBtn: 'Get a login link by email',
+    magicLinkSent: 'Check your inbox, a login link has been sent.',
+    orSeparator: 'or',
     signupSuccess: 'Account created! Check your email to confirm your address, then sign in.',
     authErrors: {
       'Invalid login credentials': 'Incorrect email or password.',
@@ -791,8 +799,34 @@ function AuthModal({ t, onClose, onSuccess, initialTab }) {
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState('')
   const [success, setSuccess]   = useState('')
+  const [magicLoading, setMagicLoading] = useState(false)
 
   const switchTab = (newTab) => { setTab(newTab); setError(''); setSuccess('') }
+
+  const handleGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+        queryParams: { access_type: 'offline', prompt: 'consent' },
+      },
+    })
+  }
+
+  const handleMagicLink = async () => {
+    if (!email) { setError(t.emailLabel + ' required'); return }
+    setMagicLoading(true); setError(''); setSuccess('')
+    try {
+      const { error: err } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.origin },
+      })
+      if (err) throw err
+      setSuccess(t.magicLinkSent)
+    } catch (err) {
+      setError(t.authErrors[err.message] || err.message)
+    } finally { setMagicLoading(false) }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -812,6 +846,15 @@ function AuthModal({ t, onClose, onSuccess, initialTab }) {
     } finally { setLoading(false) }
   }
 
+  const GoogleIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A11.96 11.96 0 001 12c0 1.94.46 3.77 1.18 5.42l3.66-2.84z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+  )
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={e => e.stopPropagation()}>
@@ -823,6 +866,13 @@ function AuthModal({ t, onClose, onSuccess, initialTab }) {
           <button className={`modal-tab${tab === 'login' ? ' active' : ''}`} onClick={() => switchTab('login')}>{t.loginTab}</button>
           <button className={`modal-tab${tab === 'signup' ? ' active' : ''}`} onClick={() => switchTab('signup')}>{t.signupTab}</button>
         </div>
+
+        <button className="google-btn" onClick={handleGoogle} type="button">
+          <GoogleIcon /> {t.googleBtn}
+        </button>
+
+        <div className="auth-separator"><span>{t.orSeparator}</span></div>
+
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
             <label className="form-label">{t.emailLabel}</label>
@@ -839,6 +889,13 @@ function AuthModal({ t, onClose, onSuccess, initialTab }) {
             {loading ? <span className="modal-spinner" /> : (tab === 'login' ? t.loginBtn : t.signupBtn)}
           </button>
         </form>
+
+        <div className="auth-separator"><span>{t.orSeparator}</span></div>
+
+        <button className="magic-link-btn" onClick={handleMagicLink} disabled={magicLoading} type="button">
+          {magicLoading ? <span className="modal-spinner" style={{ borderTopColor: '#D4450C', width: 16, height: 16 }} /> : <Mail size={18} />}
+          {t.magicLinkBtn}
+        </button>
       </div>
     </div>
   )
