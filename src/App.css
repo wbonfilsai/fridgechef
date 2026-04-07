@@ -1342,6 +1342,53 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .proposal-img-wrap.img-fallback::before { display: none; }
 
+/* PDF download button */
+.pdf-download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 400px;
+  margin: 0.75rem auto 0;
+  height: 48px;
+  background: transparent;
+  border: 2px solid #D4450C;
+  color: #D4450C;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--t);
+  font-family: inherit;
+}
+.pdf-download-btn:hover { background: rgba(212, 69, 12, 0.06); }
+
+/* Share buttons */
+.share-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 1rem;
+}
+.share-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-muted);
+}
+.share-btn:hover {
+  background: rgba(0, 0, 0, 0.12);
+  transform: scale(1.1);
+}
+
 .proposal-emoji { font-size: 2.25rem; line-height: 1; margin-bottom: 0.15rem; transition: transform var(--t); }
 .proposal-card:hover .proposal-emoji { transform: scale(1.12) rotate(-3deg); }
 .proposal-nom   { font-size: 0.98rem; font-weight: 700; color: var(--text); line-height: 1.3; margin: 0; }
