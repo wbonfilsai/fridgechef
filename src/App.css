@@ -1324,6 +1324,24 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .proposal-img.loaded { opacity: 1; }
 
+.proposal-img-skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f0ede8 25%, #e8e0d6 50%, #f0ede8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+
+.proposal-img-fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #D4450C, #1C0A02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.proposal-img-wrap.img-fallback::before { display: none; }
+
 .proposal-emoji { font-size: 2.25rem; line-height: 1; margin-bottom: 0.15rem; transition: transform var(--t); }
 .proposal-card:hover .proposal-emoji { transform: scale(1.12) rotate(-3deg); }
 .proposal-nom   { font-size: 0.98rem; font-weight: 700; color: var(--text); line-height: 1.3; margin: 0; }

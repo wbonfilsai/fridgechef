@@ -1661,6 +1661,7 @@ export default function App() {
   const [saving, setSaving]             = useState(false)
   const [heartPop, setHeartPop]         = useState(false)
   const [loadingMore, setLoadingMore]   = useState(false)
+  const [proposalImages, setProposalImages] = useState({})
 
   /* Shopping List */
   const [shoppingList, setShoppingList] = useState(() => {
@@ -1916,6 +1917,24 @@ Exact markdown, short steps:
 - 🫒 **Lipides :** ~XX g${t.langPrompt}`
   }
 
+  /* Fetch Unsplash images for proposals */
+  const fetchProposalImages = async (proposals, startIdx) => {
+    const results = await Promise.all(
+      proposals.map(async (p, i) => {
+        try {
+          const res = await fetch(`/api/recipe-image?query=${encodeURIComponent(p.nom)}`)
+          const data = await res.json()
+          return [startIdx + i, data.url]
+        } catch { return [startIdx + i, null] }
+      })
+    )
+    setProposalImages(prev => {
+      const next = { ...prev }
+      for (const [idx, url] of results) next[idx] = url
+      return next
+    })
+  }
+
   /* Step 1: Generate proposals */
   const generateProposals = async () => {
     const valid = ingredients.filter(i => i.name.trim())
@@ -1935,6 +1954,8 @@ Exact markdown, short steps:
       const parsed = JSON.parse(match[0])
       if (!Array.isArray(parsed) || !parsed.length) throw new Error(lang === 'fr' ? 'Réponse invalide. Réessayez.' : 'Invalid response. Please retry.')
       setProposals(parsed); setPhase('proposals')
+      // Fetch images in parallel
+      fetchProposalImages(parsed, 0)
       savePantryToSupabase(valid)
       setTimeout(() => proposalsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch (err) {
@@ -1961,7 +1982,9 @@ Exact markdown, short steps:
       if (!match) throw new Error(lang === 'fr' ? 'Format invalide. Réessayez.' : 'Invalid format. Please retry.')
       const parsed = JSON.parse(match[0])
       if (!Array.isArray(parsed) || !parsed.length) throw new Error(lang === 'fr' ? 'Réponse invalide. Réessayez.' : 'Invalid response. Please retry.')
+      const startIdx = proposals.length
       setProposals(prev => [...prev, ...parsed])
+      fetchProposalImages(parsed, startIdx)
     } catch (err) {
       if (err.name !== 'AbortError') setError(`❌ ${err.message}`)
     } finally {
@@ -2030,7 +2053,7 @@ Exact markdown, short steps:
 
   const resetProposals = () => {
     abortRef.current?.abort()
-    setPhase('idle'); setProposals([]); setSelectedIdx(null); setSelectedProposal(null)
+    setPhase('idle'); setProposals([]); setProposalImages({}); setSelectedIdx(null); setSelectedProposal(null)
     setCheckIngredients([]); setRecipeText(''); setError(''); setSaved(false)
   }
 
@@ -2266,14 +2289,14 @@ Exact markdown, short steps:
                       className={`proposal-card${selectedIdx === i ? ' selected' : ''}${isLoading ? ' disabled' : ''}`}
                       onClick={() => selectProposal(p, i)} disabled={isLoading}
                       style={{ animationDelay: `${i * 0.07}s` }}>
-                      <div className="proposal-img-wrap">
-                        <img
-                          src={`https://loremflickr.com/400/300/${p.nom.toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,',')},food?lock=${i}`}
-                          alt={p.nom}
-                          className="proposal-img"
-                          onLoad={e => { e.target.classList.add('loaded'); e.target.parentElement.classList.add('img-loaded'); }}
-                          onError={e => { e.target.parentElement.classList.add('img-error'); e.target.style.display = 'none'; }}
-                        />
+                      <div className={`proposal-img-wrap${proposalImages[i] === undefined ? '' : proposalImages[i] ? ' img-loaded' : ' img-fallback'}`}>
+                        {proposalImages[i] === undefined ? (
+                          <div className="proposal-img-skeleton" />
+                        ) : proposalImages[i] ? (
+                          <img src={proposalImages[i]} alt={p.nom} className="proposal-img loaded" loading="lazy" />
+                        ) : (
+                          <div className="proposal-img-fallback"><ChefHat size={32} color="#fff" /></div>
+                        )}
                       </div>
                       <div className="proposal-emoji">{p.emoji}</div>
                       <h3 className="proposal-nom">{p.nom}</h3>
