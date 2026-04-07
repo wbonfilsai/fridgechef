@@ -56,7 +56,7 @@ const T = {
     heroBadge: '✨ Recettes personnalisées en 30 secondes',
     heroTitle1: 'Vous méritez mieux',
     heroTitle2: "que l'improvisation",
-    heroSub: "Vos ingrédients. Votre style. Trois recettes en 30 secondes.",
+    heroSub: "Vos ingrédients. Votre style. Trois recettes personnalisées en 30 secondes.",
     heroCta: 'Commencer à cuisiner',
     stat1Val: '10 000+', stat1Label: 'recettes générées',
     stat2Val: '5 000+', stat2Label: 'utilisateurs actifs',
@@ -254,7 +254,7 @@ const T = {
     heroBadge: '✨ Personalized recipes in 30 seconds',
     heroTitle1: 'You deserve better',
     heroTitle2: 'than improvisation',
-    heroSub: "Your ingredients. Your style. Three recipes in 30 seconds.",
+    heroSub: "Your ingredients. Your style. Three personalized recipes in 30 seconds.",
     heroCta: 'Start cooking',
     stat1Val: '10,000+', stat1Label: 'recipes generated',
     stat2Val: '5,000+', stat2Label: 'active users',
@@ -650,7 +650,6 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
         <div className="l-container">
           <div className="hero-layout">
             <div className="hero-content">
-              <div className="hero-badge">{t.heroBadge}</div>
               <h1 className="hero-title">
                 {t.heroTitle1}<br />
                 <span className="hero-accent">{t.heroTitle2}</span>
