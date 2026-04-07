@@ -19,9 +19,9 @@ export default async function handler(req, res) {
   const authHeader = req.headers['authorization']
   const isAuthenticated = authHeader && authHeader.startsWith('Bearer ') && authHeader.length > 20
 
-  if (!isAuthenticated && process.env.UPSTASH_REDIS_REST_URL) {
+  if (!isAuthenticated && process.env.KV_REST_API_URL) {
     try {
-      const redis = Redis.fromEnv()
+      const redis = new Redis({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN })
       const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim()
       const key = `anon_gen:${ip}`
 
