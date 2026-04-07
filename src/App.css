@@ -1717,10 +1717,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    ═══════════════════════════════════════════ */
 .footer {
   text-align: center; padding: 1.75rem 0;
-  color: var(--text-muted); font-size: 0.8rem;
-  border-top: 1px solid var(--border); background: var(--card);
+  background: #1C0A02;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  border-top: none;
 }
-.footer strong { color: var(--primary); }
 
 /* ═══════════════════════════════════════════
    MIC BUTTON (Voice Input)
