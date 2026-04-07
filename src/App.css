@@ -283,21 +283,28 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 1.25rem;
 }
 .feature-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 2rem 1.75rem;
-  transition: all var(--t);
-  box-shadow: var(--shadow);
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  padding: 24px;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  animation: fadeInUp 0.4s ease both;
 }
 .feature-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-xl);
-  border-color: var(--border-h);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+  border-color: rgba(194, 65, 12, 0.2);
 }
-.feature-emoji { font-size: 2.25rem; margin-bottom: 1rem; display: block; }
-.feature-card h3 { font-size: 1.02rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
-.feature-card p { color: var(--text-muted); font-size: 0.875rem; line-height: 1.65; }
+.feature-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+.feature-card h3 { font-size: 1.125rem; font-weight: 700; color: #1a1a1a; margin: 0; line-height: 1.35; }
+.feature-card p { color: #666; font-size: 0.9375rem; line-height: 1.6; margin: 0; }
 
 /* ═══════════════════════════════════════════
    LANDING — HOW IT WORKS
@@ -308,7 +315,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .hiw-steps {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   position: relative;
   padding-left: 18px;
 }
@@ -321,8 +328,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   width: 2px;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(194,65,12,0.3) 0px,
-    rgba(194,65,12,0.3) 6px,
+    rgba(194,65,12,0.25) 0px,
+    rgba(194,65,12,0.25) 6px,
     transparent 6px,
     transparent 12px
   );
@@ -332,18 +339,25 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-direction: row;
   align-items: center;
   gap: 14px;
-  background: rgba(255,255,255,0.7);
-  border-radius: 12px;
-  padding: 16px;
-  border-left: 4px solid #C2410C;
+  background: rgba(255, 250, 245, 1);
+  border-radius: 14px;
+  padding: 18px 20px;
+  border-left: 5px solid #C2410C;
   position: relative;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  animation: fadeInUp 0.4s ease both;
+}
+.hiw-step:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 .hiw-num {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
   flex-shrink: 0;
-  background: #C2410C;
+  background: linear-gradient(135deg, #C2410C, #E55A1C);
   color: #fff;
   border-radius: 50%;
   display: flex;
@@ -352,6 +366,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   font-weight: 800;
   font-size: 0.9rem;
   z-index: 1;
+  box-shadow: 0 3px 12px rgba(194, 65, 12, 0.3);
 }
 .hiw-icon {
   flex-shrink: 0;

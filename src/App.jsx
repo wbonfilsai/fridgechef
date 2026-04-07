@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
-import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User } from 'lucide-react'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3 } from 'lucide-react'
 
 /* Claude prompt constraints */
 const COOKING_TIME_CONSTRAINTS = {
@@ -64,9 +64,9 @@ const T = {
     featuresLabel: 'Fonctionnalités',
     featuresTitle: "Tout ce qu'il faut pour cuisiner mieux",
     features: [
-      { emoji: '✨', title: '3 propositions en secondes', desc: "L'IA génère 3 idées de recettes variées, adaptées à vos ingrédients, votre style de cuisine et votre temps disponible." },
-      { emoji: '🛒', title: 'Ingrédients intelligents', desc: "Cochez les ingrédients complémentaires que vous avez. Les substitutions créatives s'occupent du reste." },
-      { emoji: '📊', title: 'Macros nutritionnelles', desc: 'Calories, protéines, glucides et lipides estimés par portion — pour cuisiner sainement sans y penser.' },
+      { icon: 'Sparkles', title: '3 propositions en secondes', desc: "L'IA génère 3 idées de recettes variées, adaptées à vos ingrédients, votre style de cuisine et votre temps disponible." },
+      { icon: 'ShoppingCart', title: 'Ingrédients intelligents', desc: "Cochez les ingrédients complémentaires que vous avez. Les substitutions créatives s'occupent du reste." },
+      { icon: 'BarChart3', title: 'Macros nutritionnelles', desc: 'Calories, protéines, glucides et lipides estimés par portion — pour cuisiner sainement sans y penser.' },
     ],
     hiwLabel: 'Comment ça marche',
     hiwTitle: 'Quatre étapes, une recette parfaite',
@@ -262,9 +262,9 @@ const T = {
     featuresLabel: 'Features',
     featuresTitle: 'Everything you need to cook better',
     features: [
-      { emoji: '✨', title: '3 proposals in seconds', desc: "AI generates 3 varied recipe ideas, tailored to your ingredients, cuisine style and available time." },
-      { emoji: '🛒', title: 'Smart ingredients', desc: "Check off the complementary ingredients you have. Creative substitutions handle the rest." },
-      { emoji: '📊', title: 'Nutritional macros', desc: 'Calories, proteins, carbs and fats estimated per serving — for healthy cooking without thinking about it.' },
+      { icon: 'Sparkles', title: '3 proposals in seconds', desc: "AI generates 3 varied recipe ideas, tailored to your ingredients, cuisine style and available time." },
+      { icon: 'ShoppingCart', title: 'Smart ingredients', desc: "Check off the complementary ingredients you have. Creative substitutions handle the rest." },
+      { icon: 'BarChart3', title: 'Nutritional macros', desc: 'Calories, proteins, carbs and fats estimated per serving — for healthy cooking without thinking about it.' },
     ],
     hiwLabel: 'How it works',
     hiwTitle: 'Four steps, one perfect recipe',
@@ -689,13 +689,19 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
           <div className="section-eyebrow">{t.featuresLabel}</div>
           <h2 className="section-title">{t.featuresTitle}</h2>
           <div className="features-grid">
-            {t.features.map((f, i) => (
-              <div key={i} className="feature-card">
-                <div className="feature-emoji">{f.emoji}</div>
-                <h3>{f.title}</h3>
-                <p>{f.desc}</p>
-              </div>
-            ))}
+            {t.features.map((f, i) => {
+              const IconMap = { Sparkles, ShoppingCart, BarChart3 }
+              const Icon = IconMap[f.icon]
+              return (
+                <div key={i} className="feature-card" style={{ animationDelay: `${i * 0.1}s` }}>
+                  <div className="feature-title-row">
+                    <h3>{f.title}</h3>
+                    <Icon size={20} color="#C2410C" strokeWidth={2} />
+                  </div>
+                  <p>{f.desc}</p>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -709,7 +715,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
               const icons = [UtensilsCrossed, Globe, ChefHat, ShoppingCart]
               const Icon = icons[i]
               return (
-                <div key={i} className="hiw-step">
+                <div key={i} className="hiw-step" style={{ animationDelay: `${i * 0.1}s` }}>
                   <div className="hiw-num">{s.n}</div>
                   <div className="hiw-icon"><Icon size={20} color="#C2410C" strokeWidth={2} /></div>
                   <p className="hiw-label">{s.label}</p>
