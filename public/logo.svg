@@ -1,24 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 70" role="img" aria-label="CheFridge">
-  <!-- Toque blanche (chef hat) -->
-  <rect x="3" y="46" width="56" height="16" rx="5" fill="#C2410C"/>
-  <path d="M 8 48 C 4 48 2 10 31 7 C 60 10 58 48 54 48 Z" fill="#C2410C"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 74" role="img" aria-label="Chefridge">
+  <!-- Chef Hat (white with orange brim) -->
+  <path d="M 11 21 C 9 2 15 0 30 0 C 45 0 51 2 49 21 Z" fill="white"/>
+  <rect x="5" y="17" width="50" height="7" rx="3.5" fill="#EA580C"/>
   <!-- Hat crease detail -->
-  <path d="M 10 48 C 9 22 18 12 31 10 C 44 12 53 22 52 48"
-    stroke="rgba(255,255,255,0.18)" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <!-- Hat brim highlight -->
-  <rect x="3" y="46" width="56" height="4" rx="2" fill="rgba(255,255,255,0.12)"/>
+  <path d="M 13 20 C 12 9 17 4 30 2 C 43 4 48 9 47 20" stroke="rgba(200,200,200,0.35)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 
-  <!-- CheFridge wordmark -->
-  <text x="72" y="52"
+  <!-- Fridge Body (orange) -->
+  <rect x="8" y="22" width="44" height="50" rx="5" fill="#EA580C"/>
+  <!-- Freezer compartment (top, slightly darker) -->
+  <rect x="8" y="22" width="44" height="16" rx="5" fill="#C2410C"/>
+  <!-- Patch bottom-corners of freezer rect so it looks flat at bottom -->
+  <rect x="8" y="32" width="44" height="6" fill="#C2410C"/>
+  <!-- Divider line -->
+  <rect x="8" y="37" width="44" height="2" fill="#9A3412"/>
+  <!-- Freezer handle -->
+  <rect x="44" y="25" width="4" height="9" rx="2" fill="#9A3412"/>
+  <!-- Fridge handle -->
+  <rect x="44" y="43" width="4" height="14" rx="2" fill="#9A3412"/>
+  <!-- Small vent lines at bottom of fridge -->
+  <rect x="16" y="62" width="12" height="2" rx="1" fill="rgba(255,255,255,0.25)"/>
+  <rect x="31" y="62" width="12" height="2" rx="1" fill="rgba(255,255,255,0.25)"/>
+
+  <!-- Chefridge wordmark -->
+  <text x="68" y="52"
     font-family="Georgia, 'Times New Roman', serif"
     font-style="italic"
     font-weight="bold"
-    font-size="40"
-    fill="#C2410C"
-    letter-spacing="-0.5">CheFridge</text>
+    font-size="38"
+    fill="#EA580C"
+    letter-spacing="-0.5">Chefridge</text>
 
   <!-- Decorative swash underline -->
-  <path d="M 72 59 Q 178 68 258 59"
-    stroke="#C2410C" stroke-width="2.2" fill="none"
+  <path d="M 68 59 Q 174 69 256 59"
+    stroke="#EA580C" stroke-width="2.2" fill="none"
     stroke-linecap="round" opacity="0.45"/>
 </svg>
