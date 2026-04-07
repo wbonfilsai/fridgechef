@@ -144,9 +144,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 0.6rem;
 }
 .landing-logo-img {
-  height: 156px;
+  height: 56px;
   width: auto;
-  border-radius: 12px;
+  border-radius: 8px;
   display: block;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
 }
@@ -471,11 +471,14 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 .footer-logo {
-  height: 36px;
+  height: 56px;
   width: auto;
   opacity: 0.8;
   display: inline-block;
-  border-radius: 6px;
+  border-radius: 8px;
+}
+@media (max-width: 768px) {
+  .footer-logo { height: 48px; }
 }
 
 /* ═══════════════════════════════════════════
@@ -933,7 +936,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: opacity var(--t);
 }
 .header-logo:hover { opacity: 0.8; }
-.header-logo-img { height: 156px; width: auto; border-radius: 12px; display: block; }
+.header-logo-img { height: 56px; width: auto; border-radius: 8px; display: block; }
 
 .header-nav {
   display: flex;
@@ -2033,7 +2036,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     letter-spacing: 0.3px;
   }
   .hero-badge { font-size: 0.72rem; }
-  .landing-logo-img { height: 132px; }
+  .landing-logo-img { height: 48px; }
 
   /* Landing sections */
   .features-section, .hiw-section, .cta-section, .reviews-section, .gallery-section { padding: 3.5rem 0; }
@@ -2074,7 +2077,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .header-email   { display: none; }
   .header-nav     { display: none; }
   .lang-toggle-sm { display: none; }
-  .header-logo-img { height: 132px; }
+  .header-logo-img { height: 48px; }
   .btn-logout { font-size: 0.75rem; padding: 0.4rem 0.75rem; min-height: 44px; display: flex; align-items: center; }
 
   /* Main content offset for fixed header */
