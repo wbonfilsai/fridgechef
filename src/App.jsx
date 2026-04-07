@@ -623,9 +623,17 @@ function ReviewsCarousel({ reviews, label, title }) {
 }
 
 function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
+  const [navScrolled, setNavScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setNavScrolled(window.scrollY > 80)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <div className="landing">
-      <nav className="landing-nav">
+      <nav className={`landing-nav${navScrolled ? ' scrolled' : ''}`}>
         <div className="l-container l-nav-inner">
           <div className="landing-logo">
             <img src="/logo.png" alt="Chefridge" className="landing-logo-img" />

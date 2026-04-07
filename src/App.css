@@ -114,14 +114,22 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    LANDING — NAV
    ═══════════════════════════════════════════ */
 .landing-nav {
-  position: sticky;
+  position: absolute;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 200;
-  background: rgba(255, 251, 245, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
-  padding: 1rem 0;
+  background: transparent;
+  padding: 16px 0;
+  transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease;
+  border-bottom: none;
+}
+.landing-nav.scrolled {
+  position: fixed;
+  background: rgba(20, 8, 2, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
 .l-nav-inner {
@@ -135,7 +143,13 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   align-items: center;
   gap: 0.6rem;
 }
-.landing-logo-img { height: 52px; width: auto; border-radius: 8px; display: block; }
+.landing-logo-img {
+  height: 52px;
+  width: auto;
+  border-radius: 8px;
+  display: block;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
 
 .landing-nav-right {
   display: flex;
@@ -143,19 +157,31 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 0.6rem;
 }
 
+/* Landing nav buttons: light on dark */
+.landing-nav .lang-toggle {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  background: transparent;
+}
+.landing-nav .lang-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+
 .btn-outline-sm {
   padding: 0.45rem 1.1rem;
-  border: 2px solid var(--border-h);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 99px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--primary);
+  color: #fff;
   background: transparent;
   transition: all var(--t);
 }
 .btn-outline-sm:hover {
-  border-color: var(--primary);
-  background: var(--primary-light);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-1px);
 }
 
@@ -164,7 +190,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    ═══════════════════════════════════════════ */
 .hero {
   background: linear-gradient(158deg, #1C0A00 0%, #3D1500 35%, #7C2D12 68%, #D4450C 100%);
-  padding: 7rem 0 6rem;
+  padding: 9rem 0 6rem;
   position: relative;
   overflow: hidden;
 }
@@ -1976,7 +2002,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
   /* Landing hero — full screen dark */
   .hero {
-    padding: 4rem 0 3rem;
+    padding: 6rem 0 3rem;
     min-height: 100dvh;
     display: flex;
     align-items: center;
@@ -2160,7 +2186,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 /* ── Mobile: ≤ 480px ── */
 @media (max-width: 480px) {
   .l-container { padding: 0 16px; }
-  .hero { padding: 3rem 0 2.5rem; }
+  .hero { padding: 5.5rem 0 2.5rem; }
 
   /* Meal plan — single column */
   .meal-plan-section { padding: 1.25rem 1rem 3rem; }
