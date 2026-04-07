@@ -144,9 +144,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 0.6rem;
 }
 .landing-logo-img {
-  height: 52px;
+  height: 156px;
   width: auto;
-  border-radius: 8px;
+  border-radius: 12px;
   display: block;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
 }
@@ -437,7 +437,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .cta-section h2 { color: #FFF7ED; font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 800; margin-bottom: 0.75rem; letter-spacing: -0.4px; }
 .cta-section p  { color: rgba(255,247,237,0.72); font-size: 1rem; margin-bottom: 2rem; }
 
-.btn-cta-outline {
+.btn-cta-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -445,9 +445,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   width: 100%;
   max-width: 360px;
   height: 56px;
-  background: #fff;
-  color: var(--primary);
-  border: 2px solid var(--primary);
+  background: #D4450C;
+  color: #fff;
+  border: none;
   border-radius: 16px;
   font-size: 1rem;
   font-weight: 700;
@@ -455,13 +455,14 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: all var(--t);
   font-family: inherit;
   margin-bottom: 1rem;
+  box-shadow: 0 8px 32px rgba(212, 69, 12, 0.4);
 }
-.btn-cta-outline:hover {
-  background: rgba(255, 255, 255, 0.9);
+.btn-cta-primary:hover {
+  background: #B93A0A;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 40px rgba(212, 69, 12, 0.5);
 }
-.btn-cta-outline:active { transform: scale(0.97); }
+.btn-cta-primary:active { transform: scale(0.97); }
 
 .landing-footer {
   background: #1C0A00;
@@ -932,7 +933,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: opacity var(--t);
 }
 .header-logo:hover { opacity: 0.8; }
-.header-logo-img { height: 52px; width: auto; border-radius: 6px; display: block; }
+.header-logo-img { height: 156px; width: auto; border-radius: 12px; display: block; }
 
 .header-nav {
   display: flex;
@@ -2032,7 +2033,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     letter-spacing: 0.3px;
   }
   .hero-badge { font-size: 0.72rem; }
-  .landing-logo-img { height: 44px; }
+  .landing-logo-img { height: 132px; }
 
   /* Landing sections */
   .features-section, .hiw-section, .cta-section, .reviews-section, .gallery-section { padding: 3.5rem 0; }
@@ -2073,7 +2074,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .header-email   { display: none; }
   .header-nav     { display: none; }
   .lang-toggle-sm { display: none; }
-  .header-logo-img { height: 44px; }
+  .header-logo-img { height: 132px; }
   .btn-logout { font-size: 0.75rem; padding: 0.4rem 0.75rem; min-height: 44px; display: flex; align-items: center; }
 
   /* Main content offset for fixed header */

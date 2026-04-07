@@ -755,10 +755,10 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
           <div className="cta-inner">
             <h2>{t.ctaTitle}</h2>
             <p>{t.ctaSub}</p>
-            <button className="btn-cta-outline" onClick={onTryFree}>
+            <button className="btn-cta-primary" onClick={onTryFree}>
               {t.heroCta} <span className="btn-arrow">→</span>
             </button>
-            <button className="btn-hero btn-hero-white" onClick={onGetStarted}>
+            <button className="btn-cta-primary" onClick={onGetStarted}>
               {t.ctaBtn} <span className="btn-arrow">→</span>
             </button>
           </div>
