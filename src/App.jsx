@@ -8,7 +8,7 @@ const COOKING_TIME_CONSTRAINTS = {
   express:   '15 minutes maximum au total (préparation + cuisson)',
   rapide:    '30 minutes maximum au total (préparation + cuisson)',
   normal:    '45 minutes maximum au total (préparation + cuisson)',
-  leisurely: "plus d'une heure — propose quelque chose d'élaboré si tu le souhaites",
+  leisurely: "plus d'une heure, propose quelque chose d'élaboré si tu le souhaites",
 }
 
 const UNITS = ['g', 'kg', 'L', 'mL', 'cl', 'unités', 'tasses', 'c. à soupe', 'c. à café', 'tranches', 'pincées']
@@ -56,7 +56,7 @@ const T = {
     heroBadge: '✨ Recettes personnalisées en 30 secondes',
     heroTitle1: 'Vous méritez mieux',
     heroTitle2: "que l'improvisation",
-    heroSub: "Entrez ce que vous avez dans votre frigo, choisissez votre style, et découvrez des recettes sur mesure — avec substitutions, macros et conseils de chef.",
+    heroSub: "Vos ingrédients. Votre style. Trois recettes en 30 secondes.",
     heroCta: 'Commencer à cuisiner',
     stat1Val: '10 000+', stat1Label: 'recettes générées',
     stat2Val: '5 000+', stat2Label: 'utilisateurs actifs',
@@ -66,7 +66,7 @@ const T = {
     features: [
       { icon: 'Sparkles', title: '3 propositions en secondes', desc: "L'IA génère 3 idées de recettes variées, adaptées à vos ingrédients, votre style de cuisine et votre temps disponible." },
       { icon: 'ShoppingCart', title: 'Ingrédients intelligents', desc: "Cochez les ingrédients complémentaires que vous avez. Les substitutions créatives s'occupent du reste." },
-      { icon: 'BarChart3', title: 'Macros nutritionnelles', desc: 'Calories, protéines, glucides et lipides estimés par portion — pour cuisiner sainement sans y penser.' },
+      { icon: 'BarChart3', title: 'Macros nutritionnelles', desc: 'Calories, protéines, glucides et lipides estimés par portion. Cuisinez sainement sans y penser.' },
     ],
     hiwLabel: 'Comment ça marche',
     hiwTitle: 'Quatre étapes, une recette parfaite',
@@ -109,7 +109,7 @@ const T = {
     newRecipe: '✨ Nouvelle recette', myRecipes: '❤️ Mes recettes', mealPlanNav: '📅 Plan semaine', logout: 'Déconnexion',
     step1Title: '🥦 Mes ingrédients', step1Sub: "Qu'est-ce qu'il y a dans votre frigo ?",
     ing1Placeholder: 'Ex: poulet, tomates, riz...', ingPlaceholder: 'Ingrédient...',
-    ingHint: '💡 Les quantités sont optionnelles — écris juste le nom de l\'ingrédient ou ajoute-les si tu veux plus de précision (ex: 300g de farine, 2 œufs)',
+    ingHint: '💡 Les quantités sont optionnelles, écris juste le nom de l\'ingrédient ou ajoute-les si tu veux plus de précision (ex: 300g de farine, 2 œufs)',
     addIngredient: '＋ Ajouter un ingrédient', removeIng: 'Supprimer',
     step2Title: '👥 Nombre de convives', step2Sub: 'Pour combien de personnes cuisinez-vous ?',
     person: 'personne', persons: 'personnes',
@@ -130,7 +130,7 @@ const T = {
     checkLoadingMsg: 'Analyse des ingrédients nécessaires...',
     recipeLoadingMsg: 'Le chef rédige la recette complète...',
     checkTitle: '🛒 Est-ce que tu as aussi ?',
-    checkSub: (name) => `Pour ${name} — coche les ingrédients que tu as`,
+    checkSub: (name) => `Pour ${name}, coche les ingrédients que tu as`,
     checkEmpty: "✅ Tu as tout ce qu'il faut !",
     checkNote: '💡 Les ingrédients non cochés seront remplacés par des substitutions créatives.',
     checkGenBtn: '👨‍🍳 Générer la recette complète',
@@ -194,7 +194,7 @@ const T = {
     shoppingListDelete: 'Supprimer',
     // Feature 1: Signup gate
     gateTitle: 'Continue à cuisiner gratuitement',
-    gateSub: 'Tu as utilisé tes 3 recettes offertes. Crée un compte — c\'est gratuit.',
+    gateSub: 'Tu as utilisé tes 3 recettes offertes. Crée un compte, c\'est gratuit.',
     gateSignup: 'Créer mon compte',
     gateLogin: 'Se connecter',
     // Feature 2: Pantry
@@ -254,7 +254,7 @@ const T = {
     heroBadge: '✨ Personalized recipes in 30 seconds',
     heroTitle1: 'You deserve better',
     heroTitle2: 'than improvisation',
-    heroSub: "Enter what's in your fridge, choose your style, and discover tailor-made recipes — with substitutions, macros and chef tips.",
+    heroSub: "Your ingredients. Your style. Three recipes in 30 seconds.",
     heroCta: 'Start cooking',
     stat1Val: '10,000+', stat1Label: 'recipes generated',
     stat2Val: '5,000+', stat2Label: 'active users',
@@ -264,7 +264,7 @@ const T = {
     features: [
       { icon: 'Sparkles', title: '3 proposals in seconds', desc: "AI generates 3 varied recipe ideas, tailored to your ingredients, cuisine style and available time." },
       { icon: 'ShoppingCart', title: 'Smart ingredients', desc: "Check off the complementary ingredients you have. Creative substitutions handle the rest." },
-      { icon: 'BarChart3', title: 'Nutritional macros', desc: 'Calories, proteins, carbs and fats estimated per serving — for healthy cooking without thinking about it.' },
+      { icon: 'BarChart3', title: 'Nutritional macros', desc: 'Calories, proteins, carbs and fats estimated per serving. Healthy cooking without thinking about it.' },
     ],
     hiwLabel: 'How it works',
     hiwTitle: 'Four steps, one perfect recipe',
@@ -307,7 +307,7 @@ const T = {
     newRecipe: '✨ New recipe', myRecipes: '❤️ My recipes', mealPlanNav: '📅 Meal Plan', logout: 'Sign out',
     step1Title: '🥦 My ingredients', step1Sub: "What's in your fridge?",
     ing1Placeholder: 'E.g. chicken, tomatoes, rice...', ingPlaceholder: 'Ingredient...',
-    ingHint: '💡 Quantities are optional — just type the ingredient name or add amounts for more precision (ex: 2 cups flour, 3 eggs)',
+    ingHint: '💡 Quantities are optional, just type the ingredient name or add amounts for more precision (ex: 2 cups flour, 3 eggs)',
     addIngredient: '＋ Add an ingredient', removeIng: 'Remove',
     step2Title: '👥 Number of guests', step2Sub: 'How many people are you cooking for?',
     person: 'person', persons: 'people',
@@ -328,7 +328,7 @@ const T = {
     checkLoadingMsg: 'Analysing required ingredients...',
     recipeLoadingMsg: 'The chef is writing the full recipe...',
     checkTitle: '🛒 Do you also have?',
-    checkSub: (name) => `For ${name} — check the ingredients you have`,
+    checkSub: (name) => `For ${name}, check the ingredients you have`,
     checkEmpty: '✅ You have everything you need!',
     checkNote: '💡 Unchecked ingredients will be replaced with creative substitutions.',
     checkGenBtn: '👨‍🍳 Generate full recipe',
@@ -392,7 +392,7 @@ const T = {
     shoppingListDelete: 'Delete',
     // Feature 1: Signup gate
     gateTitle: 'Keep cooking for free',
-    gateSub: 'You\'ve used your 3 free recipes. Create an account — it\'s free.',
+    gateSub: 'You\'ve used your 3 free recipes. Create an account, it\'s free.',
     gateSignup: 'Create my account',
     gateLogin: 'Sign in',
     // Feature 2: Pantry
@@ -606,7 +606,7 @@ function ReviewsCarousel({ reviews, label, title }) {
               <div key={i} className={`review-card carousel-card${i === current ? ' active' : ''}${i === (current - 1 + total) % total ? ' prev' : ''}${i === (current + 1) % total ? ' next' : ''}`}>
                 <div className="review-stars">★★★★★</div>
                 <p className="review-text">"{r.text}"</p>
-                <div className="review-author">— {r.name}</div>
+                <div className="review-author">{r.name}</div>
               </div>
             ))}
           </div>
@@ -1818,10 +1818,10 @@ Exact markdown, short steps:
 **Cuisine :** ${proposal.cuisine} | **Pour :** ${people} pers. | **Prép :** [X min] | **Cuisson :** [X min] | **Difficulté :** ${proposal.difficulte}
 
 ### 📋 Ingrédients
-- [ingredient : qty${unavailable.length ? ' — or [substitute]' : ''}]
+- [ingredient : qty${unavailable.length ? ' or [substitute]' : ''}]
 
 ### 👨‍🍳 Préparation
-1. [Step — concise]
+1. [Step, concise]
 
 ### 💡 Conseil du Chef
 [1 tip]
