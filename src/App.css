@@ -472,14 +472,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 .footer-logo {
-  height: 56px;
+  height: 156px;
   width: auto;
   opacity: 0.8;
   display: inline-block;
-  border-radius: 8px;
-}
-@media (max-width: 768px) {
-  .footer-logo { height: 48px; }
+  border-radius: 12px;
 }
 
 /* ═══════════════════════════════════════════
