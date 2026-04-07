@@ -696,7 +696,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
                 <div key={i} className="feature-card" style={{ animationDelay: `${i * 0.1}s` }}>
                   <div className="feature-title-row">
                     <h3>{f.title}</h3>
-                    <Icon size={20} color="#C2410C" strokeWidth={2} />
+                    <Icon size={20} color="#D4450C" strokeWidth={2} />
                   </div>
                   <p>{f.desc}</p>
                 </div>
@@ -717,7 +717,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
               return (
                 <div key={i} className="hiw-step" style={{ animationDelay: `${i * 0.1}s` }}>
                   <div className="hiw-num">{s.n}</div>
-                  <div className="hiw-icon"><Icon size={20} color="#C2410C" strokeWidth={2} /></div>
+                  <div className="hiw-icon"><Icon size={20} color="#D4450C" strokeWidth={2} /></div>
                   <p className="hiw-label">{s.label}</p>
                 </div>
               )

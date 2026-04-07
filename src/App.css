@@ -2,7 +2,7 @@
    DESIGN TOKENS
    ═══════════════════════════════════════════ */
 :root {
-  --primary:       #C2410C;
+  --primary:       #D4450C;
   --primary-h:     #9A3209;
   --primary-l:     #EA580C;
   --primary-light: rgba(194, 65, 12, 0.09);
@@ -163,7 +163,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    LANDING — HERO
    ═══════════════════════════════════════════ */
 .hero {
-  background: linear-gradient(158deg, #1C0A00 0%, #3D1500 35%, #7C2D12 68%, #C2410C 100%);
+  background: linear-gradient(158deg, #1C0A00 0%, #3D1500 35%, #7C2D12 68%, #D4450C 100%);
   padding: 7rem 0 6rem;
   position: relative;
   overflow: hidden;
@@ -251,8 +251,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   animation: fadeInUp 0.55s ease 0.28s both;
 }
 .hero-stat { display: flex; flex-direction: column; }
-.hero-stat strong { font-size: 1.75rem; font-weight: 900; color: #FDBA74; line-height: 1; }
-.hero-stat span { font-size: 0.77rem; color: rgba(255,247,237,0.55); margin-top: 0.2rem; font-weight: 500; }
+.hero-stat strong { font-size: 1.75rem; font-weight: 900; color: rgba(255, 255, 255, 0.9); line-height: 1; }
+.hero-stat span { font-size: 0.77rem; color: rgba(255, 255, 255, 0.6); margin-top: 0.2rem; font-weight: 500; }
 .hero-stat-sep { width: 1px; height: 32px; background: rgba(255,247,237,0.15); }
 
 /* ═══════════════════════════════════════════
@@ -303,13 +303,13 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 0.75rem;
   margin-bottom: 0.6rem;
 }
-.feature-card h3 { font-size: 1.125rem; font-weight: 700; color: #1a1a1a; margin: 0; line-height: 1.35; }
+.feature-card h3 { font-size: 1.125rem; font-weight: 700; color: #2D1F1A; margin: 0; line-height: 1.35; }
 .feature-card p { color: #666; font-size: 0.9375rem; line-height: 1.6; margin: 0; }
 
 /* ═══════════════════════════════════════════
    LANDING — HOW IT WORKS
    ═══════════════════════════════════════════ */
-.hiw-section { background: var(--bg-alt); padding: 6rem 0; }
+.hiw-section { background: #FAFAF8; padding: 6rem 0; }
 .hiw-title { margin-bottom: 2rem; }
 
 .hiw-steps {
@@ -342,7 +342,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   background: rgba(255, 250, 245, 1);
   border-radius: 14px;
   padding: 18px 20px;
-  border-left: 5px solid #C2410C;
+  border-left: 5px solid #D4450C;
   position: relative;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease;
@@ -357,7 +357,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   height: 38px;
   min-width: 38px;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #C2410C, #E55A1C);
+  background: linear-gradient(135deg, #D4450C, #E55A1C);
   color: #fff;
   border-radius: 50%;
   display: flex;
@@ -386,7 +386,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    LANDING — CTA + FOOTER
    ═══════════════════════════════════════════ */
 .cta-section {
-  background: linear-gradient(135deg, #7C2D12 0%, #C2410C 100%);
+  background: linear-gradient(135deg, #7C2D12 0%, #D4450C 100%);
   padding: 6rem 0;
 }
 .cta-inner { text-align: center; }
@@ -867,10 +867,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 251, 245, 0.9);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
+  background: rgba(20, 8, 2, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 0.75rem 0;
 }
 
@@ -901,11 +901,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   border-radius: 99px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.6);
   transition: all var(--t);
 }
-.header-nav-btn:hover { background: var(--primary-light); color: var(--primary); }
-.header-nav-btn.active { background: var(--primary-light); color: var(--primary); }
+.header-nav-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.header-nav-btn.active { background: rgba(212, 69, 12, 0.2); color: #FB923C; }
 
 .header-user {
   display: flex;
@@ -915,7 +915,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .header-email {
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.5);
   max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -923,14 +923,14 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .btn-logout {
   padding: 0.4rem 0.9rem;
-  border: 1.5px solid var(--border-h);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 99px;
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.6);
   transition: all var(--t);
 }
-.btn-logout:hover { border-color: var(--danger); color: var(--danger); background: #FEF2F2; }
+.btn-logout:hover { border-color: var(--danger); color: #FF6B6B; background: rgba(220, 38, 38, 0.1); }
 
 /* ═══════════════════════════════════════════
    LAYOUT
@@ -1608,8 +1608,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   background: var(--primary-light);
 }
 .diet-card.diet-active {
-  border-color: var(--primary);
-  background: var(--primary);
+  border-color: #4A7C59;
+  background: #4A7C59;
   color: #fff;
 }
 .diet-emoji { font-size: 1rem; }
@@ -2014,7 +2014,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     height: 60px;
     padding: 0;
     padding-top: env(safe-area-inset-top, 0);
-    background: rgba(255, 251, 245, 0.92);
+    background: rgba(20, 8, 2, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     display: flex;
@@ -2277,8 +2277,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: all var(--t);
 }
 .shopping-checkbox-input:checked + .shopping-checkbox-custom {
-  background: #059669;
-  border-color: #059669;
+  background: #4A7C59;
+  border-color: #4A7C59;
 }
 .shopping-checkbox-input:checked + .shopping-checkbox-custom::after {
   content: '';
@@ -2477,7 +2477,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: #1a1a1a;
+  background: #2D1F1A;
   color: #F0F0F0;
   display: flex;
   flex-direction: column;
