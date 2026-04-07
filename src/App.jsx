@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
-import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Download, Link2, Check } from 'lucide-react'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Download, Link2, Check, Mic, Volume2 } from 'lucide-react'
 // jsPDF loaded dynamically on export to reduce initial bundle
 
 /* Claude prompt constraints */
@@ -500,7 +500,7 @@ function RecipeModal({ recipe, onClose, t }) {
     .map(l => l.replace(/^\d+\.[ \t]*/, ''))
 
   if (showCookMode && steps.length) {
-    return <CookingMode steps={steps} t={t} onExit={() => setShowCookMode(false)} />
+    return <CookingMode steps={steps} t={t} lang={t.cookingModeStep(1,1).includes('Étape') ? 'fr' : 'en'} onExit={() => setShowCookMode(false)} />
   }
 
   return (
@@ -1083,11 +1083,18 @@ function SignupGateModal({ t, onClose, onSignup, onLogin, message }) {
 /* ════════════════════════════════════════════
    COOKING MODE (Feature 4)
    ════════════════════════════════════════════ */
-function CookingMode({ steps, t, onExit }) {
+function CookingMode({ steps, t, onExit, lang }) {
   const [current, setCurrent] = useState(0)
+  const [handsFree, setHandsFree] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
+  const [listening, setListening] = useState(false)
+  const recRef = useRef(null)
   const total = steps.length
   const progress = ((current + 1) / total) * 100
+  const voiceLang = lang === 'fr' ? 'fr-FR' : 'en-US'
+  const srSupported = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
 
+  // Keyboard nav
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); setCurrent(c => Math.min(c + 1, total - 1)) }
@@ -1098,6 +1105,59 @@ function CookingMode({ steps, t, onExit }) {
     return () => document.removeEventListener('keydown', onKey)
   }, [total, onExit])
 
+  // Speak current step when hands-free is on
+  const speak = (text) => {
+    window.speechSynthesis.cancel()
+    const utter = new SpeechSynthesisUtterance(text)
+    utter.lang = voiceLang
+    utter.rate = 0.9
+    utter.onstart = () => setSpeaking(true)
+    utter.onend = () => { setSpeaking(false); if (handsFree && srSupported) startListening() }
+    window.speechSynthesis.speak(utter)
+  }
+
+  useEffect(() => {
+    if (handsFree) speak(steps[current])
+    return () => window.speechSynthesis.cancel()
+  }, [current, handsFree])
+
+  // Cleanup on unmount
+  useEffect(() => () => {
+    window.speechSynthesis.cancel()
+    recRef.current?.abort()
+  }, [])
+
+  const startListening = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SR) return
+    recRef.current?.abort()
+    const rec = new SR()
+    rec.lang = voiceLang
+    rec.interimResults = false
+    rec.maxAlternatives = 1
+    rec.onstart = () => setListening(true)
+    rec.onresult = (e) => {
+      const cmd = e.results[0][0].transcript.toLowerCase().trim()
+      if (/suivant|next|prochain/.test(cmd)) setCurrent(c => Math.min(c + 1, total - 1))
+      else if (/pr[eé]c[eé]dent|previous|back/.test(cmd)) setCurrent(c => Math.max(c - 1, 0))
+      else if (/r[eé]p[eè]te|repeat|encore/.test(cmd)) speak(steps[current])
+      else if (/stop|quitter|quit|exit/.test(cmd)) onExit()
+    }
+    rec.onend = () => { setListening(false); recRef.current = null }
+    rec.onerror = () => { setListening(false); recRef.current = null }
+    recRef.current = rec
+    rec.start()
+  }
+
+  const toggleHandsFree = () => {
+    if (handsFree) {
+      window.speechSynthesis.cancel()
+      recRef.current?.abort()
+      setSpeaking(false); setListening(false)
+    }
+    setHandsFree(h => !h)
+  }
+
   return (
     <div className="cooking-mode">
       <div className="cooking-mode-progress">
@@ -1105,13 +1165,27 @@ function CookingMode({ steps, t, onExit }) {
       </div>
       <div className="cooking-mode-header">
         <span className="cooking-mode-counter">{t.cookingModeStep(current + 1, total)}</span>
-        <button className="cooking-mode-exit" onClick={onExit}>
-          <X size={20} /> {t.cookingModeExit}
-        </button>
+        <div className="cooking-mode-header-right">
+          <button className={`handsfree-btn${handsFree ? ' active' : ''}`} onClick={toggleHandsFree}>
+            {speaking ? <Volume2 size={18} className="pulse-icon" /> : <Mic size={18} className={listening ? 'pulse-icon' : ''} />}
+            <span>{handsFree ? 'ON' : (lang === 'fr' ? 'Mains libres' : 'Hands-free')}</span>
+          </button>
+          <button className="cooking-mode-exit" onClick={onExit}>
+            <X size={20} /> {t.cookingModeExit}
+          </button>
+        </div>
       </div>
       <div className="cooking-mode-body">
         <p className="cooking-mode-step-text">{steps[current]}</p>
       </div>
+      {handsFree && (
+        <div className="handsfree-hint">
+          {speaking ? (lang === 'fr' ? 'Lecture en cours...' : 'Reading aloud...') :
+           listening ? (lang === 'fr' ? "J'écoute..." : 'Listening...') :
+           !srSupported ? (lang === 'fr' ? 'Navigation vocale non supportée sur ce navigateur. Utilise les boutons.' : 'Voice nav not supported on this browser. Use buttons.') :
+           (lang === 'fr' ? "Dis 'Suivant', 'Précédent' ou 'Répète'" : "Say 'Next', 'Previous' or 'Repeat'")}
+        </div>
+      )}
       <div className="cooking-mode-nav">
         <button
           className="cooking-mode-btn"
@@ -2600,6 +2674,7 @@ Exact markdown, short steps:
         <CookingMode
           steps={recipeText.split('\n').filter(l => /^\d+\.[ \t]/.test(l)).map(l => l.replace(/^\d+\.[ \t]*/, ''))}
           t={t}
+          lang={lang}
           onExit={() => setCookingMode(false)}
         />
       )}

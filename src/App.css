@@ -2699,6 +2699,47 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   text-transform: uppercase;
 }
 
+.cooking-mode-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Hands-free button */
+.handsfree-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 36px;
+}
+.handsfree-btn:hover { background: rgba(255, 255, 255, 0.08); }
+.handsfree-btn.active {
+  background: #D4450C;
+  border-color: #D4450C;
+  color: #fff;
+}
+.pulse-icon { animation: pulse-glow 1.2s ease-in-out infinite; }
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
+}
+
+.handsfree-hint {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 0 1rem 0.5rem;
+}
+
 .cooking-mode-exit {
   display: flex;
   align-items: center;
