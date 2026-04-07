@@ -711,7 +711,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
               return (
                 <div key={i} className="hiw-step">
                   <div className="hiw-num">{s.n}</div>
-                  <div className="hiw-icon"><Icon size={20} color="#C2410C" strokeWidth={2} /></div>
+                  <div className="hiw-icon"><Icon size={20} color="#D4450C" strokeWidth={2} /></div>
                   <p className="hiw-label">{s.label}</p>
                 </div>
               )

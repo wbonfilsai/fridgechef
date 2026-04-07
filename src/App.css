@@ -2,25 +2,25 @@
    DESIGN TOKENS
    ═══════════════════════════════════════════ */
 :root {
-  --primary:       #C2410C;
+  --primary:       #D4450C;
   --primary-h:     #9A3209;
   --primary-l:     #EA580C;
-  --primary-light: rgba(194, 65, 12, 0.09);
-  --primary-ring:  rgba(194, 65, 12, 0.22);
+  --primary-light: rgba(212, 69, 12, 0.09);
+  --primary-ring:  rgba(212, 69, 12, 0.22);
   --accent:        #F97316;
   --bg:            #FFFBF5;
   --bg-alt:        #FFF3E8;
   --card:          #FFFFFF;
-  --text:          #1A0F0A;
+  --text:          #2D1F1A;
   --text-muted:    #6B4F3A;
   --border:        #F5DDD0;
   --border-h:      #E8C4AF;
   --success:       #059669;
   --danger:        #DC2626;
-  --shadow:        0 2px 16px rgba(194, 65, 12, 0.07);
-  --shadow-md:     0 6px 28px rgba(194, 65, 12, 0.12);
-  --shadow-lg:     0 16px 56px rgba(194, 65, 12, 0.18);
-  --shadow-xl:     0 24px 72px rgba(194, 65, 12, 0.24);
+  --shadow:        0 2px 16px rgba(212, 69, 12, 0.07);
+  --shadow-md:     0 6px 28px rgba(212, 69, 12, 0.12);
+  --shadow-lg:     0 16px 56px rgba(212, 69, 12, 0.18);
+  --shadow-xl:     0 24px 72px rgba(212, 69, 12, 0.24);
   --r:             18px;
   --r-sm:          12px;
   --r-xs:          8px;
@@ -117,10 +117,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   position: sticky;
   top: 0;
   z-index: 200;
-  background: rgba(255, 251, 245, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
+  background: rgba(20, 8, 2, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 1rem 0;
 }
 
@@ -145,17 +145,18 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 .btn-outline-sm {
   padding: 0.45rem 1.1rem;
-  border: 2px solid var(--border-h);
+  border: 2px solid rgba(255, 255, 255, 0.25);
   border-radius: 99px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--primary);
+  color: rgba(255, 255, 255, 0.9);
   background: transparent;
   transition: all var(--t);
 }
 .btn-outline-sm:hover {
   border-color: var(--primary);
-  background: var(--primary-light);
+  background: rgba(212, 69, 12, 0.18);
+  color: #fff;
   transform: translateY(-1px);
 }
 
@@ -163,7 +164,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    LANDING — HERO
    ═══════════════════════════════════════════ */
 .hero {
-  background: linear-gradient(158deg, #1C0A00 0%, #3D1500 35%, #7C2D12 68%, #C2410C 100%);
+  background: linear-gradient(158deg, #1C0A00 0%, #3D1500 35%, #7C2D12 68%, #D4450C 100%);
   padding: 7rem 0 6rem;
   position: relative;
   overflow: hidden;
@@ -251,8 +252,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   animation: fadeInUp 0.55s ease 0.28s both;
 }
 .hero-stat { display: flex; flex-direction: column; }
-.hero-stat strong { font-size: 1.75rem; font-weight: 900; color: #FDBA74; line-height: 1; }
-.hero-stat span { font-size: 0.77rem; color: rgba(255,247,237,0.55); margin-top: 0.2rem; font-weight: 500; }
+.hero-stat strong { font-size: 1.75rem; font-weight: 900; color: rgba(255,255,255,0.9); line-height: 1; }
+.hero-stat span { font-size: 0.77rem; color: rgba(255,255,255,0.6); margin-top: 0.2rem; font-weight: 500; }
 .hero-stat-sep { width: 1px; height: 32px; background: rgba(255,247,237,0.15); }
 
 /* ═══════════════════════════════════════════
@@ -302,7 +303,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 /* ═══════════════════════════════════════════
    LANDING — HOW IT WORKS
    ═══════════════════════════════════════════ */
-.hiw-section { background: var(--bg-alt); padding: 6rem 0; }
+.hiw-section { background: #FAFAF8; padding: 6rem 0; }
 .hiw-title { margin-bottom: 2rem; }
 
 .hiw-steps {
@@ -335,7 +336,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   background: rgba(255,255,255,0.7);
   border-radius: 12px;
   padding: 16px;
-  border-left: 4px solid #C2410C;
+  border-left: 4px solid #D4450C;
   position: relative;
 }
 .hiw-num {
@@ -343,7 +344,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   height: 36px;
   min-width: 36px;
   flex-shrink: 0;
-  background: #C2410C;
+  background: #D4450C;
   color: #fff;
   border-radius: 50%;
   display: flex;
@@ -371,7 +372,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    LANDING — CTA + FOOTER
    ═══════════════════════════════════════════ */
 .cta-section {
-  background: linear-gradient(135deg, #7C2D12 0%, #C2410C 100%);
+  background: linear-gradient(135deg, #7C2D12 0%, #D4450C 100%);
   padding: 6rem 0;
 }
 .cta-inner { text-align: center; }
@@ -1593,8 +1594,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   background: var(--primary-light);
 }
 .diet-card.diet-active {
-  border-color: var(--primary);
-  background: var(--primary);
+  border-color: #4A7C59;
+  background: #4A7C59;
   color: #fff;
 }
 .diet-emoji { font-size: 1rem; }
@@ -2262,8 +2263,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: all var(--t);
 }
 .shopping-checkbox-input:checked + .shopping-checkbox-custom {
-  background: #059669;
-  border-color: #059669;
+  background: #4A7C59;
+  border-color: #4A7C59;
 }
 .shopping-checkbox-input:checked + .shopping-checkbox-custom::after {
   content: '';
