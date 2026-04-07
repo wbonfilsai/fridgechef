@@ -79,7 +79,7 @@ const T = {
     ctaTitle: 'Prêt à transformer votre frigo ?',
     ctaSub: 'Gratuit, rapide et intelligent. Des recettes en 30 secondes.',
     ctaBtn: 'Créer mon compte',
-    footerText: 'Cuisinez avec passion 🔥 — FridgeChef',
+    footerText: '',
     reviewsLabel: 'Ils nous font confiance',
     reviewsTitle: 'Ce que disent nos utilisateurs',
     galleryLabel: 'Nos utilisateurs cuisinent',
@@ -277,7 +277,7 @@ const T = {
     ctaTitle: 'Ready to transform your fridge?',
     ctaSub: 'Free, fast and smart. Recipes in 30 seconds.',
     ctaBtn: 'Create my account',
-    footerText: 'Cook with passion 🔥 — FridgeChef',
+    footerText: '',
     reviewsLabel: 'Trusted by home cooks',
     reviewsTitle: 'What our users say',
     galleryLabel: 'Our users are cooking',
@@ -741,7 +741,10 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
           <div className="cta-inner">
             <h2>{t.ctaTitle}</h2>
             <p>{t.ctaSub}</p>
-            <button className="btn-hero btn-hero-white" onClick={onTryFree}>
+            <button className="btn-cta-outline" onClick={onTryFree}>
+              {t.heroCta} <span className="btn-arrow">→</span>
+            </button>
+            <button className="btn-hero btn-hero-white" onClick={onGetStarted}>
               {t.ctaBtn} <span className="btn-arrow">→</span>
             </button>
           </div>
@@ -750,7 +753,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
 
       <footer className="landing-footer">
         <div className="l-container">
-          <p>{t.footerText}</p>
+          <img src="/logo.png" alt="Chefridge" className="footer-logo" />
         </div>
       </footer>
     </div>
@@ -2298,7 +2301,7 @@ Exact markdown, short steps:
 
       <footer className="footer">
         <div className="container">
-          <p>{t.footerText}</p>
+          <img src="/logo.png" alt="Chefridge" className="footer-logo" />
         </div>
       </footer>
 
