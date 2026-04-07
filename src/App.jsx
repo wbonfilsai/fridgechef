@@ -197,6 +197,10 @@ const T = {
     gateSub: 'Tu as utilisé tes 3 recettes offertes. Crée un compte, c\'est gratuit.',
     gateSignup: 'Créer mon compte',
     gateLogin: 'Se connecter',
+    // Pro limit
+    proLimitTitle: 'Limite atteinte',
+    proLimitSub: 'Les comptes gratuits peuvent sauvegarder 10 recettes. Passe à Pro pour une bibliothèque illimitée.',
+    proLimitBtn: 'Passer à Pro',
     // Feature 2: Pantry
     clearPantry: 'Effacer le frigo',
     pantryCleared: 'Frigo vidé !',
@@ -395,6 +399,10 @@ const T = {
     gateSub: 'You\'ve used your 3 free recipes. Create an account, it\'s free.',
     gateSignup: 'Create my account',
     gateLogin: 'Sign in',
+    // Pro limit
+    proLimitTitle: 'Limit reached',
+    proLimitSub: 'Free accounts can save 10 recipes. Upgrade to Pro for unlimited storage.',
+    proLimitBtn: 'Upgrade to Pro',
     // Feature 2: Pantry
     clearPantry: 'Clear fridge',
     pantryCleared: 'Fridge cleared!',
@@ -1569,6 +1577,7 @@ export default function App() {
   const [showAuth, setShowAuth]       = useState(false)
   const [showGate, setShowGate]       = useState(false)
   const [gateMessage, setGateMessage] = useState('')
+  const [showProLimit, setShowProLimit] = useState(false)
   const [authInitTab, setAuthInitTab] = useState('login')
 
   /* Form */
@@ -1970,6 +1979,12 @@ Exact markdown, short steps:
   const saveRecipe = async () => {
     if (!user || !recipeText || !selectedProposal) return
     setSaving(true)
+    // Check free limit (10 recipes)
+    const { data: profile } = await supabase.from('profiles').select('is_pro').eq('id', user.id).single()
+    if (!profile?.is_pro) {
+      const { count } = await supabase.from('saved_recipes').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
+      if (count >= 10) { setSaving(false); setShowProLimit(true); return }
+    }
     const { error: err } = await supabase.from('saved_recipes').insert({
       user_id:    user.id,
       title:      selectedProposal.nom,
@@ -2340,6 +2355,19 @@ Exact markdown, short steps:
           t={t}
           onExit={() => setCookingMode(false)}
         />
+      )}
+      {showProLimit && (
+        <div className="modal-overlay" onClick={() => setShowProLimit(false)}>
+          <div className="modal-card gate-modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowProLimit(false)} aria-label="Fermer">×</button>
+            <div className="gate-illustration">👑</div>
+            <h2 className="modal-title">{t.proLimitTitle}</h2>
+            <p className="modal-sub">{t.proLimitSub}</p>
+            <div className="gate-actions">
+              <button className="modal-submit" onClick={() => setShowProLimit(false)}>{t.proLimitBtn}</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
