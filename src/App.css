@@ -203,24 +203,19 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .hero .l-container { position: relative; z-index: 1; }
 
 .hero-badge {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(249, 115, 22, 0.18);
-  border: 1px solid rgba(249, 115, 22, 0.35);
-  color: #FED7AA;
-  padding: 0.32rem 0.9rem;
-  border-radius: 99px;
-  font-size: 0.77rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.2px;
+  margin-bottom: 1.25rem;
   animation: fadeInUp 0.5s ease both;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .hero-title {
@@ -229,6 +224,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   color: #FFF7ED;
   line-height: 1.12;
   letter-spacing: -1.5px;
+  margin-top: 32px;
   margin-bottom: 1.25rem;
   animation: fadeInUp 0.55s ease 0.08s both;
 }
@@ -450,8 +446,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   width: 100%;
   max-width: 360px;
   height: 56px;
-  background: #D4450C;
-  color: #fff;
+  background: #fff;
+  color: #D4450C;
   border: none;
   border-radius: 16px;
   font-size: 1rem;
@@ -460,12 +456,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: all var(--t);
   font-family: inherit;
   margin-bottom: 1rem;
-  box-shadow: 0 8px 32px rgba(212, 69, 12, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 .btn-cta-primary:hover {
-  background: #B93A0A;
+  background: #FFF7ED;
   transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(212, 69, 12, 0.5);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.22);
 }
 .btn-cta-primary:active { transform: scale(0.97); }
 
