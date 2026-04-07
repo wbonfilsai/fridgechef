@@ -1,6 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { Redis } from '@upstash/redis'
 
 export const config = { maxDuration: 300 }
+
+const ANON_LIMIT = 3
+const WEEK_SECONDS = 604800
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -8,9 +12,40 @@ export default async function handler(req, res) {
   }
 
   if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'your-key-here') {
-    return res.status(500).json({
-      error: 'ANTHROPIC_API_KEY non configurée.'
-    })
+    return res.status(500).json({ error: 'ANTHROPIC_API_KEY non configurée.' })
+  }
+
+  // Rate limiting: check if user is authenticated
+  const authHeader = req.headers['authorization']
+  const isAuthenticated = authHeader && authHeader.startsWith('Bearer ') && authHeader.length > 20
+
+  if (!isAuthenticated && process.env.UPSTASH_REDIS_REST_URL) {
+    try {
+      const redis = Redis.fromEnv()
+      const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim()
+      const key = `anon_gen:${ip}`
+
+      const data = await redis.get(key)
+
+      if (!data) {
+        await redis.set(key, { count: 1, first_gen: Date.now() }, { ex: WEEK_SECONDS })
+      } else {
+        const parsed = typeof data === 'string' ? JSON.parse(data) : data
+        if (parsed.count >= ANON_LIMIT) {
+          const resetIn = parsed.first_gen + (WEEK_SECONDS * 1000) - Date.now()
+          return res.status(429).json({
+            error: 'limit_reached',
+            message_fr: 'Tu as utilisé tes 3 recettes offertes cette semaine. Crée un compte gratuit pour continuer.',
+            message_en: "You've used your 3 free recipes this week. Create a free account to continue.",
+            reset_in: Math.max(0, resetIn),
+          })
+        }
+        await redis.set(key, { count: parsed.count + 1, first_gen: parsed.first_gen }, { ex: WEEK_SECONDS })
+      }
+    } catch (kvErr) {
+      // If KV fails, allow the request (fail open)
+      console.error('KV rate limit error:', kvErr.message)
+    }
   }
 
   const { prompt, model, maxTokens } = req.body

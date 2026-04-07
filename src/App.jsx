@@ -839,14 +839,14 @@ function AuthModal({ t, onClose, onSuccess, initialTab }) {
 /* ════════════════════════════════════════════
    SIGNUP GATE MODAL (Feature 1)
    ════════════════════════════════════════════ */
-function SignupGateModal({ t, onClose, onSignup, onLogin }) {
+function SignupGateModal({ t, onClose, onSignup, onLogin, message }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card gate-modal" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose} aria-label="Fermer">×</button>
         <div className="gate-illustration">🔒</div>
         <h2 className="modal-title">{t.gateTitle}</h2>
-        <p className="modal-sub">{t.gateSub}</p>
+        <p className="modal-sub">{message || t.gateSub}</p>
         <div className="gate-actions">
           <button className="modal-submit" onClick={onSignup}>{t.gateSignup}</button>
           <button className="gate-login-btn" onClick={onLogin}>{t.gateLogin}</button>
@@ -1568,6 +1568,7 @@ export default function App() {
   const [view, setView]               = useState('landing')
   const [showAuth, setShowAuth]       = useState(false)
   const [showGate, setShowGate]       = useState(false)
+  const [gateMessage, setGateMessage] = useState('')
   const [authInitTab, setAuthInitTab] = useState('login')
 
   /* Form */
@@ -1617,12 +1618,9 @@ export default function App() {
       setAuthLoading(false)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const prevUser = user
       setUser(session?.user ?? null)
       if (session?.user) {
         setView('app'); setShowAuth(false); setShowGate(false)
-        // Reset anonymous generation counter on signup
-        if (!prevUser) localStorage.setItem('chefridge_gen_count', '0')
       } else {
         setView('landing')
       }
@@ -1631,10 +1629,6 @@ export default function App() {
   }, [])
 
   const handleLogout = () => { supabase.auth.signOut(); setView('landing') }
-
-  /* Anonymous generation counter (Feature 1) */
-  const getGenCount = () => parseInt(localStorage.getItem('chefridge_gen_count') || '0', 10)
-  const incrementGenCount = () => localStorage.setItem('chefridge_gen_count', String(getGenCount() + 1))
 
   /* Pantry persistence (Feature 2) */
   const savePantryToSupabase = async (validIngredients) => {
@@ -1743,14 +1737,25 @@ export default function App() {
 
   /* SSE helper */
   const streamSSE = async (prompt, onChunk, signal, model = 'claude-sonnet-4-6', maxTokens = 2000) => {
+    const headers = { 'Content-Type': 'application/json' }
+    const session = (await supabase.auth.getSession()).data.session
+    if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
+
     const res = await fetch('/api/generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ prompt, model, maxTokens }),
       signal,
     })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
+      if (res.status === 429 && data.error === 'limit_reached') {
+        const err = new Error(data.error)
+        err.rateLimited = true
+        err.messageFr = data.message_fr
+        err.messageEn = data.message_en
+        throw err
+      }
       throw new Error(data.error || `Erreur serveur (${res.status})`)
     }
     const reader = res.body.getReader()
@@ -1848,9 +1853,6 @@ Exact markdown, short steps:
     const valid = ingredients.filter(i => i.name.trim())
     if (!valid.length) { setError(lang === 'fr' ? 'Veuillez ajouter au moins un ingrédient !' : 'Please add at least one ingredient!'); return }
 
-    // Feature 1: Anonymous generation gate
-    if (!user && getGenCount() >= 3) { setShowGate(true); return }
-
     setError(''); setSaved(false)
     setPhase('proposals-loading')
     setProposals([]); setSelectedIdx(null); setSelectedProposal(null)
@@ -1865,13 +1867,15 @@ Exact markdown, short steps:
       const parsed = JSON.parse(match[0])
       if (!Array.isArray(parsed) || !parsed.length) throw new Error(lang === 'fr' ? 'Réponse invalide. Réessayez.' : 'Invalid response. Please retry.')
       setProposals(parsed); setPhase('proposals')
-      // Increment anonymous counter after success
-      if (!user) incrementGenCount()
-      // Save pantry (Feature 2)
       savePantryToSupabase(valid)
       setTimeout(() => proposalsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch (err) {
-      if (err.name !== 'AbortError') setError(`❌ ${err.message}`)
+      if (err.rateLimited) {
+        setGateMessage(lang === 'fr' ? err.messageFr : err.messageEn)
+        setShowGate(true)
+      } else if (err.name !== 'AbortError') {
+        setError(`❌ ${err.message}`)
+      }
       setPhase('idle')
     } finally { abortRef.current = null }
   }
@@ -2324,9 +2328,10 @@ Exact markdown, short steps:
       {showGate && (
         <SignupGateModal
           t={t}
-          onClose={() => setShowGate(false)}
-          onSignup={() => { setShowGate(false); setShowAuth(true); setAuthInitTab('signup') }}
-          onLogin={() => { setShowGate(false); setShowAuth(true); setAuthInitTab('login') }}
+          message={gateMessage}
+          onClose={() => { setShowGate(false); setGateMessage('') }}
+          onSignup={() => { setShowGate(false); setGateMessage(''); setShowAuth(true); setAuthInitTab('signup') }}
+          onLogin={() => { setShowGate(false); setGateMessage(''); setShowAuth(true); setAuthInitTab('login') }}
         />
       )}
       {cookingMode && recipeText && (
