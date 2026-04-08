@@ -2039,7 +2039,7 @@ export default function App() {
       .filter(i => !i.checked)
       .map(i => {
         const label = i.purchase_unit
-          ? `${i.purchase_qty || 1} ${i.purchase_unit} — ${i.name}`
+          ? `${i.purchase_unit} — ${i.name}`
           : i.note ? `${i.name} (${i.note})` : i.name
         return { name: label, checked: false, importance: i.importance || 'essentiel' }
       })
