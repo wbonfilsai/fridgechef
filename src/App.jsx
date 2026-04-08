@@ -1429,7 +1429,7 @@ function SavedRecipesView({ t, onNavigate }) {
             <div className="saved-empty-illustration">🍽️</div>
             <h3>{t.savedEmptyTitle}</h3>
             <p>{t.savedEmptyDesc}</p>
-            <button className="gen-btn saved-empty-btn" onClick={() => onNavigate('app')}><span>✨</span> {t.savedNewRecipeBtn}</button>
+            <button className="gen-btn saved-empty-btn" onClick={() => onNavigate('app')}>{t.savedNewRecipeBtn}</button>
           </div>
         ) : (
           <>
