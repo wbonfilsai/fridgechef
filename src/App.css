@@ -996,7 +996,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: opacity var(--t);
 }
 .header-logo:hover { opacity: 0.8; }
-.header-logo-img { height: 48px; width: auto; border-radius: 8px; display: block; }
+.header-logo-img { height: 156px; width: auto; border-radius: 12px; display: block; }
 
 .header-nav {
   display: flex;
@@ -2137,7 +2137,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     display: flex;
     align-items: center;
   }
-  .hero-content { padding-top: 48px; }
+  .hero-content { padding-top: 120px; }
   .hero-title {
     font-size: clamp(28px, 7vw, 52px);
     letter-spacing: -0.8px;
@@ -2163,7 +2163,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     letter-spacing: 0.3px;
   }
   .hero-badge { font-size: 0.72rem; }
-  .landing-logo-img { height: 48px; border-radius: 8px; }
+  .landing-logo-img { height: 156px; border-radius: 12px; }
 
   /* Landing sections */
   .features-section, .hiw-section, .cta-section, .reviews-section, .gallery-section { padding: 3.5rem 0; }
@@ -2204,7 +2204,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .header-email   { display: none; }
   .header-nav     { display: none; }
   .lang-toggle-sm { display: none; }
-  .header-logo-img { height: 48px; }
+  .header-logo-img { height: 156px; border-radius: 12px; }
   .btn-logout { font-size: 0.75rem; padding: 0.4rem 0.75rem; min-height: 44px; display: flex; align-items: center; }
 
   /* Main content offset for fixed header */
