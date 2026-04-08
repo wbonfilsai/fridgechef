@@ -996,7 +996,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: opacity var(--t);
 }
 .header-logo:hover { opacity: 0.8; }
-.header-logo-img { height: 156px; width: auto; border-radius: 12px; display: block; }
+.header-logo-img { height: 48px; width: auto; border-radius: 8px; display: block; }
 
 .header-nav {
   display: flex;
@@ -2137,6 +2137,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     display: flex;
     align-items: center;
   }
+  .hero-content { padding-top: 48px; }
   .hero-title {
     font-size: clamp(28px, 7vw, 52px);
     letter-spacing: -0.8px;
@@ -2162,7 +2163,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     letter-spacing: 0.3px;
   }
   .hero-badge { font-size: 0.72rem; }
-  .landing-logo-img { height: 156px; }
+  .landing-logo-img { height: 48px; border-radius: 8px; }
 
   /* Landing sections */
   .features-section, .hiw-section, .cta-section, .reviews-section, .gallery-section { padding: 3.5rem 0; }
@@ -2203,7 +2204,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .header-email   { display: none; }
   .header-nav     { display: none; }
   .lang-toggle-sm { display: none; }
-  .header-logo-img { height: 156px; }
+  .header-logo-img { height: 48px; }
   .btn-logout { font-size: 0.75rem; padding: 0.4rem 0.75rem; min-height: 44px; display: flex; align-items: center; }
 
   /* Main content offset for fixed header */
@@ -2369,7 +2370,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .add-missing-btn { margin-bottom: 0.75rem; }
 
 /* Shopping page card */
-.shopping-card { max-width: 640px; margin: 0 auto; }
+.shopping-card { max-width: 640px; margin: 0 auto; overflow: hidden; }
 
 .shopping-header {
   display: flex;
@@ -2506,11 +2507,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 /* Add row */
 .shopping-add-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 0.25rem;
 }
-.shopping-add-input { flex: 1; }
-.shopping-add-btn { flex-shrink: 0; padding: 0.55rem 1rem; font-size: 0.85rem; }
+.shopping-add-input { flex: 1; min-width: 0; }
+.shopping-add-btn { flex-shrink: 0; padding: 0.55rem 1rem; font-size: 0.85rem; width: auto; }
 
 @media (max-width: 480px) {
   .shopping-header { flex-direction: column; align-items: flex-start; }

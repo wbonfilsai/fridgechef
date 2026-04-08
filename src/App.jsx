@@ -634,6 +634,15 @@ async function exportRecipePDF(recipeText, proposal) {
   const contentW = pageW - margin * 2
   let y = 20
 
+  // Strip emojis and replace section headers with clean text
+  const stripEmoji = (s) => s.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim()
+  const cleanSection = (s) => {
+    const map = { 'Ingrédients': 'INGRÉDIENTS', 'Ingredients': 'INGREDIENTS', 'Préparation': 'PRÉPARATION', 'Preparation': 'PREPARATION', 'Conseil du Chef': 'CONSEIL DU CHEF', "Chef's Tip": "CHEF'S TIP", 'Accord': 'ACCORD', 'Pairing': 'PAIRING', 'Macros': 'MACROS' }
+    let clean = stripEmoji(s)
+    for (const [k, v] of Object.entries(map)) { if (clean.includes(k)) return v }
+    return clean
+  }
+
   const addPage = () => { doc.addPage(); y = 20 }
   const checkSpace = (needed) => { if (y + needed > 275) addPage() }
 
@@ -656,12 +665,12 @@ async function exportRecipePDF(recipeText, proposal) {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(18)
   doc.setTextColor(45, 31, 26)
-  const titleLines = doc.splitTextToSize(`${proposal?.emoji || ''} ${proposal?.nom || 'Recette'}`, contentW)
+  const titleLines = doc.splitTextToSize(proposal?.nom || 'Recette', contentW)
   doc.text(titleLines, margin, y)
   y += titleLines.length * 8 + 2
 
   // Meta line
-  const meta = [proposal?.cuisine, proposal?.tempsPrep, proposal?.tempsCuisson, proposal?.difficulte].filter(Boolean).join('  |  ')
+  const meta = [proposal?.cuisine, proposal?.tempsPrep, proposal?.tempsCuisson, proposal?.difficulte].filter(Boolean).map(stripEmoji).join('  |  ')
   if (meta) {
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(11)
@@ -682,7 +691,7 @@ async function exportRecipePDF(recipeText, proposal) {
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(14)
       doc.setTextColor(212, 69, 12)
-      doc.text(trimmed.replace(/^## /, '').replace(/\*\*/g, ''), margin, y)
+      doc.text(cleanSection(trimmed.replace(/^## /, '').replace(/\*\*/g, '')), margin, y)
       y += 4
       doc.setDrawColor(212, 69, 12)
       doc.setLineWidth(0.2)
@@ -694,14 +703,14 @@ async function exportRecipePDF(recipeText, proposal) {
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(12)
       doc.setTextColor(45, 31, 26)
-      doc.text(trimmed.replace(/^### /, '').replace(/\*\*/g, ''), margin, y)
+      doc.text(cleanSection(trimmed.replace(/^### /, '').replace(/\*\*/g, '')), margin, y)
       y += 7
     } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
       checkSpace(8)
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(10.5)
       doc.setTextColor(60, 45, 30)
-      const text = trimmed.replace(/^[-*] /, '').replace(/\*\*/g, '')
+      const text = stripEmoji(trimmed.replace(/^[-*] /, '').replace(/\*\*/g, ''))
       const wrapped = doc.splitTextToSize(text, contentW - 6)
       doc.text('•', margin, y)
       doc.text(wrapped, margin + 5, y)
@@ -712,7 +721,7 @@ async function exportRecipePDF(recipeText, proposal) {
       doc.setFontSize(10.5)
       doc.setTextColor(60, 45, 30)
       const num = trimmed.match(/^(\d+)\./)[1]
-      const text = trimmed.replace(/^\d+\.[ \t]*/, '').replace(/\*\*/g, '')
+      const text = stripEmoji(trimmed.replace(/^\d+\.[ \t]*/, '').replace(/\*\*/g, ''))
       const wrapped = doc.splitTextToSize(text, contentW - 8)
       doc.setFont('helvetica', 'bold')
       doc.setTextColor(212, 69, 12)
@@ -726,7 +735,7 @@ async function exportRecipePDF(recipeText, proposal) {
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(10.5)
       doc.setTextColor(60, 45, 30)
-      const text = trimmed.replace(/\*\*/g, '')
+      const text = stripEmoji(trimmed.replace(/\*\*/g, ''))
       const wrapped = doc.splitTextToSize(text, contentW)
       doc.text(wrapped, margin, y)
       y += wrapped.length * 5 + 1
