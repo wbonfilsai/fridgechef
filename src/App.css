@@ -2137,7 +2137,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     display: flex;
     align-items: center;
   }
-  .hero-content { padding-top: 120px; }
+  .hero-content { padding-top: 90px; }
   .hero-title {
     font-size: clamp(28px, 7vw, 52px);
     letter-spacing: -0.8px;
