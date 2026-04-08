@@ -1888,19 +1888,8 @@ export default function App() {
   const pendingIngredientsRef = useRef(null)
   const pendingFiltersRef     = useRef(null)
 
-  /* Navigation with pushState (FIX 1 & 6) */
+  /* Navigation with pushState */
   const setView = (v) => { setView_(v); window.history.pushState({ view: v }, '', '') }
-  useEffect(() => {
-    const onPop = (e) => {
-      const v = e.state?.view
-      if (v) { setView_(v); return }
-      if (cookingMode) { setCookingMode(false); return }
-      if (phase === 'recipe' || phase === 'recipe-loading') { setPhase('proposals'); return }
-      if (phase === 'proposals' || phase === 'check' || phase === 'check-loading') { setPhase('idle'); setProposals([]); return }
-    }
-    window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
-  }, [phase, cookingMode])
 
   /* Form */
   const [ingredients, setIngredients]       = useState([{ id: 1, name: '', qty: '', unit: 'g' }])
@@ -1938,6 +1927,19 @@ export default function App() {
   const abortRef        = useRef(null)
   const recognitionRef  = useRef(null)
   const newIngIdRef     = useRef(null)
+
+  /* Popstate navigation (back button) */
+  useEffect(() => {
+    const onPop = (e) => {
+      const v = e.state?.view
+      if (v) { setView_(v); return }
+      if (cookingMode) { setCookingMode(false); return }
+      if (phase === 'recipe' || phase === 'recipe-loading') { setPhase('proposals'); return }
+      if (phase === 'proposals' || phase === 'check' || phase === 'check-loading') { setPhase('idle'); setProposals([]); return }
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [phase, cookingMode])
 
   /* Auth setup */
   useEffect(() => {
