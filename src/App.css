@@ -979,7 +979,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 0.75rem 0;
+  padding: 1rem 0;
 }
 
 .header-inner {
@@ -2186,9 +2186,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
-    padding: 0;
-    padding-top: env(safe-area-inset-top, 0);
+    height: auto;
+    padding: 0.75rem 0;
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0));
     background: rgba(20, 8, 2, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -2199,7 +2199,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .header-inner {
     width: 100%;
     padding: 0 16px;
-    height: 60px;
+    height: auto;
   }
   .header-email   { display: none; }
   .header-nav     { display: none; }
@@ -2208,7 +2208,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .btn-logout { font-size: 0.75rem; padding: 0.4rem 0.75rem; min-height: 44px; display: flex; align-items: center; }
 
   /* Main content offset for fixed header */
-  .app > .main { margin-top: 60px; }
+  .app > .main { margin-top: 180px; }
 
   /* Cards & forms */
   .card {
