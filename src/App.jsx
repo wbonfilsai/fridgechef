@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
-import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2 } from 'lucide-react'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2, Share2 } from 'lucide-react'
 // jsPDF loaded dynamically on export to reduce initial bundle
 
 /* Claude prompt constraints */
@@ -760,7 +760,7 @@ async function exportRecipePDF(recipeText, proposal) {
 
   const pdfBlob = doc.output('blob')
   const blobUrl = URL.createObjectURL(pdfBlob)
-  window.open(blobUrl, '_blank')
+  return { blob: pdfBlob, url: blobUrl }
 }
 
 /* ── Reviews Carousel ── */
@@ -1885,6 +1885,9 @@ export default function App() {
   const [showGate, setShowGate]       = useState(false)
   const [gateMessage, setGateMessage] = useState('')
   const [showProLimit, setShowProLimit] = useState(false)
+  const [showPdfModal, setShowPdfModal] = useState(false)
+  const [pdfUrl, setPdfUrl]             = useState(null)
+  const pdfBlobRef = useRef(null)
   const [authInitTab, setAuthInitTab] = useState('login')
   const pendingIngredientsRef = useRef(null)
   const pendingFiltersRef     = useRef(null)
@@ -2696,7 +2699,10 @@ Exact markdown, short steps:
                     <button className="cooking-mode-trigger" onClick={() => setCookingMode(true)}>
                       <CookingPot size={20} /> {t.cookingModeBtn}
                     </button>
-                    <button className="pdf-download-btn" onClick={() => exportRecipePDF(recipeText, selectedProposal)}>
+                    <button className="pdf-download-btn" onClick={async () => {
+                      const result = await exportRecipePDF(recipeText, selectedProposal)
+                      if (result) { pdfBlobRef.current = result.blob; setPdfUrl(result.url); setShowPdfModal(true) }
+                    }}>
                       <Eye size={18} /> {lang === 'fr' ? 'Voir la recette en PDF' : 'View recipe as PDF'}
                     </button>
                     <RecipeShareButtons title={selectedProposal?.nom || ''} lang={lang} />
@@ -2748,6 +2754,45 @@ Exact markdown, short steps:
           </div>
         </div>
       )}
+      {showPdfModal && pdfUrl && (() => {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+        const closePdf = () => { URL.revokeObjectURL(pdfUrl); setPdfUrl(null); pdfBlobRef.current = null; setShowPdfModal(false) }
+        const sharePdf = async () => {
+          if (navigator.share && pdfBlobRef.current) {
+            try {
+              await navigator.share({ title: selectedProposal?.nom || 'Recette', files: [new File([pdfBlobRef.current], 'recette-chefridge.pdf', { type: 'application/pdf' })] })
+            } catch { /* user cancelled */ }
+          } else {
+            const a = document.createElement('a'); a.href = pdfUrl; a.download = 'recette-chefridge.pdf'; a.click()
+          }
+        }
+        return (
+          <div className="pdf-modal">
+            <div className="pdf-modal-header">
+              <button className="pdf-modal-close" onClick={closePdf}>
+                <X size={20} /> {lang === 'fr' ? 'Fermer' : 'Close'}
+              </button>
+              <span className="pdf-modal-title">{lang === 'fr' ? 'Recette PDF' : 'Recipe PDF'}</span>
+              <button className="pdf-modal-share" onClick={sharePdf}>
+                <Share2 size={18} /> {lang === 'fr' ? 'Partager' : 'Share'}
+              </button>
+            </div>
+            <div className="pdf-modal-body">
+              {isIOS ? (
+                <div className="pdf-ios-fallback">
+                  <Share2 size={48} color="#D4450C" />
+                  <p>{lang === 'fr' ? 'Appuyez sur Partager pour sauvegarder le PDF' : 'Tap Share to save the PDF'}</p>
+                  <button className="pdf-modal-share-btn" onClick={sharePdf}>
+                    <Share2 size={20} /> {lang === 'fr' ? 'Partager le PDF' : 'Share PDF'}
+                  </button>
+                </div>
+              ) : (
+                <iframe src={pdfUrl} title="PDF" className="pdf-iframe" />
+              )}
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

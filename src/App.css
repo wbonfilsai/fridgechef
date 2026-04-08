@@ -1373,6 +1373,102 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .pdf-download-btn:hover { background: rgba(212, 69, 12, 0.06); }
 
+/* PDF Modal */
+.pdf-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease;
+}
+.pdf-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 16px;
+  padding-top: env(safe-area-inset-top, 0);
+  background: rgba(0, 0, 0, 0.9);
+  flex-shrink: 0;
+}
+.pdf-modal-close {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0 8px;
+}
+.pdf-modal-title {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 600;
+}
+.pdf-modal-share {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #D4450C;
+  font-size: 14px;
+  font-weight: 700;
+  background: none;
+  border: none;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0 8px;
+}
+.pdf-modal-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.pdf-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
+.pdf-ios-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+.pdf-ios-fallback p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  line-height: 1.5;
+  max-width: 280px;
+}
+.pdf-modal-share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 32px;
+  background: #D4450C;
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 56px;
+}
+.pdf-modal-share-btn:hover { background: #B93A0A; }
+
 /* Share buttons */
 .share-row {
   display: flex;
