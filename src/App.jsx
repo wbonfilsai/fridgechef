@@ -2207,10 +2207,12 @@ Exact markdown, short steps:
 
   /* Fetch Unsplash images for proposals */
   const fetchProposalImages = async (proposals, startIdx) => {
+    const ingNames = ingredients.filter(i => i.name.trim()).map(i => i.name.trim()).join(',')
     const results = await Promise.all(
       proposals.map(async (p, i) => {
         try {
-          const res = await fetch(`/api/recipe-image?query=${encodeURIComponent(p.nom)}&cuisine=${encodeURIComponent(p.cuisine || '')}`)
+          const params = new URLSearchParams({ title: p.nom, cuisine: p.cuisine || '', ingredients: ingNames })
+          const res = await fetch(`/api/recipe-image?${params}`)
           const data = await res.json()
           return [startIdx + i, data.url]
         } catch { return [startIdx + i, null] }
