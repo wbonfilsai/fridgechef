@@ -51,6 +51,9 @@ const T = {
       { id: 'sans-lactose',label: 'Sans lactose',  emoji: '🥛' },
       { id: 'halal',       label: 'Halal',          emoji: '☪️' },
       { id: 'casher',      label: 'Casher',         emoji: '✡️' },
+      { id: 'high-protein',label: 'Riche en protéines', emoji: '💪' },
+      { id: 'anti-inflam', label: 'Anti-inflammatoire', emoji: '🌿' },
+      { id: 'low-carb',    label: 'Low-carb',       emoji: '🥑' },
     ],
     langToggle: '🇺🇸 EN',
     connect: 'Se connecter',
@@ -257,6 +260,9 @@ const T = {
       { id: 'sans-lactose',label: 'Dairy-free',  emoji: '🥛' },
       { id: 'halal',       label: 'Halal',        emoji: '☪️' },
       { id: 'casher',      label: 'Kosher',       emoji: '✡️' },
+      { id: 'high-protein',label: 'High-protein', emoji: '💪' },
+      { id: 'anti-inflam', label: 'Anti-inflammatory', emoji: '🌿' },
+      { id: 'low-carb',    label: 'Low-carb',     emoji: '🥑' },
     ],
     langToggle: '🇫🇷 FR',
     connect: 'Sign in',
@@ -1873,12 +1879,28 @@ export default function App() {
   /* Auth */
   const [user, setUser]               = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
-  const [view, setView]               = useState('landing')
+  const [view, setView_]              = useState('landing')
   const [showAuth, setShowAuth]       = useState(false)
   const [showGate, setShowGate]       = useState(false)
   const [gateMessage, setGateMessage] = useState('')
   const [showProLimit, setShowProLimit] = useState(false)
   const [authInitTab, setAuthInitTab] = useState('login')
+  const pendingIngredientsRef = useRef(null)
+  const pendingFiltersRef     = useRef(null)
+
+  /* Navigation with pushState (FIX 1 & 6) */
+  const setView = (v) => { setView_(v); window.history.pushState({ view: v }, '', '') }
+  useEffect(() => {
+    const onPop = (e) => {
+      const v = e.state?.view
+      if (v) { setView_(v); return }
+      if (cookingMode) { setCookingMode(false); return }
+      if (phase === 'recipe' || phase === 'recipe-loading') { setPhase('proposals'); return }
+      if (phase === 'proposals' || phase === 'check' || phase === 'check-loading') { setPhase('idle'); setProposals([]); return }
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [phase, cookingMode])
 
   /* Form */
   const [ingredients, setIngredients]       = useState([{ id: 1, name: '', qty: '', unit: 'g' }])
@@ -1931,6 +1953,18 @@ export default function App() {
       setUser(session?.user ?? null)
       if (session?.user) {
         setView('app'); setShowAuth(false); setShowGate(false)
+        // FIX 4: Restore pending ingredients/filters after login
+        if (pendingIngredientsRef.current?.length) {
+          setIngredients(pendingIngredientsRef.current)
+          pendingIngredientsRef.current = null
+        }
+        if (pendingFiltersRef.current) {
+          setSelectedCuisines(pendingFiltersRef.current.cuisines || [])
+          setActiveDietaryFilters(pendingFiltersRef.current.diets || [])
+          setCookingTime(pendingFiltersRef.current.cookingTime || 'normal')
+          setSkillLevel(pendingFiltersRef.current.skillLevel || 'intermediate')
+          pendingFiltersRef.current = null
+        }
       } else {
         setView('landing')
       }
@@ -2022,7 +2056,7 @@ export default function App() {
   const removeIngredient = (id) => setIngredients(prev => prev.length > 1 ? prev.filter(i => i.id !== id) : prev)
   const updateIngredient = (id, field, value) => setIngredients(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i))
   const handleIngKeyDown = (e) => { if (e.key === 'Enter') { e.preventDefault(); addIngredient() } }
-  const toggleCuisine    = (id) => setSelectedCuisines(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
+  const toggleCuisine    = (id) => setSelectedCuisines(prev => prev.includes(id) ? [] : [id])
   const toggleCheckIng   = (idx) => setCheckIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, checked: !ing.checked } : ing))
   const toggleDietaryFilter = (id) => setActiveDietaryFilters(prev =>
     prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
@@ -2098,8 +2132,16 @@ export default function App() {
   const buildIngList = (valid) =>
     valid.map(i => `- ${i.name.trim()}${i.qty ? ` : ${i.qty} ${i.unit}` : ''}`).join('\n')
 
-  const buildDietStr = () =>
-    selectedDiets.map(id => t.dietOptions.find(d => d.id === id)?.label).filter(Boolean).join(', ')
+  const DIET_PROMPT_EXTRAS = {
+    'high-protein': 'optimise pour un maximum de protéines, minimum 30g par portion',
+    'anti-inflam': 'utilise des ingrédients anti-inflammatoires : curcuma, gingembre, baies, légumes verts, oméga-3, évite les aliments transformés',
+    'low-carb': 'maximum 20g de glucides par portion, privilégie protéines et bonnes graisses',
+  }
+  const buildDietStr = () => {
+    const labels = selectedDiets.map(id => t.dietOptions.find(d => d.id === id)?.label).filter(Boolean)
+    const extras = selectedDiets.map(id => DIET_PROMPT_EXTRAS[id]).filter(Boolean)
+    return [...labels, ...extras].join(', ')
+  }
 
   const buildProposalsPrompt = (valid, excludeNames = null) => {
     const ingList = buildIngList(valid)
@@ -2164,7 +2206,7 @@ Exact markdown, short steps:
     const results = await Promise.all(
       proposals.map(async (p, i) => {
         try {
-          const res = await fetch(`/api/recipe-image?query=${encodeURIComponent(p.nom)}`)
+          const res = await fetch(`/api/recipe-image?query=${encodeURIComponent(p.nom)}&cuisine=${encodeURIComponent(p.cuisine || '')}`)
           const data = await res.json()
           return [startIdx + i, data.url]
         } catch { return [startIdx + i, null] }
@@ -2675,8 +2717,8 @@ Exact markdown, short steps:
           t={t}
           message={gateMessage}
           onClose={() => { setShowGate(false); setGateMessage('') }}
-          onSignup={() => { setShowGate(false); setGateMessage(''); setShowAuth(true); setAuthInitTab('signup') }}
-          onLogin={() => { setShowGate(false); setGateMessage(''); setShowAuth(true); setAuthInitTab('login') }}
+          onSignup={() => { pendingIngredientsRef.current = ingredients; pendingFiltersRef.current = { cuisines: selectedCuisines, diets: activeDietaryFilters, cookingTime, skillLevel }; setShowGate(false); setGateMessage(''); setShowAuth(true); setAuthInitTab('signup') }}
+          onLogin={() => { pendingIngredientsRef.current = ingredients; pendingFiltersRef.current = { cuisines: selectedCuisines, diets: activeDietaryFilters, cookingTime, skillLevel }; setShowGate(false); setGateMessage(''); setShowAuth(true); setAuthInitTab('login') }}
         />
       )}
       {cookingMode && recipeText && (
