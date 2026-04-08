@@ -98,6 +98,15 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   font-size: 0.72rem;
   padding: 0.3rem 0.7rem;
 }
+.app-header .lang-toggle {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+}
+.app-header .lang-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
 
 /* ═══════════════════════════════════════════
    LANDING — CONTAINER
@@ -2203,7 +2212,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   }
   .header-email   { display: none; }
   .header-nav     { display: none; }
-  .lang-toggle-sm { display: none; }
+  .lang-toggle-sm { font-size: 0.7rem; padding: 0.3rem 0.6rem; }
   .header-logo-img { height: 156px; border-radius: 12px; }
   .btn-logout { font-size: 0.75rem; padding: 0.4rem 0.75rem; min-height: 44px; display: flex; align-items: center; }
 

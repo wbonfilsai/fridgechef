@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
-import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Download, Link2, Check, Mic, Volume2 } from 'lucide-react'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2 } from 'lucide-react'
 // jsPDF loaded dynamically on export to reduce initial bundle
 
 /* Claude prompt constraints */
@@ -758,8 +758,9 @@ async function exportRecipePDF(recipeText, proposal) {
     doc.text('Généré par Chefridge — chefridge.com', pageW / 2, 290, { align: 'center' })
   }
 
-  const filename = (proposal?.nom || 'recette').toLowerCase().replace(/[^a-z0-9àâäéèêëïôùûüç\s]/g, '').replace(/\s+/g, '-')
-  doc.save(`${filename}-chefridge.pdf`)
+  const pdfBlob = doc.output('blob')
+  const blobUrl = URL.createObjectURL(pdfBlob)
+  window.open(blobUrl, '_blank')
 }
 
 /* ── Reviews Carousel ── */
@@ -1955,18 +1956,19 @@ export default function App() {
       setUser(session?.user ?? null)
       if (session?.user) {
         setView('app'); setShowAuth(false); setShowGate(false)
-        // FIX 4: Restore pending ingredients/filters after login
-        if (pendingIngredientsRef.current?.length) {
+        // Restore pending state after login (what user typed > what's in DB)
+        if (pendingIngredientsRef.current?.some(i => i.name.trim())) {
           setIngredients(pendingIngredientsRef.current)
-          pendingIngredientsRef.current = null
         }
         if (pendingFiltersRef.current) {
           setSelectedCuisines(pendingFiltersRef.current.cuisines || [])
           setActiveDietaryFilters(pendingFiltersRef.current.diets || [])
           setCookingTime(pendingFiltersRef.current.cookingTime || 'normal')
           setSkillLevel(pendingFiltersRef.current.skillLevel || 'intermediate')
-          pendingFiltersRef.current = null
+          setPeople(pendingFiltersRef.current.people || 2)
         }
+        pendingIngredientsRef.current = null
+        pendingFiltersRef.current = null
       } else {
         setView('landing')
       }
@@ -2018,9 +2020,9 @@ export default function App() {
     setIngredients([{ id: Date.now(), name: '', qty: '', unit: 'g' }])
   }
 
-  // Load pantry when user changes or view becomes 'app'
+  // Load pantry when user changes or view becomes 'app' (skip if pending state exists)
   useEffect(() => {
-    if (view === 'app') loadPantry()
+    if (view === 'app' && !pendingIngredientsRef.current?.some(i => i.name?.trim())) loadPantry()
   }, [user, view])
 
   /* Persist shopping list to localStorage */
@@ -2693,7 +2695,7 @@ Exact markdown, short steps:
                       <CookingPot size={20} /> {t.cookingModeBtn}
                     </button>
                     <button className="pdf-download-btn" onClick={() => exportRecipePDF(recipeText, selectedProposal)}>
-                      <Download size={18} /> {lang === 'fr' ? 'Télécharger PDF' : 'Download PDF'}
+                      <Eye size={18} /> {lang === 'fr' ? 'Voir la recette en PDF' : 'View recipe as PDF'}
                     </button>
                     <RecipeShareButtons title={selectedProposal?.nom || ''} lang={lang} />
                   </>
@@ -2719,8 +2721,8 @@ Exact markdown, short steps:
           t={t}
           message={gateMessage}
           onClose={() => { setShowGate(false); setGateMessage('') }}
-          onSignup={() => { pendingIngredientsRef.current = ingredients; pendingFiltersRef.current = { cuisines: selectedCuisines, diets: activeDietaryFilters, cookingTime, skillLevel }; setShowGate(false); setGateMessage(''); setShowAuth(true); setAuthInitTab('signup') }}
-          onLogin={() => { pendingIngredientsRef.current = ingredients; pendingFiltersRef.current = { cuisines: selectedCuisines, diets: activeDietaryFilters, cookingTime, skillLevel }; setShowGate(false); setGateMessage(''); setShowAuth(true); setAuthInitTab('login') }}
+          onSignup={() => { pendingIngredientsRef.current = ingredients; pendingFiltersRef.current = { cuisines: selectedCuisines, diets: activeDietaryFilters, cookingTime, skillLevel, people }; setShowGate(false); setGateMessage(''); setShowAuth(true); setAuthInitTab('signup') }}
+          onLogin={() => { pendingIngredientsRef.current = ingredients; pendingFiltersRef.current = { cuisines: selectedCuisines, diets: activeDietaryFilters, cookingTime, skillLevel, people }; setShowGate(false); setGateMessage(''); setShowAuth(true); setAuthInitTab('login') }}
         />
       )}
       {cookingMode && recipeText && (
