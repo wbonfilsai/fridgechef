@@ -1970,6 +1970,25 @@ export default function App() {
   const [pdfUrl, setPdfUrl]             = useState(null)
   const pdfBlobRef = useRef(null)
   const [showContact, setShowContact] = useState(false)
+  const [navHeight, setNavHeight]     = useState(0)
+  useEffect(() => {
+    const updateHeight = () => {
+      const nav = document.querySelector('.app-header')
+      if (nav) setNavHeight(nav.offsetHeight)
+    }
+    updateHeight()
+    const raf = requestAnimationFrame(updateHeight)
+    const t1 = setTimeout(updateHeight, 100)
+    const t2 = setTimeout(updateHeight, 500)
+    window.addEventListener('resize', updateHeight)
+    window.addEventListener('load', updateHeight)
+    return () => {
+      cancelAnimationFrame(raf)
+      clearTimeout(t1); clearTimeout(t2)
+      window.removeEventListener('resize', updateHeight)
+      window.removeEventListener('load', updateHeight)
+    }
+  }, [view, user])
   const [showPwaBanner, setShowPwaBanner] = useState(() => {
     if (typeof window === 'undefined') return false
     const dismissed = localStorage.getItem('pwa_banner_dismissed')
@@ -2124,21 +2143,6 @@ export default function App() {
   useEffect(() => {
     if (view === 'app' && !pendingIngredientsRef.current?.some(i => i.name?.trim())) loadPantry()
   }, [user, view])
-
-  /* Auto-scroll to ingredients on generator view */
-  useEffect(() => {
-    if (view === 'app') {
-      const t = setTimeout(() => {
-        const navHeight = document.querySelector('.app-header')?.offsetHeight || 180
-        const el = document.getElementById('ingredients-section')
-        if (el) {
-          const elementTop = el.getBoundingClientRect().top + window.scrollY - navHeight - 16
-          window.scrollTo({ top: elementTop, behavior: 'smooth' })
-        }
-      }, 200)
-      return () => clearTimeout(t)
-    }
-  }, [view])
 
   /* Persist shopping list to localStorage */
   useEffect(() => {
@@ -2564,6 +2568,7 @@ Exact markdown, short steps:
     <div className="app">
       <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} onShowAuth={() => setShowAuth(true)} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
 
+      <div style={{ paddingTop: navHeight + 'px' }}>
       {view === 'meal-plan' ? (
         <MealPlanView t={t} lang={lang} />
       ) : view === 'saved' ? (
@@ -2905,6 +2910,7 @@ Exact markdown, short steps:
           </div>
         </main>
       )}
+      </div>
 
       <footer className="footer">
         <div className="container">
