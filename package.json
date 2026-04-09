@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.36.3",
+    "@formspree/react": "^3.0.0",
     "@supabase/supabase-js": "^2.101.1",
     "@upstash/redis": "^1.37.0",
     "cors": "^2.8.5",

@@ -484,8 +484,45 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   height: 156px;
   width: auto;
   opacity: 0.8;
-  display: inline-block;
+  display: block;
+  margin: 0 auto 0.75rem;
   border-radius: 12px;
+}
+.footer-contact-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  font-family: inherit;
+}
+.footer-contact-link:hover { opacity: 1; color: #fff; }
+
+/* Contact modal */
+.contact-modal {
+  max-width: 480px;
+  border-radius: 20px;
+  padding: 32px;
+}
+.contact-textarea {
+  min-height: 120px;
+  resize: vertical;
+  font-family: inherit;
+}
+.contact-success {
+  text-align: center;
+  color: #4A7C59;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 2rem 0;
+}
+.contact-error {
+  color: #ff4444;
+  font-size: 13px;
+  margin-top: 4px;
+  display: block;
 }
 
 /* ═══════════════════════════════════════════

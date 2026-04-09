@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
 import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2, Share2, Camera } from 'lucide-react'
+import { useForm, ValidationError } from '@formspree/react'
 // jsPDF loaded dynamically on export to reduce initial bundle
 
 /* Claude prompt constraints */
@@ -237,6 +238,14 @@ const T = {
     tryFree: 'Essayer gratuitement',
     pwaBanner: 'Installe Chefridge sur ton téléphone pour un accès rapide',
     pwaBannerHow: 'Partager > Sur l\'écran d\'accueil',
+    contactTitle: 'Nous contacter',
+    contactName: 'Nom',
+    contactEmail: 'Email',
+    contactMessage: 'Message',
+    contactSend: 'Envoyer',
+    contactSending: 'Envoi...',
+    contactSuccess: 'Message envoyé ! On te répond bientôt.',
+    contactLink: 'Nous contacter',
   },
   en: {
     cuisines: [
@@ -455,6 +464,14 @@ const T = {
     tryFree: 'Try for free',
     pwaBanner: 'Install Chefridge on your phone for quick access',
     pwaBannerHow: 'Share > Add to Home Screen',
+    contactTitle: 'Contact us',
+    contactName: 'Name',
+    contactEmail: 'Email',
+    contactMessage: 'Message',
+    contactSend: 'Send',
+    contactSending: 'Sending...',
+    contactSuccess: "Message sent! We'll get back to you soon.",
+    contactLink: 'Contact us',
   },
 }
 
@@ -612,6 +629,51 @@ const FOOD_STRIP_ITEMS = [
   { id: 55, src: '/homemade2.jpg' },
   { id: 66, src: '/pain.jpeg' },
 ]
+
+/* ── Contact Modal ── */
+function ContactModal({ t, onClose }) {
+  const [state, handleSubmit] = useForm('mjgpdklj')
+
+  useEffect(() => {
+    if (state.succeeded) {
+      const timer = setTimeout(onClose, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [state.succeeded, onClose])
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card contact-modal" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose} aria-label="Fermer">×</button>
+        <h2 className="modal-title">{t.contactTitle}</h2>
+        {state.succeeded ? (
+          <p className="contact-success">{t.contactSuccess}</p>
+        ) : (
+          <form onSubmit={handleSubmit} className="modal-form">
+            <div className="form-group">
+              <label className="form-label">{t.contactName}</label>
+              <input type="text" name="name" className="modal-input" required />
+              <ValidationError field="name" errors={state.errors} className="contact-error" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">{t.contactEmail}</label>
+              <input type="email" name="email" className="modal-input" required />
+              <ValidationError field="email" errors={state.errors} className="contact-error" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">{t.contactMessage}</label>
+              <textarea name="message" className="modal-input contact-textarea" required />
+              <ValidationError field="message" errors={state.errors} className="contact-error" />
+            </div>
+            <button type="submit" className="modal-submit" disabled={state.submitting}>
+              {state.submitting ? t.contactSending : t.contactSend}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
 
 /* ── Share buttons ── */
 function RecipeShareButtons({ title, lang }) {
@@ -831,7 +893,7 @@ function ReviewsCarousel({ reviews, label, title }) {
   )
 }
 
-function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
+function LandingPage({ t, onToggleLang, onGetStarted, onTryFree, onContact }) {
   const [navScrolled, setNavScrolled] = useState(false)
 
   useEffect(() => {
@@ -976,6 +1038,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree }) {
       <footer className="landing-footer">
         <div className="l-container">
           <img src="/logo.png" alt="Chefridge" className="footer-logo" />
+          <button className="footer-contact-link" onClick={() => onContact()}>{t.contactLink}</button>
         </div>
       </footer>
     </div>
@@ -1906,6 +1969,7 @@ export default function App() {
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [pdfUrl, setPdfUrl]             = useState(null)
   const pdfBlobRef = useRef(null)
+  const [showContact, setShowContact] = useState(false)
   const [showPwaBanner, setShowPwaBanner] = useState(() => {
     if (typeof window === 'undefined') return false
     const dismissed = localStorage.getItem('pwa_banner_dismissed')
@@ -2469,7 +2533,7 @@ Exact markdown, short steps:
 
   if (view === 'landing') return (
     <>
-      <LandingPage t={t} onToggleLang={toggleLang} onGetStarted={() => setShowAuth(true)} onTryFree={() => setView('app')} />
+      <LandingPage t={t} onToggleLang={toggleLang} onGetStarted={() => setShowAuth(true)} onTryFree={() => setView('app')} onContact={() => setShowContact(true)} />
       {showAuth && <AuthModal t={t} initialTab={authInitTab} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
     </>
   )
@@ -2823,6 +2887,7 @@ Exact markdown, short steps:
       <footer className="footer">
         <div className="container">
           <img src="/logo.png" alt="Chefridge" className="footer-logo" />
+          <button className="footer-contact-link" onClick={() => setShowContact(true)}>{t.contactLink}</button>
         </div>
       </footer>
 
@@ -2910,6 +2975,7 @@ Exact markdown, short steps:
           </div>
         )
       })()}
+      {showContact && <ContactModal t={t} onClose={() => setShowContact(false)} />}
     </div>
   )
 }
