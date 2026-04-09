@@ -2128,8 +2128,11 @@ export default function App() {
   /* Auto-scroll to ingredients on generator view */
   useEffect(() => {
     if (view === 'app') {
-      const el = document.getElementById('ingredients-section')
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const t = setTimeout(() => {
+        const el = document.getElementById('ingredients-section')
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
+      return () => clearTimeout(t)
     }
   }, [view])
 
