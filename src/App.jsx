@@ -2241,12 +2241,13 @@ export default function App() {
         body: JSON.stringify({ imageBase64: base64, mediaType }),
       })
       const data = await res.json()
+      console.log('[scan-fridge] API response:', data)
       if (data.ingredients?.length) {
         const newIngs = data.ingredients.map((name, i) => ({ id: Date.now() + i, name, qty: '', unit: 'g' }))
         setIngredients(newIngs)
         setScanMsg(t.scanSuccess(data.ingredients.length))
       } else {
-        setScanMsg(t.scanEmpty)
+        setScanMsg(`${t.scanEmpty} Debug: ${data.debug || 'no response'}`)
       }
     } catch (err) {
       setScanMsg(err.message || 'Error')
