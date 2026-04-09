@@ -2129,9 +2129,13 @@ export default function App() {
   useEffect(() => {
     if (view === 'app') {
       const t = setTimeout(() => {
+        const navHeight = document.querySelector('.app-header')?.offsetHeight || 180
         const el = document.getElementById('ingredients-section')
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 100)
+        if (el) {
+          const elementTop = el.getBoundingClientRect().top + window.scrollY - navHeight - 16
+          window.scrollTo({ top: elementTop, behavior: 'smooth' })
+        }
+      }, 200)
       return () => clearTimeout(t)
     }
   }, [view])
