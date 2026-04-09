@@ -1,14 +1,6 @@
-const CACHE_NAME = 'chefridge-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/logo.png'
-];
+const CACHE_NAME = 'chefridge-v2';
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
-  );
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
@@ -22,11 +14,27 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.url.includes('/api/')) {
-    event.respondWith(fetch(event.request));
-  } else {
+  // Skip non-GET and API calls
+  if (event.request.method !== 'GET' || event.request.url.includes('/api/')) return;
+
+  // HTML: network-first (always get fresh index.html)
+  if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match(event.request).then(cached => cached || fetch(event.request))
+      fetch(event.request).catch(() => caches.match('/index.html'))
     );
+    return;
   }
+
+  // Assets: stale-while-revalidate
+  event.respondWith(
+    caches.open(CACHE_NAME).then(cache =>
+      cache.match(event.request).then(cached => {
+        const fetched = fetch(event.request).then(response => {
+          if (response.ok) cache.put(event.request, response.clone());
+          return response;
+        }).catch(() => cached);
+        return cached || fetched;
+      })
+    )
+  );
 });
