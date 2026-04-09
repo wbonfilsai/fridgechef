@@ -2119,6 +2119,14 @@ export default function App() {
     if (view === 'app' && !pendingIngredientsRef.current?.some(i => i.name?.trim())) loadPantry()
   }, [user, view])
 
+  /* Auto-scroll to ingredients on generator view */
+  useEffect(() => {
+    if (view === 'app') {
+      const el = document.getElementById('ingredients-section')
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [view])
+
   /* Persist shopping list to localStorage */
   useEffect(() => {
     localStorage.setItem('chefridge_shopping', JSON.stringify(shoppingList))
@@ -2555,7 +2563,7 @@ Exact markdown, short steps:
           <div className="container">
 
             {/* Step 1: Ingredients */}
-            <section className="card">
+            <section className="card" id="ingredients-section">
               <div className="step-header">
                 <div className="step-badge">1</div>
                 <div><h2>{t.step1Title}</h2><p>{t.step1Sub}</p></div>
