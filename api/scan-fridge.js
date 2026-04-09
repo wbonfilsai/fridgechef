@@ -35,13 +35,22 @@ export default async function handler(req, res) {
           },
           {
             type: 'text',
-            text: `Analyse cette image et identifie tous les aliments et ingrédients visibles.
-Retourne UNIQUEMENT un JSON valide avec ce format :
-{ "ingredients": ["poulet", "tomates", "ail", "oignons"] }
-- Noms en français
-- Noms simples et génériques (pas de marques)
+            text: `Tu es un expert en identification d'aliments. Analyse cette image avec attention et identifie TOUS les aliments visibles, même partiellement.
+
+Règles importantes :
+- Un seul aliment, un morceau, une tranche = valide
+- Peu importe le contexte (frigo, table, main, assiette)
+- Si tu vois quelque chose qui ressemble à un aliment, liste-le
+- Noms simples en français (ex: concombre, pas 'morceau de concombre frais')
+- Inclus les condiments, épices, sauces visibles
 - Maximum 20 ingrédients
-- Si aucun aliment visible : { "ingredients": [] }`,
+- Sois généreux dans ta détection, mieux vaut détecter trop que pas assez
+
+Retourne UNIQUEMENT ce JSON valide, rien d'autre :
+{ "ingredients": ["concombre", "tomate", "ail"] }
+
+Si vraiment aucun aliment n'est visible (image floue, objet non-alimentaire) :
+{ "ingredients": [] }`,
           },
         ],
       }],
