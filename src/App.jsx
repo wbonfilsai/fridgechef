@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
-import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2, Share2 } from 'lucide-react'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2, Share2, Camera } from 'lucide-react'
 // jsPDF loaded dynamically on export to reduce initial bundle
 
 /* Claude prompt constraints */
@@ -118,6 +118,13 @@ const T = {
     step1Title: '🥦 Mes ingrédients', step1Sub: "Qu'est-ce qu'il y a dans votre frigo ?",
     ing1Placeholder: 'Ex: poulet, tomates, riz...', ingPlaceholder: 'Ingrédient...',
     ingHint: '💡 Les quantités sont optionnelles, écris juste le nom de l\'ingrédient ou ajoute-les si tu veux plus de précision (ex: 300g de farine, 2 œufs)',
+    scanBtn: 'Scanner mon frigo',
+    scanTakePhoto: 'Prendre une photo',
+    scanGallery: 'Choisir dans la galerie',
+    scanAnalyzing: 'Analyse en cours...',
+    scanSuccess: (n) => `${n} ingrédients détectés, vérifie et modifie si besoin`,
+    scanEmpty: 'Aucun aliment détecté. Essaie une photo plus proche.',
+    scanTooBig: 'Image trop lourde. Utilise une photo de moins de 5MB.',
     addIngredient: '＋ Ajouter un ingrédient', removeIng: 'Supprimer',
     step2Title: '👥 Nombre de convives', step2Sub: 'Pour combien de personnes cuisinez-vous ?',
     person: 'personne', persons: 'personnes',
@@ -228,6 +235,8 @@ const T = {
     cookingModeStep: (n, total) => `Étape ${n} / ${total}`,
     // Anonymous CTA
     tryFree: 'Essayer gratuitement',
+    pwaBanner: 'Installe Chefridge sur ton téléphone pour un accès rapide',
+    pwaBannerHow: 'Partager > Sur l\'écran d\'accueil',
   },
   en: {
     cuisines: [
@@ -327,6 +336,13 @@ const T = {
     step1Title: '🥦 My ingredients', step1Sub: "What's in your fridge?",
     ing1Placeholder: 'E.g. chicken, tomatoes, rice...', ingPlaceholder: 'Ingredient...',
     ingHint: '💡 Quantities are optional, just type the ingredient name or add amounts for more precision (ex: 2 cups flour, 3 eggs)',
+    scanBtn: 'Scan my fridge',
+    scanTakePhoto: 'Take a photo',
+    scanGallery: 'Choose from gallery',
+    scanAnalyzing: 'Analyzing...',
+    scanSuccess: (n) => `${n} ingredients detected, check and edit if needed`,
+    scanEmpty: 'No food detected. Try a closer photo.',
+    scanTooBig: 'Image too large. Use a photo under 5MB.',
     addIngredient: '＋ Add an ingredient', removeIng: 'Remove',
     step2Title: '👥 Number of guests', step2Sub: 'How many people are you cooking for?',
     person: 'person', persons: 'people',
@@ -437,6 +453,8 @@ const T = {
     cookingModeStep: (n, total) => `Step ${n} / ${total}`,
     // Anonymous CTA
     tryFree: 'Try for free',
+    pwaBanner: 'Install Chefridge on your phone for quick access',
+    pwaBannerHow: 'Share > Add to Home Screen',
   },
 }
 
@@ -1888,6 +1906,15 @@ export default function App() {
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [pdfUrl, setPdfUrl]             = useState(null)
   const pdfBlobRef = useRef(null)
+  const [showPwaBanner, setShowPwaBanner] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const dismissed = localStorage.getItem('pwa_banner_dismissed')
+    if (dismissed) return false
+    const visits = parseInt(localStorage.getItem('pwa_visits') || '0', 10) + 1
+    localStorage.setItem('pwa_visits', String(visits))
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
+    return visits >= 3 && !isStandalone && /iPhone|iPad|Android/i.test(navigator.userAgent)
+  })
   const [authInitTab, setAuthInitTab] = useState('login')
   const pendingIngredientsRef = useRef(null)
   const pendingFiltersRef     = useRef(null)
@@ -2085,6 +2112,64 @@ export default function App() {
     rec.onerror  = () => { setListeningId(null); recognitionRef.current = null }
     rec.start()
     recognitionRef.current = rec
+  }
+
+  /* Scan fridge */
+  const [scanning, setScanning] = useState(false)
+  const [scanMsg, setScanMsg]   = useState('')
+  const scanCameraRef = useRef(null)
+  const scanGalleryRef = useRef(null)
+
+  const resizeImage = (file) => new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const maxW = 1200
+      const scale = img.width > maxW ? maxW / img.width : 1
+      const canvas = document.createElement('canvas')
+      canvas.width = img.width * scale
+      canvas.height = img.height * scale
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob((blob) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve({ base64: reader.result.split(',')[1], mediaType: 'image/jpeg' })
+        reader.readAsDataURL(blob)
+      }, 'image/jpeg', 0.8)
+    }
+    img.src = URL.createObjectURL(file)
+  })
+
+  const handleScanFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    if (file.size > 5 * 1024 * 1024 && file.size > 5242880) {
+      setScanMsg(t.scanTooBig); return
+    }
+    setScanning(true); setScanMsg('')
+    try {
+      const { base64, mediaType } = file.size > 2 * 1024 * 1024
+        ? await resizeImage(file)
+        : await new Promise((resolve) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve({ base64: reader.result.split(',')[1], mediaType: file.type })
+            reader.readAsDataURL(file)
+          })
+      const res = await fetch('/api/scan-fridge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64, mediaType }),
+      })
+      const data = await res.json()
+      if (data.ingredients?.length) {
+        const newIngs = data.ingredients.map((name, i) => ({ id: Date.now() + i, name, qty: '', unit: 'g' }))
+        setIngredients(newIngs)
+        setScanMsg(t.scanSuccess(data.ingredients.length))
+      } else {
+        setScanMsg(t.scanEmpty)
+      }
+    } catch (err) {
+      setScanMsg(err.message || 'Error')
+    } finally { setScanning(false) }
   }
 
   /* SSE helper */
@@ -2448,6 +2533,26 @@ Exact markdown, short steps:
                   <button className="clear-pantry-btn" onClick={clearPantry}>{t.clearPantry}</button>
                 )}
               </div>
+              <div className="scan-section">
+                <input type="file" accept="image/*" capture="environment" ref={scanCameraRef} onChange={handleScanFile} hidden />
+                <input type="file" accept="image/*" ref={scanGalleryRef} onChange={handleScanFile} hidden />
+                {scanning ? (
+                  <div className="scan-loading">
+                    <span className="modal-spinner" style={{ borderTopColor: '#D4450C', width: 20, height: 20 }} />
+                    <span>{t.scanAnalyzing}</span>
+                  </div>
+                ) : (
+                  <div className="scan-buttons">
+                    <button className="scan-btn" onClick={() => scanCameraRef.current?.click()}>
+                      <Camera size={18} /> {t.scanTakePhoto}
+                    </button>
+                    <button className="scan-btn" onClick={() => scanGalleryRef.current?.click()}>
+                      <Eye size={18} /> {t.scanGallery}
+                    </button>
+                  </div>
+                )}
+                {scanMsg && <p className={`scan-msg${scanMsg === t.scanEmpty || scanMsg === t.scanTooBig ? ' error' : ''}`}>{scanMsg}</p>}
+              </div>
             </section>
 
             {/* Step 2: People */}
@@ -2720,6 +2825,18 @@ Exact markdown, short steps:
           <img src="/logo.png" alt="Chefridge" className="footer-logo" />
         </div>
       </footer>
+
+      {showPwaBanner && (
+        <div className="pwa-banner">
+          <div className="pwa-banner-text">
+            <strong>{t.pwaBanner}</strong>
+            <span>{t.pwaBannerHow}</span>
+          </div>
+          <button className="pwa-banner-close" onClick={() => { setShowPwaBanner(false); localStorage.setItem('pwa_banner_dismissed', '1') }}>
+            <X size={18} />
+          </button>
+        </div>
+      )}
 
       <BottomTabBar lang={lang} view={view} onNavigate={setView} user={user} onShowAuth={() => setShowAuth(true)} onLogout={handleLogout} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
 
