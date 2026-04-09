@@ -1979,6 +1979,12 @@ export default function App() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
     return visits >= 3 && !isStandalone && /iPhone|iPad|Android/i.test(navigator.userAgent)
   })
+  const [installPrompt, setInstallPrompt] = useState(null)
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
   const [authInitTab, setAuthInitTab] = useState('login')
   const pendingIngredientsRef = useRef(null)
   const pendingFiltersRef     = useRef(null)
@@ -2899,17 +2905,32 @@ Exact markdown, short steps:
         </div>
       </footer>
 
-      {showPwaBanner && (
-        <div className="pwa-banner">
-          <div className="pwa-banner-text">
-            <strong>{t.pwaBanner}</strong>
-            <span>{t.pwaBannerHow}</span>
+      {showPwaBanner && (() => {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+        const isAndroid = /Android/.test(navigator.userAgent)
+        const dismiss = () => { setShowPwaBanner(false); localStorage.setItem('pwa_banner_dismissed', '1') }
+        const handleInstall = async () => { if (installPrompt) { installPrompt.prompt(); dismiss() } }
+        return (
+          <div className="pwa-banner">
+            <div className="pwa-banner-content">
+              <strong className="pwa-banner-title">{lang === 'fr' ? '📲 Installe Chefridge' : '📲 Install Chefridge'}</strong>
+              {isIOS ? (
+                <div className="pwa-banner-steps">
+                  <span>1. {lang === 'fr' ? 'Appuie sur' : 'Tap'} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4450C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle'}}><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span>
+                  <span>2. {lang === 'fr' ? '"Sur l\'écran d\'accueil"' : '"Add to Home Screen"'}</span>
+                </div>
+              ) : isAndroid && installPrompt ? (
+                <button className="pwa-install-btn" onClick={handleInstall}>
+                  {lang === 'fr' ? 'Installer' : 'Install'}
+                </button>
+              ) : (
+                <span className="pwa-banner-sub">{lang === 'fr' ? 'Accès rapide depuis ton écran' : 'Quick access from your home screen'}</span>
+              )}
+            </div>
+            <button className="pwa-banner-close" onClick={dismiss}><X size={18} /></button>
           </div>
-          <button className="pwa-banner-close" onClick={() => { setShowPwaBanner(false); localStorage.setItem('pwa_banner_dismissed', '1') }}>
-            <X size={18} />
-          </button>
-        </div>
-      )}
+        )
+      })()}
 
       <BottomTabBar lang={lang} view={view} onNavigate={setView} user={user} onShowAuth={() => setShowAuth(true)} onLogout={handleLogout} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
 
