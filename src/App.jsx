@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
-import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2, Share2, Camera } from 'lucide-react'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2, Share2, Camera, Refrigerator, Calendar, History, FileDown, FolderOpen } from 'lucide-react'
 import { useForm, ValidationError } from '@formspree/react'
 // jsPDF loaded dynamically on export to reduce initial bundle
 
@@ -217,6 +217,32 @@ const T = {
     proLimitTitle: 'Limite atteinte',
     proLimitSub: 'Les comptes gratuits peuvent sauvegarder 10 recettes. Passe à Pro pour une bibliothèque illimitée.',
     proLimitBtn: 'Passer à Pro',
+    // Pro waitlist modal
+    proBadge: 'BIENTÔT DISPONIBLE',
+    proTitle: 'Chefridge Pro',
+    proSub: 'Rejoins la liste d\'attente et obtiens 3 jours d\'essai gratuit au lancement.',
+    proFeatures: [
+      { icon: 'Bookmark', label: 'Recettes sauvegardées illimitées' },
+      { icon: 'Refrigerator', label: 'Pantry persistant entre sessions' },
+      { icon: 'Calendar', label: 'Meal planning 7 jours' },
+      { icon: 'History', label: 'Historique complet' },
+      { icon: 'FileDown', label: 'Export PDF des recettes' },
+      { icon: 'FolderOpen', label: 'Dossiers et tags' },
+    ],
+    proNamePlaceholder: 'Ton nom',
+    proEmailPlaceholder: 'ton@email.com',
+    proSubmit: 'Rejoindre la liste d\'attente',
+    proSubmitting: 'Envoi...',
+    proSuccess: '🎉 Tu es sur la liste ! 10 générations offertes ajoutées à ton compte, valables 15 jours. On te prévient au lancement avec 3 jours gratuits.',
+    proDisclaimer: 'Gratuit à l\'inscription. Pas de carte requise.',
+    proNavBtn: 'PRO ✨',
+    proPrice: '$3.99',
+    proPriceSuffix: '/ mois',
+    proBonusOffer: 'Rejoins maintenant et reçois 10 générations offertes valables 15 jours',
+    proAlreadyJoined: '✓ Tu es déjà sur la liste. Tes générations bonus sont actives.',
+    bonusLeft: (n, days) => `⚡ ${n} générations bonus restantes (expire dans ${days} jours)`,
+    mealPlanProBanner: '✨ Meal planning est une feature Pro',
+    mealPlanProBtn: 'Rejoindre la waitlist',
     // Feature 2: Pantry
     clearPantry: 'Effacer le frigo',
     pantryCleared: 'Frigo vidé !',
@@ -441,6 +467,31 @@ const T = {
     gateLogin: 'Sign in',
     // Pro limit
     proLimitTitle: 'Limit reached',
+    proBadge: 'COMING SOON',
+    proTitle: 'Chefridge Pro',
+    proSub: 'Join the waitlist and get a 3-day free trial at launch.',
+    proFeatures: [
+      { icon: 'Bookmark', label: 'Unlimited saved recipes' },
+      { icon: 'Refrigerator', label: 'Persistent pantry across sessions' },
+      { icon: 'Calendar', label: '7-day meal planning' },
+      { icon: 'History', label: 'Full history' },
+      { icon: 'FileDown', label: 'Export recipes to PDF' },
+      { icon: 'FolderOpen', label: 'Folders and tags' },
+    ],
+    proNamePlaceholder: 'Your name',
+    proEmailPlaceholder: 'you@email.com',
+    proSubmit: 'Join the waitlist',
+    proSubmitting: 'Sending...',
+    proSuccess: "🎉 You're on the list! 10 free generations added to your account, valid for 15 days. We'll notify you at launch with a 3-day free trial.",
+    proDisclaimer: 'Free to join. No credit card required.',
+    proNavBtn: 'PRO ✨',
+    proPrice: '$3.99',
+    proPriceSuffix: '/ month',
+    proBonusOffer: 'Join now and get 10 free generations valid for 15 days',
+    proAlreadyJoined: "✓ You're already on the list. Your bonus generations are active.",
+    bonusLeft: (n, days) => `⚡ ${n} bonus generations left (expires in ${days} days)`,
+    mealPlanProBanner: '✨ Meal planning is a Pro feature',
+    mealPlanProBtn: 'Join the waitlist',
     proLimitSub: 'Free accounts can save 10 recipes. Upgrade to Pro for unlimited storage.',
     proLimitBtn: 'Upgrade to Pro',
     // Feature 2: Pantry
@@ -669,6 +720,101 @@ function ContactModal({ t, onClose }) {
               {state.submitting ? t.contactSending : t.contactSend}
             </button>
           </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ── Pro Waitlist Modal ── */
+function ProWaitlistModal({ t, onClose, user, alreadyJoined, onJoined }) {
+  const [state, handleSubmit] = useForm('mzdklzag')
+  const [joining, setJoining] = useState(false)
+  const [joinError, setJoinError] = useState('')
+  const IconMap = { Bookmark, Refrigerator, Calendar, History, FileDown, FolderOpen }
+
+  const joinBackend = async () => {
+    if (!user) return
+    try {
+      const session = (await supabase.auth.getSession()).data.session
+      const res = await fetch('/api/join-waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token || ''}`,
+        },
+        body: JSON.stringify({ userId: user.id, email: user.email }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        onJoined?.({ bonus: data.bonus, expiry: data.expiry })
+      }
+    } catch { /* ignore */ }
+  }
+
+  const onFormSubmit = async (e) => {
+    setJoining(true); setJoinError('')
+    await handleSubmit(e)
+    await joinBackend()
+    setJoining(false)
+  }
+
+  useEffect(() => {
+    if (state.succeeded) {
+      const timer = setTimeout(onClose, 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [state.succeeded, onClose])
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card pro-modal" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose} aria-label="Fermer">×</button>
+        {state.succeeded ? (
+          <div className="pro-modal-success">
+            <Check size={48} color="#4A7C59" />
+            <p>{t.proSuccess}</p>
+          </div>
+        ) : alreadyJoined ? (
+          <div className="pro-modal-success">
+            <Check size={48} color="#4A7C59" />
+            <p>{t.proAlreadyJoined}</p>
+          </div>
+        ) : (
+          <>
+            <span className="pro-badge">{t.proBadge}</span>
+            <h2 className="pro-title">{t.proTitle}</h2>
+            <div className="pro-price-row">
+              <span className="pro-price">{t.proPrice}</span>
+              <span className="pro-price-suffix">{t.proPriceSuffix}</span>
+            </div>
+            <p className="pro-bonus-offer">{t.proBonusOffer}</p>
+            <p className="pro-sub">{t.proSub}</p>
+            <ul className="pro-features">
+              {t.proFeatures.map((f, i) => {
+                const Icon = IconMap[f.icon]
+                return (
+                  <li key={i}>
+                    <Icon size={18} color="#D4450C" strokeWidth={2} />
+                    <span>{f.label}</span>
+                  </li>
+                )
+              })}
+            </ul>
+            <form onSubmit={onFormSubmit} className="pro-form">
+              <input type="text" name="name" className="modal-input" placeholder={t.proNamePlaceholder} defaultValue={user?.user_metadata?.name || ''} required />
+              <input type="email" name="email" className="modal-input" placeholder={t.proEmailPlaceholder} defaultValue={user?.email || ''} required />
+              <input type="hidden" name="plan" value="Pro Waitlist" />
+              <input type="hidden" name="trial" value="3 days" />
+              <input type="hidden" name="bonus" value="10 generations / 15 days" />
+              <ValidationError field="email" errors={state.errors} className="contact-error" />
+              {joinError && <div className="contact-error">{joinError}</div>}
+              <button type="submit" className="pro-submit" disabled={state.submitting || joining}>
+                {(state.submitting || joining) ? t.proSubmitting : t.proSubmit}
+              </button>
+            </form>
+            <p className="pro-disclaimer">{t.proDisclaimer}</p>
+          </>
         )}
       </div>
     </div>
@@ -1375,7 +1521,7 @@ function ShoppingListView({ t, shoppingList, setShoppingList }) {
 /* ════════════════════════════════════════════
    APP HEADER
    ════════════════════════════════════════════ */
-function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAuth, shoppingBadge }) {
+function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAuth, onShowPro, shoppingBadge }) {
   return (
     <header className="app-header">
       <div className="container header-inner">
@@ -1404,6 +1550,7 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAu
           </button>
         </nav>
         <div className="header-user">
+          {user && <button className="pro-nav-btn" onClick={onShowPro}>{t.proNavBtn}</button>}
           <button className="lang-toggle lang-toggle-sm" onClick={onToggleLang}>{t.langToggle}</button>
           {user ? (
             <>
@@ -1789,7 +1936,7 @@ Return: {"name":"...","emoji":"🍝","cuisine":"...","time":"...","calories":450
 /* ════════════════════════════════════════════
    MEAL PLAN VIEW
    ════════════════════════════════════════════ */
-function MealPlanView({ t, lang }) {
+function MealPlanView({ t, lang, onShowPro }) {
   const [people, setPeople]       = useState(2)
   const [filters, setFilters]     = useState([])
   const [planText, setPlanText]   = useState('')
@@ -1867,6 +2014,10 @@ List 15-20 key ingredients needed for the week.${langNote}`
   return (
     <main className="main">
       <div className="container">
+        <div className="pro-banner">
+          <span>{t.mealPlanProBanner}</span>
+          <button onClick={onShowPro}>{t.mealPlanProBtn}</button>
+        </div>
         <div className="meal-plan-header">
           <h1 className="meal-plan-title">{t.mealPlanTitle}</h1>
           <p className="meal-plan-sub">{t.mealPlanSub}</p>
@@ -1965,7 +2116,8 @@ export default function App() {
   const [showAuth, setShowAuth]       = useState(false)
   const [showGate, setShowGate]       = useState(false)
   const [gateMessage, setGateMessage] = useState('')
-  const [showProLimit, setShowProLimit] = useState(false)
+  const [showProModal, setShowProModal] = useState(false)
+  const [userProfile, setUserProfile]   = useState(null)
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [pdfUrl, setPdfUrl]             = useState(null)
   const pdfBlobRef = useRef(null)
@@ -2085,6 +2237,9 @@ export default function App() {
           setCookingTime(pendingFiltersRef.current.cookingTime || 'normal')
           setSkillLevel(pendingFiltersRef.current.skillLevel || 'intermediate')
           setPeople(pendingFiltersRef.current.people || 2)
+          if (pendingFiltersRef.current.openProAfterAuth) {
+            setTimeout(() => setShowProModal(true), 500)
+          }
         }
         pendingIngredientsRef.current = null
         pendingFiltersRef.current = null
@@ -2138,6 +2293,14 @@ export default function App() {
     localStorage.removeItem('chefridge_pantry')
     setIngredients([{ id: Date.now(), name: '', qty: '', unit: 'g' }])
   }
+
+  // Load user profile (bonus generations, waitlist status)
+  const loadProfile = async () => {
+    if (!user) { setUserProfile(null); return }
+    const { data } = await supabase.from('profiles').select('bonus_generations, bonus_expiry, waitlist_joined, is_pro').eq('id', user.id).single()
+    if (data) setUserProfile(data)
+  }
+  useEffect(() => { loadProfile() }, [user])
 
   // Load pantry when user changes or view becomes 'app' (skip if pending state exists)
   useEffect(() => {
@@ -2299,6 +2462,7 @@ export default function App() {
         if (raw === '[DONE]') return
         let p; try { p = JSON.parse(raw) } catch { continue }
         if (p.text)  onChunk(p.text)
+        if (p.bonusRemaining !== undefined) setUserProfile(prev => ({ ...(prev || {}), bonus_generations: p.bonusRemaining }))
         if (p.error) throw new Error(p.error)
       }
     }
@@ -2533,7 +2697,7 @@ Exact markdown, short steps:
     const { data: profile } = await supabase.from('profiles').select('is_pro').eq('id', user.id).single()
     if (!profile?.is_pro) {
       const { count } = await supabase.from('saved_recipes').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
-      if (count >= 10) { setSaving(false); setShowProLimit(true); return }
+      if (count >= 10) { setSaving(false); setShowProModal(true); return }
     }
     const { error: err } = await supabase.from('saved_recipes').insert({
       user_id:    user.id,
@@ -2566,11 +2730,11 @@ Exact markdown, short steps:
 
   return (
     <div className="app">
-      <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} onShowAuth={() => setShowAuth(true)} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
+      <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} onShowAuth={() => setShowAuth(true)} onShowPro={() => { if (user) setShowProModal(true); else { setShowAuth(true); pendingFiltersRef.current = { ...pendingFiltersRef.current, openProAfterAuth: true } } }} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
 
       <div style={{ paddingTop: navHeight + 'px' }}>
       {view === 'meal-plan' ? (
-        <MealPlanView t={t} lang={lang} />
+        <MealPlanView t={t} lang={lang} onShowPro={() => setShowProModal(true)} />
       ) : view === 'saved' ? (
         <SavedRecipesView t={t} onNavigate={setView} />
       ) : view === 'shopping' ? (
@@ -2757,6 +2921,11 @@ Exact markdown, short steps:
                 <button className="gen-btn" onClick={() => { if (typeof navigator.vibrate === 'function') navigator.vibrate(10); generateProposals() }}><span>✨</span> {t.generateBtn.replace('✨ ', '')}</button>
               ) : (
                 <button className="gen-btn secondary" onClick={resetProposals}><span>🔄</span> {t.resetBtn.replace('🔄 ', '')}</button>
+              )}
+              {userProfile?.bonus_generations > 0 && userProfile?.bonus_expiry && new Date(userProfile.bonus_expiry) > new Date() && (
+                <p className="bonus-badge">
+                  {t.bonusLeft(userProfile.bonus_generations, Math.max(0, Math.ceil((new Date(userProfile.bonus_expiry) - new Date()) / 86400000)))}
+                </p>
               )}
             </div>
 
@@ -2966,18 +3135,14 @@ Exact markdown, short steps:
           onExit={() => setCookingMode(false)}
         />
       )}
-      {showProLimit && (
-        <div className="modal-overlay" onClick={() => setShowProLimit(false)}>
-          <div className="modal-card gate-modal" onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowProLimit(false)} aria-label="Fermer">×</button>
-            <div className="gate-illustration">👑</div>
-            <h2 className="modal-title">{t.proLimitTitle}</h2>
-            <p className="modal-sub">{t.proLimitSub}</p>
-            <div className="gate-actions">
-              <button className="modal-submit" onClick={() => setShowProLimit(false)}>{t.proLimitBtn}</button>
-            </div>
-          </div>
-        </div>
+      {showProModal && (
+        <ProWaitlistModal
+          t={t}
+          user={user}
+          alreadyJoined={userProfile?.waitlist_joined}
+          onClose={() => setShowProModal(false)}
+          onJoined={(data) => { setUserProfile(p => ({ ...(p || {}), bonus_generations: data.bonus, bonus_expiry: data.expiry, waitlist_joined: true })) }}
+        />
       )}
       {showPdfModal && pdfUrl && (() => {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)

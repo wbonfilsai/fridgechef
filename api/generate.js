@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { Redis } from '@upstash/redis'
+import { createClient } from '@supabase/supabase-js'
 
 export const config = { maxDuration: 300 }
 
@@ -18,6 +19,34 @@ export default async function handler(req, res) {
   // Rate limiting: check if user is authenticated
   const authHeader = req.headers['authorization']
   const isAuthenticated = authHeader && authHeader.startsWith('Bearer ') && authHeader.length > 20
+
+  // Check bonus generations for authenticated users
+  let bonusRemaining = null
+  if (isAuthenticated && process.env.VITE_SUPABASE_URL) {
+    try {
+      const token = authHeader.slice(7)
+      const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      })
+      const { data: { user } } = await supabase.auth.getUser(token)
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('bonus_generations, bonus_expiry').eq('id', user.id).single()
+        if (profile) {
+          const expiry = profile.bonus_expiry ? new Date(profile.bonus_expiry).getTime() : 0
+          if (expiry < Date.now() && profile.bonus_generations > 0) {
+            // Expired, reset
+            await supabase.from('profiles').update({ bonus_generations: 0 }).eq('id', user.id)
+          } else if (profile.bonus_generations > 0 && expiry > Date.now()) {
+            // Decrement bonus
+            bonusRemaining = profile.bonus_generations - 1
+            await supabase.from('profiles').update({ bonus_generations: bonusRemaining }).eq('id', user.id)
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[generate] bonus check error:', e.message)
+    }
+  }
 
   if (!isAuthenticated && process.env.KV_REST_API_URL) {
     try {
@@ -62,9 +91,11 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-cache')
   res.setHeader('Connection', 'keep-alive')
   res.setHeader('X-Accel-Buffering', 'no')
+  if (bonusRemaining !== null) res.setHeader('X-Bonus-Remaining', String(bonusRemaining))
   res.flushHeaders()
 
   const send = (payload) => res.write(`data: ${JSON.stringify(payload)}\n\n`)
+  if (bonusRemaining !== null) send({ bonusRemaining })
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
