@@ -1831,6 +1831,36 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .check-gen-btn { margin-top: 0; }
 
 /* ═══════════════════════════════════════════
+   MISSING INGREDIENTS MODAL
+   ═══════════════════════════════════════════ */
+.missing-modal { max-width: 420px; width: 100%; }
+
+.missing-list {
+  list-style: none; margin: 0 0 1.5rem; padding: 0;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  max-height: 280px; overflow-y: auto;
+}
+
+.missing-item {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.65rem 0.875rem;
+  background: #FAFAF9; border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  animation: fadeInUp 0.25s ease both;
+}
+
+.missing-emoji { font-size: 1.3rem; flex-shrink: 0; line-height: 1.4; }
+
+.missing-info { flex: 1; min-width: 0; }
+.missing-name { display: block; font-weight: 600; font-size: 0.875rem; color: var(--text); }
+.missing-note { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+.missing-actions {
+  display: flex; gap: 0.75rem;
+}
+.missing-actions .gen-btn { flex: 1; }
+
+/* ═══════════════════════════════════════════
    RECIPE OUTPUT
    ═══════════════════════════════════════════ */
 .recipes-section { scroll-margin-top: 80px; animation: fadeInUp 0.35s ease both; }

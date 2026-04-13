@@ -150,6 +150,10 @@ const T = {
     checkEmpty: "✅ Tu as tout ce qu'il faut !",
     checkNote: '💡 Les ingrédients non cochés seront remplacés par des substitutions créatives.',
     checkGenBtn: '👨‍🍳 Générer la recette complète',
+    missingModalTitle: '🛒 Ingrédients manquants',
+    missingModalSub: (name) => `Il vous manque des ingrédients pour "${name}"`,
+    continueAnyway: 'Continuer quand même',
+    cancelBtn: 'Annuler',
     recipeTitle: '📖 Recette complète',
     saveBtn: '❤️ Sauvegarder', savedConfirm: '✅ Sauvegardée !',
     savedPageTitle: '❤️ Mes recettes sauvegardées',
@@ -402,6 +406,10 @@ const T = {
     checkEmpty: '✅ You have everything you need!',
     checkNote: '💡 Unchecked ingredients will be replaced with creative substitutions.',
     checkGenBtn: '👨‍🍳 Generate full recipe',
+    missingModalTitle: '🛒 Missing ingredients',
+    missingModalSub: (name) => `You're missing some ingredients for "${name}"`,
+    continueAnyway: 'Continue anyway',
+    cancelBtn: 'Cancel',
     recipeTitle: '📖 Full Recipe',
     saveBtn: '❤️ Save', savedConfirm: '✅ Saved!',
     savedPageTitle: '❤️ My saved recipes',
@@ -2116,9 +2124,11 @@ export default function App() {
   const [showAuth, setShowAuth]       = useState(false)
   const [showGate, setShowGate]       = useState(false)
   const [gateMessage, setGateMessage] = useState('')
-  const [showProModal, setShowProModal] = useState(false)
-  const [userProfile, setUserProfile]   = useState(null)
-  const [showPdfModal, setShowPdfModal] = useState(false)
+  const [showProModal, setShowProModal]         = useState(false)
+  const [userProfile, setUserProfile]           = useState(null)
+  const [showPdfModal, setShowPdfModal]         = useState(false)
+  const [showMissingModal, setShowMissingModal] = useState(false)
+  const [pendingGenArgs, setPendingGenArgs]     = useState(null)
   const [pdfUrl, setPdfUrl]             = useState(null)
   const pdfBlobRef = useRef(null)
   const [showContact, setShowContact] = useState(false)
@@ -2650,7 +2660,10 @@ Exact markdown, short steps:
       if (!extras?.length) {
         await doGenerateRecipe(valid, proposal, [])
       } else {
-        setCheckIngredients(extras.map(e => ({ ...e, checked: true }))); setPhase('check')
+        setCheckIngredients(extras.map(e => ({ ...e, checked: true })))
+        setPendingGenArgs({ valid, proposal })
+        setShowMissingModal(true)
+        setPhase('proposals')
       }
     } catch (err) {
       if (err.name !== 'AbortError') setError(`❌ ${err.message}`)
@@ -2670,12 +2683,27 @@ Exact markdown, short steps:
       }, ctrl.signal, 'claude-opus-4-6', 2000)
       setPhase('recipe')
     } catch (err) {
-      if (err.name !== 'AbortError') { setError(`❌ ${err.message}`); setPhase(extras.length ? 'check' : 'proposals') }
-      else setPhase(accumulated ? 'recipe' : (extras.length ? 'check' : 'proposals'))
+      if (err.name !== 'AbortError') { setError(`❌ ${err.message}`); setPhase('proposals') }
+      else setPhase(accumulated ? 'recipe' : 'proposals')
     } finally { abortRef.current = null }
   }
 
   const generateFullRecipe = () => doGenerateRecipe(ingredients.filter(i => i.name.trim()), selectedProposal, checkIngredients)
+
+  const handleContinueAnyway = async () => {
+    if (!pendingGenArgs) return
+    const { valid, proposal } = pendingGenArgs
+    setShowMissingModal(false)
+    setPendingGenArgs(null)
+    await doGenerateRecipe(valid, proposal, checkIngredients)
+  }
+
+  const handleCancelMissing = () => {
+    setShowMissingModal(false)
+    setPendingGenArgs(null)
+    setCheckIngredients([])
+    setPhase('proposals')
+  }
 
   const stopGeneration = () => {
     abortRef.current?.abort(); abortRef.current = null
@@ -3143,6 +3171,30 @@ Exact markdown, short steps:
           onClose={() => setShowProModal(false)}
           onJoined={(data) => { setUserProfile(p => ({ ...(p || {}), bonus_generations: data.bonus, bonus_expiry: data.expiry, waitlist_joined: true })) }}
         />
+      )}
+      {showMissingModal && (
+        <div className="modal-overlay" onClick={handleCancelMissing}>
+          <div className="modal-card missing-modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={handleCancelMissing} aria-label="Fermer">×</button>
+            <h2 className="modal-title">{t.missingModalTitle}</h2>
+            {pendingGenArgs && <p className="modal-sub">{t.missingModalSub(pendingGenArgs.proposal.nom)}</p>}
+            <ul className="missing-list">
+              {checkIngredients.map((ing, i) => (
+                <li key={i} className="missing-item">
+                  <span className="missing-emoji">{ing.emoji}</span>
+                  <div className="missing-info">
+                    <span className="missing-name">{ing.name}</span>
+                    {ing.note && <span className="missing-note">{ing.note}</span>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="missing-actions">
+              <button className="gen-btn secondary" onClick={handleCancelMissing}>{t.cancelBtn}</button>
+              <button className="gen-btn" onClick={handleContinueAnyway}>{t.continueAnyway}</button>
+            </div>
+          </div>
+        </div>
       )}
       {showPdfModal && pdfUrl && (() => {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
