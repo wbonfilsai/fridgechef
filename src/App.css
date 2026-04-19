@@ -2145,10 +2145,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   color: var(--primary);
   background: var(--primary-light);
 }
-.diet-card.diet-active {
+.diet-card.diet-active,
+.diet-card.selected {
   border-color: #4A7C59;
   background: #4A7C59;
   color: #fff;
+}
+.diet-card.allergy.selected {
+  border-color: #C53030;
+  background: #C53030;
+}
+.diet-card.allergy:hover {
+  border-color: #C53030;
+  color: #C53030;
+  background: #FED7D7;
 }
 .diet-emoji { font-size: 1rem; }
 .diet-name  { font-size: 0.82rem; }

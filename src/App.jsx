@@ -47,15 +47,28 @@ const T = {
     dietOptions: [
       { id: 'vegetarien',  label: 'Végétarien',   emoji: '🥦' },
       { id: 'vegan',       label: 'Végan',         emoji: '🌱' },
-      { id: 'sans-gluten', label: 'Sans gluten',   emoji: '🌾' },
       { id: 'keto',        label: 'Keto',           emoji: '🥩' },
-      { id: 'sans-lactose',label: 'Sans lactose',  emoji: '🥛' },
       { id: 'halal',       label: 'Halal',          emoji: '☪️' },
       { id: 'casher',      label: 'Casher',         emoji: '✡️' },
       { id: 'high-protein',label: 'Riche en protéines', emoji: '💪' },
       { id: 'anti-inflam', label: 'Anti-inflammatoire', emoji: '🌿' },
       { id: 'low-carb',    label: 'Low-carb',       emoji: '🥑' },
     ],
+    allergyOptions: [
+      { id: 'peanuts',    label: 'Arachides',       emoji: '🥜' },
+      { id: 'tree-nuts',  label: 'Fruits à coque',  emoji: '🌰' },
+      { id: 'gluten',     label: 'Gluten',           emoji: '🌾' },
+      { id: 'lactose',    label: 'Lactose',          emoji: '🥛' },
+      { id: 'eggs',       label: 'Œufs',             emoji: '🥚' },
+      { id: 'shellfish',  label: 'Crustacés',        emoji: '🦐' },
+      { id: 'soy',        label: 'Soja',             emoji: '🫘' },
+      { id: 'fish',       label: 'Poisson',          emoji: '🐟' },
+      { id: 'sesame',     label: 'Sésame',           emoji: '🫓' },
+      { id: 'sulfites',   label: 'Sulfites',         emoji: '🍷' },
+    ],
+    allergyTitle: '⚠️ Allergies',
+    allergySub: 'Aucune allergie sélectionnée',
+    allergySubSelected: (n) => `${n} allergie${n > 1 ? 's' : ''} sélectionnée${n > 1 ? 's' : ''}`,
     langToggle: '🇺🇸 EN',
     connect: 'Se connecter',
     heroBadge: '✨ Recettes personnalisées en 30 secondes',
@@ -149,11 +162,10 @@ const T = {
     checkSub: (name) => `Pour ${name}, coche les ingrédients que tu as`,
     checkEmpty: "✅ Tu as tout ce qu'il faut !",
     checkNote: '💡 Les ingrédients non cochés seront remplacés par des substitutions créatives.',
-    checkGenBtn: '👨‍🍳 Générer la recette complète',
-    missingModalTitle: '🛒 Ingrédients manquants',
-    missingModalSub: (name) => `Il vous manque des ingrédients pour "${name}"`,
-    continueAnyway: 'Continuer quand même',
+    checkGenBtn: '👨‍🍳 Continuer vers la recette',
     cancelBtn: 'Annuler',
+    timeoutError: '❌ La génération a pris trop de temps. Réessaie.',
+    retryBtn: '🔄 Réessayer',
     recipeTitle: '📖 Recette complète',
     saveBtn: '❤️ Sauvegarder', savedConfirm: '✅ Sauvegardée !',
     savedPageTitle: '❤️ Mes recettes sauvegardées',
@@ -172,9 +184,7 @@ const T = {
     dietaryFilters: [
       { id: 'vegetarian', label: 'Végétarien', emoji: '🥦' },
       { id: 'vegan',      label: 'Vegan',       emoji: '🌱' },
-      { id: 'gluten-free', label: 'Sans gluten', emoji: '🌾' },
       { id: 'keto',       label: 'Kéto',         emoji: '🥑' },
-      { id: 'lactose-free', label: 'Sans lactose', emoji: '🥛' },
       { id: 'halal',      label: 'Halal',         emoji: '☪️' },
       { id: 'kosher',     label: 'Casher',        emoji: '✡️' },
     ],
@@ -205,7 +215,7 @@ const T = {
     mealPlanNoSaved: 'Aucun plan sauvegardé',
     shoppingListNav: 'Courses',
     shoppingListTitle: '🛒 Liste de courses',
-    addMissingBtn: 'Ajouter les manquants à la liste',
+    addMissingBtn: 'Ajouter les items décochés à ma liste de courses',
     shoppingListClear: 'Vider la liste',
     shoppingListEmpty: 'Votre liste est vide',
     shoppingListAddPlaceholder: 'Ajouter un article...',
@@ -303,15 +313,28 @@ const T = {
     dietOptions: [
       { id: 'vegetarien',  label: 'Vegetarian', emoji: '🥦' },
       { id: 'vegan',       label: 'Vegan',       emoji: '🌱' },
-      { id: 'sans-gluten', label: 'Gluten-free', emoji: '🌾' },
       { id: 'keto',        label: 'Keto',         emoji: '🥩' },
-      { id: 'sans-lactose',label: 'Dairy-free',  emoji: '🥛' },
       { id: 'halal',       label: 'Halal',        emoji: '☪️' },
       { id: 'casher',      label: 'Kosher',       emoji: '✡️' },
       { id: 'high-protein',label: 'High-protein', emoji: '💪' },
       { id: 'anti-inflam', label: 'Anti-inflammatory', emoji: '🌿' },
       { id: 'low-carb',    label: 'Low-carb',     emoji: '🥑' },
     ],
+    allergyOptions: [
+      { id: 'peanuts',    label: 'Peanuts',     emoji: '🥜' },
+      { id: 'tree-nuts',  label: 'Tree nuts',   emoji: '🌰' },
+      { id: 'gluten',     label: 'Gluten',      emoji: '🌾' },
+      { id: 'lactose',    label: 'Lactose',     emoji: '🥛' },
+      { id: 'eggs',       label: 'Eggs',        emoji: '🥚' },
+      { id: 'shellfish',  label: 'Shellfish',   emoji: '🦐' },
+      { id: 'soy',        label: 'Soy',         emoji: '🫘' },
+      { id: 'fish',       label: 'Fish',        emoji: '🐟' },
+      { id: 'sesame',     label: 'Sesame',      emoji: '🫓' },
+      { id: 'sulfites',   label: 'Sulfites',    emoji: '🍷' },
+    ],
+    allergyTitle: '⚠️ Allergies',
+    allergySub: 'No allergies selected',
+    allergySubSelected: (n) => `${n} allerg${n > 1 ? 'ies' : 'y'} selected`,
     langToggle: '🇫🇷 FR',
     connect: 'Sign in',
     heroBadge: '✨ Personalized recipes in 30 seconds',
@@ -405,11 +428,10 @@ const T = {
     checkSub: (name) => `For ${name}, check the ingredients you have`,
     checkEmpty: '✅ You have everything you need!',
     checkNote: '💡 Unchecked ingredients will be replaced with creative substitutions.',
-    checkGenBtn: '👨‍🍳 Generate full recipe',
-    missingModalTitle: '🛒 Missing ingredients',
-    missingModalSub: (name) => `You're missing some ingredients for "${name}"`,
-    continueAnyway: 'Continue anyway',
+    checkGenBtn: '👨‍🍳 Continue to recipe',
     cancelBtn: 'Cancel',
+    timeoutError: '❌ Generation took too long. Please try again.',
+    retryBtn: '🔄 Retry',
     recipeTitle: '📖 Full Recipe',
     saveBtn: '❤️ Save', savedConfirm: '✅ Saved!',
     savedPageTitle: '❤️ My saved recipes',
@@ -428,9 +450,7 @@ const T = {
     dietaryFilters: [
       { id: 'vegetarian',  label: 'Vegetarian',    emoji: '🥦' },
       { id: 'vegan',       label: 'Vegan',          emoji: '🌱' },
-      { id: 'gluten-free', label: 'Gluten-free',    emoji: '🌾' },
       { id: 'keto',        label: 'Keto',            emoji: '🥑' },
-      { id: 'lactose-free', label: 'Lactose-free',  emoji: '🥛' },
       { id: 'halal',       label: 'Halal',           emoji: '☪️' },
       { id: 'kosher',      label: 'Kosher',          emoji: '✡️' },
     ],
@@ -461,7 +481,7 @@ const T = {
     mealPlanNoSaved: 'No saved plans',
     shoppingListNav: 'Shopping',
     shoppingListTitle: '🛒 Shopping List',
-    addMissingBtn: 'Add missing items to list',
+    addMissingBtn: 'Add unchecked items to my shopping list',
     shoppingListClear: 'Clear list',
     shoppingListEmpty: 'Your list is empty',
     shoppingListAddPlaceholder: 'Add an item...',
@@ -2127,8 +2147,6 @@ export default function App() {
   const [showProModal, setShowProModal]         = useState(false)
   const [userProfile, setUserProfile]           = useState(null)
   const [showPdfModal, setShowPdfModal]         = useState(false)
-  const [showMissingModal, setShowMissingModal] = useState(false)
-  const [pendingGenArgs, setPendingGenArgs]     = useState(null)
   const [pdfUrl, setPdfUrl]             = useState(null)
   const pdfBlobRef = useRef(null)
   const [showContact, setShowContact] = useState(false)
@@ -2179,6 +2197,7 @@ export default function App() {
   const [selectedCuisines, setSelectedCuisines] = useState([])
   const [cookingTime, setCookingTime] = useState('normal')
   const [activeDietaryFilters, setActiveDietaryFilters] = useState([])
+  const [activeAllergies, setActiveAllergies]           = useState([])
   const [skillLevel, setSkillLevel]         = useState('intermediate')
 
   /* Cooking mode (Feature 4) */
@@ -2304,13 +2323,29 @@ export default function App() {
     setIngredients([{ id: Date.now(), name: '', qty: '', unit: 'g' }])
   }
 
-  // Load user profile (bonus generations, waitlist status)
+  // Load user profile (bonus generations, waitlist status, dietary, allergies)
   const loadProfile = async () => {
     if (!user) { setUserProfile(null); return }
-    const { data } = await supabase.from('profiles').select('bonus_generations, bonus_expiry, waitlist_joined, is_pro').eq('id', user.id).single()
-    if (data) setUserProfile(data)
+    const { data } = await supabase.from('profiles').select('bonus_generations, bonus_expiry, waitlist_joined, is_pro, allergies, dietary_preferences').eq('id', user.id).single()
+    if (data) {
+      setUserProfile(data)
+      if (data.dietary_preferences?.length) setActiveDietaryFilters(data.dietary_preferences)
+      if (data.allergies?.length) setActiveAllergies(data.allergies)
+    }
   }
   useEffect(() => { loadProfile() }, [user])
+
+  // Auto-save dietary preferences to Supabase
+  useEffect(() => {
+    if (!user) return
+    supabase.from('profiles').update({ dietary_preferences: activeDietaryFilters }).eq('id', user.id)
+  }, [activeDietaryFilters, user])
+
+  // Auto-save allergies to Supabase
+  useEffect(() => {
+    if (!user) return
+    supabase.from('profiles').update({ allergies: activeAllergies }).eq('id', user.id)
+  }, [activeAllergies, user])
 
   // Load pantry when user changes or view becomes 'app' (skip if pending state exists)
   useEffect(() => {
@@ -2356,6 +2391,8 @@ export default function App() {
   const toggleCheckIng   = (idx) => setCheckIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, checked: !ing.checked } : ing))
   const toggleDietaryFilter = (id) => setActiveDietaryFilters(prev =>
     prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
+  const toggleAllergy = (id) => setActiveAllergies(prev =>
+    prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id])
   const selectedDiets = activeDietaryFilters
   const toggleDiet    = toggleDietaryFilter
 
@@ -2498,17 +2535,20 @@ export default function App() {
     const extras = selectedDiets.map(id => DIET_PROMPT_EXTRAS[id]).filter(Boolean)
     return [...labels, ...extras].join(', ')
   }
+  const buildAllergyStr = () =>
+    activeAllergies.map(id => t.allergyOptions.find(a => a.id === id)?.label).filter(Boolean).join(', ')
 
   const buildProposalsPrompt = (valid, excludeNames = null) => {
     const ingList = buildIngList(valid)
     const cNames  = selectedCuisines.map(id => t.cuisines.find(c => c.id === id)?.label).filter(Boolean)
     const cText   = cNames.length ? cNames.join(', ') : 'any cuisine'
     const constraint = COOKING_TIME_CONSTRAINTS[cookingTime]
-    const dietText   = activeDietaryFilters.length ? `\nDietary: ${activeDietaryFilters.join(', ')}` : ''
+    const dietText    = activeDietaryFilters.length ? `\nDietary: ${buildDietStr()}` : ''
+    const allergyText = activeAllergies.length ? `\nALLERGIES TO AVOID ABSOLUTELY: ${buildAllergyStr()}. Never include these ingredients or their derivatives.` : ''
     const skillText  = SKILL_PROMPTS[skillLevel]
     return `JSON only, no text, no backticks.
 Ingredients: ${ingList}
-${people} serving(s) · Style: ${cText} · Time: ${constraint}${dietText}
+${people} serving(s) · Style: ${cText} · Time: ${constraint}${dietText}${allergyText}
 ${skillText}
 
 3 varied proposals, different from: ${excludeNames || 'none'}. Strict format:
@@ -2526,9 +2566,10 @@ ${skillText}
     if (available.length)   extras += `\nExtra available: ${available.map(i => `${i.name}${i.note ? ` (${i.note})` : ''}`).join(', ')}`
     if (unavailable.length) extras += `\nMissing (substitute each): ${unavailable.map(i => i.name).join(', ')}`
 
-    const dietNote = activeDietaryFilters.length ? `\nRestrictions alimentaires : ${activeDietaryFilters.join(', ')}.` : ''
+    const dietNote    = activeDietaryFilters.length ? `\nRégime alimentaire : ${buildDietStr()}.` : ''
+    const allergyNote = activeAllergies.length ? `\nALLERGIES À ÉVITER ABSOLUMENT : ${buildAllergyStr()}. Ne jamais inclure ces ingrédients ni leurs dérivés dans la recette.` : ''
     const skillText = SKILL_PROMPTS[skillLevel]
-    return `Chef expert. Recette concise pour "${proposal.nom}" (${proposal.cuisine}).${dietNote}
+    return `Chef expert. Recette concise pour "${proposal.nom}" (${proposal.cuisine}).${dietNote}${allergyNote}
 ${skillText}
 Ingrédients : ${ingList}${extras}
 ${people} pers. · ${constraint}.
@@ -2661,9 +2702,7 @@ Exact markdown, short steps:
         await doGenerateRecipe(valid, proposal, [])
       } else {
         setCheckIngredients(extras.map(e => ({ ...e, checked: true })))
-        setPendingGenArgs({ valid, proposal })
-        setShowMissingModal(true)
-        setPhase('proposals')
+        setPhase('check')
       }
     } catch (err) {
       if (err.name !== 'AbortError') setError(`❌ ${err.message}`)
@@ -2676,6 +2715,7 @@ Exact markdown, short steps:
     setPhase('recipe-loading'); setRecipeText(''); setError(''); setSaved(false)
     const ctrl = new AbortController(); abortRef.current = ctrl
     let accumulated = ''
+    const timeout = setTimeout(() => ctrl.abort(), 30000)
     setTimeout(() => recipeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150)
     try {
       await streamSSE(buildFullRecipePrompt(valid, proposal, extras), chunk => {
@@ -2683,25 +2723,30 @@ Exact markdown, short steps:
       }, ctrl.signal, 'claude-opus-4-6', 2000)
       setPhase('recipe')
     } catch (err) {
-      if (err.name !== 'AbortError') { setError(`❌ ${err.message}`); setPhase('proposals') }
-      else setPhase(accumulated ? 'recipe' : 'proposals')
-    } finally { abortRef.current = null }
+      console.error('[Chefridge] Recipe generation error:', err)
+      if (err.name === 'AbortError') {
+        if (accumulated) {
+          setPhase('recipe')
+        } else if (abortRef.current === ctrl) {
+          // Timeout (not user-initiated abort)
+          setError(t.timeoutError)
+          setPhase('recipe-error')
+        } else {
+          setPhase('proposals')
+        }
+      } else {
+        setError(`❌ ${err.message}`)
+        setPhase('recipe-error')
+      }
+    } finally { clearTimeout(timeout); abortRef.current = null }
   }
 
   const generateFullRecipe = () => doGenerateRecipe(ingredients.filter(i => i.name.trim()), selectedProposal, checkIngredients)
 
-  const handleContinueAnyway = async () => {
-    if (!pendingGenArgs) return
-    const { valid, proposal } = pendingGenArgs
-    setShowMissingModal(false)
-    setPendingGenArgs(null)
-    await doGenerateRecipe(valid, proposal, checkIngredients)
-  }
-
-  const handleCancelMissing = () => {
-    setShowMissingModal(false)
-    setPendingGenArgs(null)
+  const cancelCheck = () => {
     setCheckIngredients([])
+    setSelectedIdx(null)
+    setSelectedProposal(null)
     setPhase('proposals')
   }
 
@@ -2745,7 +2790,7 @@ Exact markdown, short steps:
   const isLoading     = phase === 'proposals-loading' || phase === 'check-loading' || phase === 'recipe-loading'
   const showProposals = proposals.length > 0 && phase !== 'idle' && phase !== 'proposals-loading'
   const showCheck     = (phase === 'check-loading' || phase === 'check') && selectedProposal !== null
-  const showRecipe    = phase === 'recipe-loading' || phase === 'recipe'
+  const showRecipe    = phase === 'recipe-loading' || phase === 'recipe' || phase === 'recipe-error'
 
   if (authLoading) return <div className="auth-splash"><span className="auth-splash-icon">🍳</span></div>
 
@@ -2893,6 +2938,26 @@ Exact markdown, short steps:
                     <span className="diet-emoji">{d.emoji}</span>
                     <span className="diet-name">{d.label}</span>
                     {selectedDiets.includes(d.id) && <span className="c-check">✓</span>}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Step 4b: Allergies */}
+            <section className="card">
+              <div className="step-header">
+                <div className="step-badge">⚠️</div>
+                <div>
+                  <h2>{t.allergyTitle}</h2>
+                  <p>{activeAllergies.length === 0 ? t.allergySub : t.allergySubSelected(activeAllergies.length)}</p>
+                </div>
+              </div>
+              <div className="diet-grid">
+                {t.allergyOptions.map(a => (
+                  <button key={a.id} className={`diet-card allergy${activeAllergies.includes(a.id) ? ' selected' : ''}`} onClick={() => toggleAllergy(a.id)}>
+                    <span className="diet-emoji">{a.emoji}</span>
+                    <span className="diet-name">{a.label}</span>
+                    {activeAllergies.includes(a.id) && <span className="c-check">✓</span>}
                   </button>
                 ))}
               </div>
@@ -3049,14 +3114,19 @@ Exact markdown, short steps:
                       <p className="check-empty">{t.checkEmpty}</p>
                     )}
                     {checkIngredients.some(i => !i.checked) && <p className="check-sub-note">{t.checkNote}</p>}
-                    {checkIngredients.some(i => !i.checked) && (
-                      <button className="gen-btn secondary add-missing-btn" onClick={addMissingToShopping}>
-                        🛒 {t.addMissingBtn}
+                    <div className="check-actions">
+                      {checkIngredients.some(i => !i.checked) && (
+                        <button className="gen-btn secondary add-missing-btn" onClick={addMissingToShopping}>
+                          🛒 {t.addMissingBtn}
+                        </button>
+                      )}
+                      <button className="gen-btn check-gen-btn" onClick={generateFullRecipe}>
+                        <span>👨‍🍳</span> {t.checkGenBtn.replace('👨‍🍳 ', '')}
                       </button>
-                    )}
-                    <button className="gen-btn check-gen-btn" onClick={generateFullRecipe}>
-                      <span>👨‍🍳</span> {t.checkGenBtn.replace('👨‍🍳 ', '')}
-                    </button>
+                      <button className="gen-btn secondary" onClick={cancelCheck}>
+                        {t.cancelBtn}
+                      </button>
+                    </div>
                   </div>
                 )}
               </section>
@@ -3080,6 +3150,12 @@ Exact markdown, short steps:
                     <span className="chef-anim">👨‍🍳</span>
                     <p>{t.recipeLoadingMsg}</p>
                     <div className="dots"><span /><span /><span /></div>
+                  </div>
+                )}
+                {phase === 'recipe-error' && (
+                  <div className="error-state">
+                    <div className="error-msg" role="alert">{error}</div>
+                    <button className="gen-btn" onClick={generateFullRecipe}>{t.retryBtn}</button>
                   </div>
                 )}
                 {recipeText && (
@@ -3171,30 +3247,6 @@ Exact markdown, short steps:
           onClose={() => setShowProModal(false)}
           onJoined={(data) => { setUserProfile(p => ({ ...(p || {}), bonus_generations: data.bonus, bonus_expiry: data.expiry, waitlist_joined: true })) }}
         />
-      )}
-      {showMissingModal && (
-        <div className="modal-overlay" onClick={handleCancelMissing}>
-          <div className="modal-card missing-modal" onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={handleCancelMissing} aria-label="Fermer">×</button>
-            <h2 className="modal-title">{t.missingModalTitle}</h2>
-            {pendingGenArgs && <p className="modal-sub">{t.missingModalSub(pendingGenArgs.proposal.nom)}</p>}
-            <ul className="missing-list">
-              {checkIngredients.map((ing, i) => (
-                <li key={i} className="missing-item">
-                  <span className="missing-emoji">{ing.emoji}</span>
-                  <div className="missing-info">
-                    <span className="missing-name">{ing.name}</span>
-                    {ing.note && <span className="missing-note">{ing.note}</span>}
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <div className="missing-actions">
-              <button className="gen-btn secondary" onClick={handleCancelMissing}>{t.cancelBtn}</button>
-              <button className="gen-btn" onClick={handleContinueAnyway}>{t.continueAnyway}</button>
-            </div>
-          </div>
-        </div>
       )}
       {showPdfModal && pdfUrl && (() => {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
