@@ -164,6 +164,7 @@ const T = {
     checkNote: '💡 Les ingrédients non cochés seront remplacés par des substitutions créatives.',
     checkGenBtn: '👨‍🍳 Continuer vers la recette',
     cancelBtn: 'Annuler',
+    backBtn: 'Retour',
     timeoutError: '❌ La génération a pris trop de temps. Réessaie.',
     retryBtn: '🔄 Réessayer',
     recipeTitle: '📖 Recette complète',
@@ -430,6 +431,7 @@ const T = {
     checkNote: '💡 Unchecked ingredients will be replaced with creative substitutions.',
     checkGenBtn: '👨‍🍳 Continue to recipe',
     cancelBtn: 'Cancel',
+    backBtn: 'Back',
     timeoutError: '❌ Generation took too long. Please try again.',
     retryBtn: '🔄 Retry',
     recipeTitle: '📖 Full Recipe',
@@ -2698,12 +2700,8 @@ Exact markdown, short steps:
       })
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || `Erreur (${res.status})`) }
       const { ingredients: extras } = await res.json()
-      if (!extras?.length) {
-        await doGenerateRecipe(valid, proposal, [])
-      } else {
-        setCheckIngredients(extras.map(e => ({ ...e, checked: true })))
-        setPhase('check')
-      }
+      setCheckIngredients((extras || []).map(e => ({ ...e, checked: true })))
+      setPhase('check')
     } catch (err) {
       if (err.name !== 'AbortError') setError(`❌ ${err.message}`)
       setPhase('proposals')
@@ -3116,7 +3114,7 @@ Exact markdown, short steps:
                     {checkIngredients.some(i => !i.checked) && <p className="check-sub-note">{t.checkNote}</p>}
                     <div className="check-actions">
                       {checkIngredients.some(i => !i.checked) && (
-                        <button className="gen-btn secondary add-missing-btn" onClick={addMissingToShopping}>
+                        <button className="gen-btn secondary add-missing-btn" onClick={() => { addMissingToShopping(); generateFullRecipe() }}>
                           🛒 {t.addMissingBtn}
                         </button>
                       )}
@@ -3124,7 +3122,7 @@ Exact markdown, short steps:
                         <span>👨‍🍳</span> {t.checkGenBtn.replace('👨‍🍳 ', '')}
                       </button>
                       <button className="gen-btn secondary" onClick={cancelCheck}>
-                        {t.cancelBtn}
+                        {t.backBtn}
                       </button>
                     </div>
                   </div>
