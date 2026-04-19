@@ -1234,7 +1234,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: opacity var(--t);
 }
 .header-logo:hover { opacity: 0.8; }
-.header-logo-img { height: 156px; width: auto; border-radius: 12px; display: block; }
+.header-logo-img { height: 48px; width: auto; object-fit: contain; display: block; }
 
 .header-nav {
   display: flex;
@@ -2579,7 +2579,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .header-email   { display: none; }
   .header-nav     { display: none; }
   .lang-toggle-sm { font-size: 0.7rem; padding: 0.3rem 0.6rem; }
-  .header-logo-img { height: 156px; border-radius: 12px; }
+  .header-logo-img { height: 40px; }
   .btn-logout { font-size: 0.75rem; padding: 0.4rem 0.75rem; min-height: 44px; display: flex; align-items: center; }
 
   /* Main content offset for fixed header */

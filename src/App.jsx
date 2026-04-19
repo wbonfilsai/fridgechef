@@ -1081,7 +1081,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree, onContact }) {
       <nav className={`landing-nav${navScrolled ? ' scrolled' : ''}`}>
         <div className="l-container l-nav-inner">
           <div className="landing-logo">
-            <img src="/logo.png" alt="Chefridge" className="landing-logo-img" />
+            <img src="/logo.svg" alt="Chefridge" className="landing-logo-img" />
           </div>
           <div className="landing-nav-right">
             <button className="lang-toggle" onClick={onToggleLang}>{t.langToggle}</button>
@@ -1211,7 +1211,7 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree, onContact }) {
 
       <footer className="landing-footer">
         <div className="l-container">
-          <img src="/logo.png" alt="Chefridge" className="footer-logo" />
+          <img src="/logo.svg" alt="Chefridge" className="footer-logo" />
           <button className="footer-contact-link" onClick={() => onContact()}>{t.contactLink}</button>
         </div>
       </footer>
@@ -1289,7 +1289,7 @@ function AuthModal({ t, onClose, onSuccess, initialTab }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose} aria-label="Fermer">×</button>
-        <div className="modal-logo"><img src="/logo.png" alt="Chefridge" className="modal-logo-img" /></div>
+        <div className="modal-logo"><img src="/logo.svg" alt="Chefridge" className="modal-logo-img" /></div>
         <h2 className="modal-title">{tab === 'login' ? t.loginTitle : t.signupTitle}</h2>
         <p className="modal-sub">{tab === 'login' ? t.loginSub : t.signupSub}</p>
         <div className="modal-tabs">
@@ -1554,7 +1554,7 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAu
     <header className="app-header">
       <div className="container header-inner">
         <button className="header-logo" onClick={() => onNavigate('landing')}>
-          <img src="/logo.png" alt="Chefridge" className="header-logo-img" />
+          <img src="/logo.svg" alt="Chefridge" className="header-logo-img" />
         </button>
         <nav className="header-nav">
           <button className={`header-nav-btn${view === 'app' ? ' active' : ''}`} onClick={() => onNavigate('app')}>
@@ -3187,7 +3187,7 @@ Exact markdown, short steps:
 
       <footer className="footer">
         <div className="container">
-          <img src="/logo.png" alt="Chefridge" className="footer-logo" />
+          <img src="/logo.svg" alt="Chefridge" className="footer-logo" />
           <button className="footer-contact-link" onClick={() => setShowContact(true)}>{t.contactLink}</button>
         </div>
       </footer>
