@@ -3111,13 +3111,11 @@ Exact markdown, short steps:
                     ) : (
                       <p className="check-empty">{t.checkEmpty}</p>
                     )}
-                    {checkIngredients.some(i => !i.checked) && <p className="check-sub-note">{t.checkNote}</p>}
+                    <p className="check-sub-note" style={{ visibility: checkIngredients.some(i => !i.checked) ? 'visible' : 'hidden' }}>{t.checkNote}</p>
                     <div className="check-actions">
-                      {checkIngredients.some(i => !i.checked) && (
-                        <button className="gen-btn secondary add-missing-btn" onClick={() => { addMissingToShopping(); generateFullRecipe() }}>
-                          🛒 {t.addMissingBtn}
-                        </button>
-                      )}
+                      <button className="gen-btn secondary add-missing-btn" disabled={!checkIngredients.some(i => !i.checked)} onClick={() => { addMissingToShopping(); generateFullRecipe() }}>
+                        🛒 {t.addMissingBtn}
+                      </button>
                       <button className="gen-btn check-gen-btn" onClick={generateFullRecipe}>
                         <span>👨‍🍳</span> {t.checkGenBtn.replace('👨‍🍳 ', '')}
                       </button>
