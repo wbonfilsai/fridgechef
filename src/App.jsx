@@ -2135,9 +2135,13 @@ List 15-20 key ingredients needed for the week.${langNote}`
    ════════════════════════════════════════════ */
 export default function App() {
   /* i18n */
-  const [lang, setLang] = useState('fr')
+  const [lang, setLang] = useState(() => localStorage.getItem('chefridge_language') || 'en')
   const t = T[lang]
-  const toggleLang = () => setLang(l => l === 'fr' ? 'en' : 'fr')
+  const toggleLang = () => setLang(l => {
+    const next = l === 'fr' ? 'en' : 'fr'
+    localStorage.setItem('chefridge_language', next)
+    return next
+  })
 
   /* Auth */
   const [user, setUser]               = useState(null)
