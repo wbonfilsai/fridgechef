@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
-import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2, Share2, Camera, Refrigerator, Calendar, History, FileDown, FolderOpen } from 'lucide-react'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2, Share2, Camera, Refrigerator, Calendar, History, FileDown, FolderOpen, Smartphone, Monitor, Tablet } from 'lucide-react'
 import { useForm, ValidationError } from '@formspree/react'
 // jsPDF loaded dynamically on export to reduce initial bundle
 
@@ -98,6 +98,26 @@ const T = {
     ctaSub: 'Gratuit, rapide et intelligent. Des recettes en 30 secondes.',
     ctaBtn: 'Créer mon compte',
     footerText: '',
+    installTitle: 'Installe Chefridge sur ton téléphone',
+    installSub: "Garde ton chef IA à portée de main, directement sur ton écran d'accueil",
+    installIos: [
+      "Appuie sur l'icône Partager (carré avec flèche vers le haut) en bas de l'écran Safari",
+      'Fais défiler et appuie sur "Ajouter à l\'écran d\'accueil"',
+      'Appuie sur "Ajouter" en haut à droite',
+    ],
+    installAndroid: [
+      'Appuie sur le menu (trois points verticaux) en haut à droite de Chrome',
+      'Appuie sur "Ajouter à l\'écran d\'accueil" ou "Installer l\'application"',
+      'Confirme en appuyant sur "Ajouter"',
+    ],
+    installDesktop: [
+      'Regarde la barre d\'adresse de ton navigateur (Chrome ou Edge)',
+      "Clique sur l'icône d'installation (ordinateur avec flèche vers le bas) à droite de l'URL",
+      'Clique sur "Installer"',
+    ],
+    installTabIos: 'iOS',
+    installTabAndroid: 'Android',
+    installTabDesktop: 'Desktop',
     reviewsLabel: 'Ils nous font confiance',
     reviewsTitle: 'Ce que disent nos utilisateurs',
     galleryLabel: 'Nos utilisateurs cuisinent',
@@ -365,6 +385,26 @@ const T = {
     ctaSub: 'Free, fast and smart. Recipes in 30 seconds.',
     ctaBtn: 'Create my account',
     footerText: '',
+    installTitle: 'Install Chefridge on your phone',
+    installSub: 'Keep your AI chef at your fingertips, right on your home screen',
+    installIos: [
+      'Tap the Share icon (square with up arrow) at the bottom of Safari',
+      'Scroll down and tap "Add to Home Screen"',
+      'Tap "Add" in the top right corner',
+    ],
+    installAndroid: [
+      'Tap the menu (three vertical dots) in the top right of Chrome',
+      'Tap "Add to Home screen" or "Install app"',
+      'Confirm by tapping "Add"',
+    ],
+    installDesktop: [
+      'Look at the address bar of your browser (Chrome or Edge)',
+      'Click the install icon (computer with down arrow) on the right side of the URL',
+      'Click "Install"',
+    ],
+    installTabIos: 'iOS',
+    installTabAndroid: 'Android',
+    installTabDesktop: 'Desktop',
     reviewsLabel: 'Trusted by home cooks',
     reviewsTitle: 'What our users say',
     galleryLabel: 'Our users are cooking',
@@ -1069,6 +1109,51 @@ function ReviewsCarousel({ reviews, label, title }) {
   )
 }
 
+/* ── Install PWA Section ── */
+function InstallSection({ t }) {
+  const detectOS = () => {
+    const ua = navigator.userAgent
+    if (/iPad|iPhone|iPod/.test(ua)) return 'ios'
+    if (/Android/.test(ua)) return 'android'
+    return 'desktop'
+  }
+  const [activeTab, setActiveTab] = useState(detectOS)
+  const steps = activeTab === 'ios' ? t.installIos : activeTab === 'android' ? t.installAndroid : t.installDesktop
+  const IconMap = { ios: Smartphone, android: Smartphone, desktop: Monitor }
+  const TabIcon = IconMap[activeTab]
+
+  return (
+    <section className="install-section">
+      <div className="l-container">
+        <div className="install-card">
+          <div className="install-header">
+            <div className="install-title-row">
+              <Smartphone size={28} color="#C2410C" />
+              <div>
+                <h2 className="install-title">{t.installTitle}</h2>
+                <p className="install-sub">{t.installSub}</p>
+              </div>
+            </div>
+            <div className="install-tabs">
+              <button className={`install-tab${activeTab === 'ios' ? ' active' : ''}`} onClick={() => setActiveTab('ios')}>{t.installTabIos}</button>
+              <button className={`install-tab${activeTab === 'android' ? ' active' : ''}`} onClick={() => setActiveTab('android')}>{t.installTabAndroid}</button>
+              <button className={`install-tab${activeTab === 'desktop' ? ' active' : ''}`} onClick={() => setActiveTab('desktop')}>{t.installTabDesktop}</button>
+            </div>
+          </div>
+          <ol className="install-steps">
+            {steps.map((step, i) => (
+              <li key={i} className="install-step">
+                <span className="install-step-num">{i + 1}</span>
+                <span className="install-step-text">{step}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function LandingPage({ t, onToggleLang, onGetStarted, onTryFree, onContact }) {
   const [navScrolled, setNavScrolled] = useState(false)
 
@@ -1179,6 +1264,8 @@ function LandingPage({ t, onToggleLang, onGetStarted, onTryFree, onContact }) {
           </div>
         </div>
       </section>
+
+      <InstallSection t={t} />
 
       <ReviewsCarousel reviews={t.reviews} label={t.reviewsLabel} title={t.reviewsTitle} />
 
