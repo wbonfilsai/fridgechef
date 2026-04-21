@@ -2552,7 +2552,7 @@ export default function App() {
       const res = await fetch('/api/scan-fridge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: base64, mediaType }),
+        body: JSON.stringify({ imageBase64: base64, mediaType, language: lang }),
       })
       const data = await res.json()
       console.log('[scan-fridge] API response:', data)
