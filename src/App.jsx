@@ -752,7 +752,7 @@ const FOOD_STRIP_ITEMS = [
 ]
 
 /* ── Contact Modal ── */
-function ContactModal({ t, onClose }) {
+function ContactModal({ t, onClose, userEmail }) {
   const [state, handleSubmit] = useForm('mjgpdklj')
 
   useEffect(() => {
@@ -778,7 +778,7 @@ function ContactModal({ t, onClose }) {
             </div>
             <div className="form-group">
               <label className="form-label">{t.contactEmail}</label>
-              <input type="email" name="email" className="modal-input" required />
+              <input type="email" name="email" className="modal-input" required defaultValue={userEmail || ''} readOnly={!!userEmail} style={userEmail ? { opacity: 0.7 } : undefined} />
               <ValidationError field="email" errors={state.errors} className="contact-error" />
             </div>
             <div className="form-group">
@@ -1638,7 +1638,7 @@ function ShoppingListView({ t, shoppingList, setShoppingList }) {
 /* ════════════════════════════════════════════
    APP HEADER
    ════════════════════════════════════════════ */
-function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAuth, onShowPro, shoppingBadge }) {
+function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAuth, onShowPro, onShowContact, shoppingBadge }) {
   return (
     <header className="app-header">
       <div className="container header-inner">
@@ -1668,6 +1668,7 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAu
         </nav>
         <div className="header-user">
           {user && <button className="pro-nav-btn" onClick={onShowPro}>{t.proNavBtn}</button>}
+          <button className="header-nav-btn contact-nav-btn" onClick={onShowContact}>{t.contactLink}</button>
           <button className="lang-toggle lang-toggle-sm" onClick={onToggleLang}>{t.langToggle}</button>
           {user ? (
             <>
@@ -1686,12 +1687,13 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAu
 /* ════════════════════════════════════════════
    BOTTOM TAB BAR (Mobile)
    ════════════════════════════════════════════ */
-function BottomTabBar({ lang, view, onNavigate, user, onShowAuth, onLogout, shoppingBadge }) {
+function BottomTabBar({ lang, view, onNavigate, user, onShowAuth, onLogout, onShowContact, shoppingBadge }) {
   const tabs = [
     { id: 'landing', icon: Home, label: lang === 'fr' ? 'Accueil' : 'Home' },
     { id: 'app', icon: ChefHat, label: lang === 'fr' ? 'Générer' : 'Generate' },
     ...(user ? [{ id: 'saved', icon: Bookmark, label: lang === 'fr' ? 'Recettes' : 'Recipes' }] : []),
     { id: 'shopping', icon: ShoppingCart, label: lang === 'fr' ? 'Courses' : 'Shopping', badge: shoppingBadge },
+    { id: 'contact', icon: Mail, label: 'Contact' },
     { id: user ? 'logout' : 'auth', icon: User, label: user ? (lang === 'fr' ? 'Déconnexion' : 'Sign out') : (lang === 'fr' ? 'Connexion' : 'Sign in') },
   ]
 
@@ -1699,6 +1701,7 @@ function BottomTabBar({ lang, view, onNavigate, user, onShowAuth, onLogout, shop
     if (typeof navigator.vibrate === 'function') navigator.vibrate(10)
     if (id === 'auth') { onShowAuth(); return }
     if (id === 'logout') { onLogout(); return }
+    if (id === 'contact') { onShowContact(); return }
     onNavigate(id)
   }
 
@@ -2887,12 +2890,13 @@ Exact markdown, short steps:
     <>
       <LandingPage t={t} onToggleLang={toggleLang} onGetStarted={() => setShowAuth(true)} onTryFree={() => setView('app')} onContact={() => setShowContact(true)} />
       {showAuth && <AuthModal t={t} initialTab={authInitTab} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
+      {showContact && <ContactModal t={t} onClose={() => setShowContact(false)} userEmail={user?.email} />}
     </>
   )
 
   return (
     <div className="app">
-      <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} onShowAuth={() => setShowAuth(true)} onShowPro={() => { if (user) setShowProModal(true); else { setShowAuth(true); pendingFiltersRef.current = { ...pendingFiltersRef.current, openProAfterAuth: true } } }} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
+      <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} onShowAuth={() => setShowAuth(true)} onShowPro={() => { if (user) setShowProModal(true); else { setShowAuth(true); pendingFiltersRef.current = { ...pendingFiltersRef.current, openProAfterAuth: true } } }} onShowContact={() => setShowContact(true)} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
 
       <div style={{ paddingTop: navHeight + 'px' }}>
       {view === 'meal-plan' ? (
@@ -3306,7 +3310,7 @@ Exact markdown, short steps:
         )
       })()}
 
-      <BottomTabBar lang={lang} view={view} onNavigate={setView} user={user} onShowAuth={() => setShowAuth(true)} onLogout={handleLogout} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
+      <BottomTabBar lang={lang} view={view} onNavigate={setView} user={user} onShowAuth={() => setShowAuth(true)} onLogout={handleLogout} onShowContact={() => setShowContact(true)} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
 
       {showAuth && <AuthModal t={t} initialTab={authInitTab} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
       {showGate && (
@@ -3374,7 +3378,7 @@ Exact markdown, short steps:
           </div>
         )
       })()}
-      {showContact && <ContactModal t={t} onClose={() => setShowContact(false)} />}
+      {showContact && <ContactModal t={t} onClose={() => setShowContact(false)} userEmail={user?.email} />}
     </div>
   )
 }
