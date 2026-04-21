@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './supabase'
-import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2, Share2, Camera, Refrigerator, Calendar, History, FileDown, FolderOpen, Smartphone, Monitor, Tablet } from 'lucide-react'
+import { UtensilsCrossed, Globe, ChefHat, ShoppingCart, Baby, Flame, X, CookingPot, Home, Bookmark, User, Sparkles, BarChart3, Mail, Eye, Link2, Check, Mic, Volume2, Share2, Camera, Refrigerator, Calendar, History, FileDown, FolderOpen, Smartphone, Monitor, Tablet, Crown } from 'lucide-react'
 import { useForm, ValidationError } from '@formspree/react'
 // jsPDF loaded dynamically on export to reduce initial bundle
 
@@ -245,24 +245,31 @@ const T = {
     shoppingListDelete: 'Supprimer',
     // Feature 1: Signup gate
     gateTitle: 'Continue à cuisiner gratuitement',
-    gateSub: 'Tu as utilisé tes 3 recettes offertes. Crée un compte, c\'est gratuit.',
-    gateSignup: 'Créer mon compte',
-    gateLogin: 'Se connecter',
+    gateSub: 'Tu as utilisé tes 3 recettes offertes. Crée un compte gratuit pour générer sans limite.',
+    gateBenefits: [
+      'Générations illimitées',
+      'Sauvegarde tes recettes favorites',
+      'Liste de courses personnalisée',
+      'Accès au meal planning',
+    ],
+    gateSignup: 'Créer mon compte gratuit',
+    gateLogin: 'J\'ai déjà un compte',
     // Pro limit
     proLimitTitle: 'Limite atteinte',
     proLimitSub: 'Les comptes gratuits peuvent sauvegarder 10 recettes. Passe à Pro pour une bibliothèque illimitée.',
     proLimitBtn: 'Passer à Pro',
     // Pro waitlist modal
     proBadge: 'BIENTÔT DISPONIBLE',
-    proTitle: 'Chefridge Pro',
-    proSub: 'Rejoins la liste d\'attente et obtiens 3 jours d\'essai gratuit au lancement.',
+    proTitle: 'Passe au niveau supérieur',
+    proSub: 'Rejoins la waitlist Pro et débloque tout le potentiel de Chefridge.',
+    proHighlight: 'Bonus waitlist : 10 générations bonus pendant 15 jours + 3 jours d\'essai gratuit au lancement',
     proFeatures: [
       { icon: 'Bookmark', label: 'Recettes sauvegardées illimitées' },
-      { icon: 'Refrigerator', label: 'Pantry persistant entre sessions' },
       { icon: 'Calendar', label: 'Meal planning 7 jours' },
-      { icon: 'History', label: 'Historique complet' },
-      { icon: 'FileDown', label: 'Export PDF des recettes' },
-      { icon: 'FolderOpen', label: 'Dossiers et tags' },
+      { icon: 'History', label: 'Mode cuisine step-by-step' },
+      { icon: 'FileDown', label: 'Export PDF de toutes tes recettes' },
+      { icon: 'Refrigerator', label: 'Pantry persistant avancé' },
+      { icon: 'FolderOpen', label: 'Support prioritaire' },
     ],
     proNamePlaceholder: 'Ton nom',
     proEmailPlaceholder: 'ton@email.com',
@@ -532,21 +539,28 @@ const T = {
     shoppingListDelete: 'Delete',
     // Feature 1: Signup gate
     gateTitle: 'Keep cooking for free',
-    gateSub: 'You\'ve used your 3 free recipes. Create an account, it\'s free.',
-    gateSignup: 'Create my account',
-    gateLogin: 'Sign in',
+    gateSub: 'You\'ve used your 3 free recipes. Create a free account to generate without limits.',
+    gateBenefits: [
+      'Unlimited generations',
+      'Save your favorite recipes',
+      'Personalized shopping list',
+      'Access to meal planning',
+    ],
+    gateSignup: 'Create my free account',
+    gateLogin: 'I already have an account',
     // Pro limit
     proLimitTitle: 'Limit reached',
     proBadge: 'COMING SOON',
-    proTitle: 'Chefridge Pro',
-    proSub: 'Join the waitlist and get a 3-day free trial at launch.',
+    proTitle: 'Level up your cooking',
+    proSub: 'Join the Pro waitlist and unlock everything Chefridge has to offer.',
+    proHighlight: 'Waitlist bonus: 10 bonus generations for 15 days + 3-day free trial at launch',
     proFeatures: [
       { icon: 'Bookmark', label: 'Unlimited saved recipes' },
-      { icon: 'Refrigerator', label: 'Persistent pantry across sessions' },
       { icon: 'Calendar', label: '7-day meal planning' },
-      { icon: 'History', label: 'Full history' },
-      { icon: 'FileDown', label: 'Export recipes to PDF' },
-      { icon: 'FolderOpen', label: 'Folders and tags' },
+      { icon: 'History', label: 'Step-by-step cooking mode' },
+      { icon: 'FileDown', label: 'Unlimited PDF export' },
+      { icon: 'Refrigerator', label: 'Advanced persistent pantry' },
+      { icon: 'FolderOpen', label: 'Priority support' },
     ],
     proNamePlaceholder: 'Your name',
     proEmailPlaceholder: 'you@email.com',
@@ -852,14 +866,11 @@ function ProWaitlistModal({ t, onClose, user, alreadyJoined, onJoined }) {
           </div>
         ) : (
           <>
+            <div className="pro-icon"><Crown size={40} color="#C2410C" /></div>
             <span className="pro-badge">{t.proBadge}</span>
             <h2 className="pro-title">{t.proTitle}</h2>
-            <div className="pro-price-row">
-              <span className="pro-price">{t.proPrice}</span>
-              <span className="pro-price-suffix">{t.proPriceSuffix}</span>
-            </div>
-            <p className="pro-bonus-offer">{t.proBonusOffer}</p>
             <p className="pro-sub">{t.proSub}</p>
+            <div className="pro-highlight">{t.proHighlight}</div>
             <ul className="pro-features">
               {t.proFeatures.map((f, i) => {
                 const Icon = IconMap[f.icon]
@@ -1428,9 +1439,14 @@ function SignupGateModal({ t, onClose, onSignup, onLogin, message }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card gate-modal" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose} aria-label="Fermer">×</button>
-        <div className="gate-illustration">🔒</div>
+        <div className="gate-icon"><Sparkles size={40} color="#C2410C" /></div>
         <h2 className="modal-title">{t.gateTitle}</h2>
         <p className="modal-sub">{message || t.gateSub}</p>
+        <ul className="gate-benefits">
+          {t.gateBenefits.map((b, i) => (
+            <li key={i}><Check size={16} color="#4A7C59" /><span>{b}</span></li>
+          ))}
+        </ul>
         <div className="gate-actions">
           <button className="modal-submit" onClick={onSignup}>{t.gateSignup}</button>
           <button className="gate-login-btn" onClick={onLogin}>{t.gateLogin}</button>
