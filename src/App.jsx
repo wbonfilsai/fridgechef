@@ -2798,18 +2798,21 @@ Exact markdown, short steps:
     setTimeout(() => checkRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150)
 
     try {
+      const userIngList = valid.map(i => `${i.name.trim()}${i.qty ? ` : ${i.qty} ${i.unit}` : ''}`)
+      console.log('[check-ingredients] Recipe:', proposal.nom, '| User ingredients:', userIngList)
       const res = await fetch('/api/check-ingredients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipeName: proposal.nom, recipeCuisine: proposal.cuisine,
-          userIngredients: valid.map(i => `${i.name.trim()}${i.qty ? ` : ${i.qty} ${i.unit}` : ''}`),
+          userIngredients: userIngList,
           people, cookingTime, dietary: buildDietStr(),
         }),
         signal: ctrl.signal,
       })
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || `Erreur (${res.status})`) }
       const { ingredients: extras } = await res.json()
+      console.log('[check-ingredients] Missing ingredients:', extras)
       setCheckIngredients((extras || []).map(e => ({ ...e, checked: true })))
       setPhase('check')
     } catch (err) {

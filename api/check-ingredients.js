@@ -26,32 +26,38 @@ export default async function handler(req, res) {
   }
   const timeLabel = timeLabels[cookingTime] || '45 minutes'
   const dietLine = dietary && typeof dietary === 'string' && dietary.length < 200
-    ? `\nContraintes: ${dietary}.` : ''
+    ? `\nContraintes alimentaires: ${dietary}.` : ''
 
-  const prompt = `Recette "${recipeName}" (${recipeCuisine}), ${people} pers., ${timeLabel}.${dietLine}
-Ingrédients déjà disponibles :
+  const prompt = `Tu es un assistant qui compare deux listes d'ingrédients de façon STRICTE.
+
+RECETTE : "${recipeName}" (${recipeCuisine}), ${people} personnes, ${timeLabel}.${dietLine}
+
+INGRÉDIENTS DISPONIBLES DE L'UTILISATEUR :
 ${userIngList}
 
-Réponds UNIQUEMENT avec un JSON — max 6 ingrédients complémentaires manquants. Si rien ne manque : [].
-Pour chaque ingrédient, indique :
-- name : nom de l'ingrédient
-- emoji : un emoji représentatif
-- note : quantité nécessaire pour la recette
-- recipe_quantity : quantité exacte pour la recette (ex: "300g", "1 gousse")
-- purchase_unit : ce qu'on achète réellement en épicerie (ex: "1 sac (1kg)", "1 tête d'ail", "1 contenant (250ml)", "1 bloc (250g)", "1 filet de citrons", "1 douzaine d'oeufs")
-- purchase_qty : nombre d'unités à acheter (presque toujours 1)
-- importance : "essentiel" si la recette ne fonctionne pas sans, "recommandé" si ça améliore beaucoup, "optionnel" si c'est un plus
+ÉTAPE 1 : Détermine la liste COMPLÈTE des ingrédients nécessaires pour préparer "${recipeName}" pour ${people} personnes, avec les quantités exactes.
 
-Classe par importance : essentiel en premier, optionnel en dernier.
+ÉTAPE 2 : Compare CHAQUE ingrédient nécessaire avec la liste de l'utilisateur.
 
-Format strict :
-[{"name":"Farine","emoji":"🌾","note":"300g","recipe_quantity":"300g","purchase_unit":"1 sac (1kg)","purchase_qty":1,"importance":"essentiel"}]`
+RÈGLES STRICTES :
+- Si l'utilisateur n'a PAS un ingrédient dans sa liste → il est MANQUANT
+- Si l'utilisateur a l'ingrédient mais en quantité insuffisante → il est MANQUANT
+- Ne JAMAIS assumer qu'un ingrédient est disponible s'il n'est pas EXPLICITEMENT listé par l'utilisateur
+- Le sel, poivre, huile d'olive, eau, sucre sont considérés comme basiques (ne pas lister comme manquants)
+- TOUS les autres ingrédients doivent être vérifiés strictement
+
+Retourne UNIQUEMENT un JSON valide, rien d'autre :
+[{"name":"Nom","emoji":"🧅","note":"quantité nécessaire","recipe_quantity":"300g","purchase_unit":"1 sac (1kg)","purchase_qty":1,"importance":"essentiel"}]
+
+importance : "essentiel" si la recette ne fonctionne pas sans, "recommandé" si ça améliore beaucoup, "optionnel" si c'est un bonus.
+Classe par importance : essentiel d'abord, optionnel en dernier.
+Si RIEN ne manque (très rare), retourne : []`
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   try {
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 400,
+      max_tokens: 800,
       messages: [{ role: 'user', content: prompt }],
     })
     const text = message.content[0].text
