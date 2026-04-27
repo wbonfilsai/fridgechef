@@ -18,38 +18,44 @@ export default async function handler(req, res) {
   }
 
   console.log('[scan-fridge] Image reçue - taille base64:', imageBase64?.length)
-  console.log('[scan-fridge] Media type:', mediaType, '| Language:', lang)
+  console.log('[scan-fridge] Media type:', mediaType, '| Language:', lang, '| raw param:', language)
 
   const prompt = lang === 'fr'
-    ? `Analyse cette photo de frigo et liste tous les ingrédients visibles. Retourne UNIQUEMENT la liste des ingrédients en français, séparés par des virgules. Utilise les noms français standards (ex: 'poulet', 'tomates', 'fromage râpé'). Ne rajoute aucune introduction ni conclusion.
+    ? `LANGUE DE SORTIE : FRANÇAIS UNIQUEMENT. Tous les noms d'ingrédients que tu retournes DOIVENT être en français standard (ex: "poulet", "tomates", "fromage râpé", "concombre"). Ne traduis JAMAIS en anglais.
 
-Règles importantes :
+Analyse cette photo et liste tous les ingrédients visibles.
+
+Règles :
 - Un seul aliment, un morceau, une tranche = valide
 - Peu importe le contexte (frigo, table, main, assiette)
 - Si tu vois quelque chose qui ressemble à un aliment, liste-le
 - Inclus les condiments, épices, sauces visibles
 - Maximum 20 ingrédients
-- Sois généreux dans ta détection, mieux vaut détecter trop que pas assez
+- Sois généreux dans ta détection
+- Noms en français : "concombre" pas "cucumber", "tomate" pas "tomato", "ail" pas "garlic"
 
-Retourne UNIQUEMENT ce JSON valide, rien d'autre :
+Retourne UNIQUEMENT ce JSON valide, rien d'autre, avec les noms en français :
 { "ingredients": ["concombre", "tomate", "ail"] }
 
-Si vraiment aucun aliment n'est visible (image floue, objet non-alimentaire) :
+Si aucun aliment visible :
 { "ingredients": [] }`
-    : `Analyze this fridge photo and list all visible ingredients. Return ONLY the list of ingredients in English, comma-separated. Use standard English names (ex: 'chicken', 'tomatoes', 'shredded cheese'). Do not add any introduction or conclusion.
+    : `OUTPUT LANGUAGE: ENGLISH ONLY. All ingredient names you return MUST be in standard English (e.g. "chicken", "tomatoes", "shredded cheese", "cucumber"). Never translate to French.
 
-Important rules:
+Analyze this photo and list all visible ingredients.
+
+Rules:
 - A single item, a piece, a slice = valid
 - Any context is fine (fridge, table, hand, plate)
 - If something looks like food, list it
 - Include visible condiments, spices, sauces
 - Maximum 20 ingredients
-- Be generous in detection, better to detect too many than too few
+- Be generous in detection
+- English names: "cucumber" not "concombre", "tomato" not "tomate", "garlic" not "ail"
 
-Return ONLY this valid JSON, nothing else:
+Return ONLY this valid JSON, nothing else, with English names:
 { "ingredients": ["cucumber", "tomato", "garlic"] }
 
-If truly no food is visible (blurry image, non-food object):
+If no food visible:
 { "ingredients": [] }`
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })

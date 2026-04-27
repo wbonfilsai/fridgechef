@@ -214,7 +214,7 @@ const T = {
     mealPlanResetBtn: '🔄 Nouveau plan',
     mealPlanDays: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
     dateLocale: 'fr-FR',
-    langPrompt: '',
+    langPrompt: '\nLes ingrédients fournis par l\'utilisateur peuvent être dans n\'importe quelle langue (français, anglais ou un mélange) — comprends-les correctement (ex: "chicken" = poulet, "rice" = riz). Réponds entièrement en français : tous les noms d\'ingrédients, titres, étapes et instructions doivent être en français.',
     mealPlanTitle: '📅 Plan de la semaine',
     mealPlanSub: 'Votre menu 7 jours généré par l\'IA',
     mealPlanIngredientsLabel: 'Ingrédients disponibles pour la semaine',
@@ -239,6 +239,7 @@ const T = {
     addMissingBtn: 'Ajouter les items décochés à ma liste de courses',
     shoppingListClear: 'Vider la liste',
     shoppingListEmpty: 'Votre liste est vide',
+    optionalTag: 'Optionnel',
     shoppingListAddPlaceholder: 'Ajouter un article...',
     shoppingListAddBtn: '+ Ajouter',
     shoppingListItemsLeft: (left, total) => left === 0 ? `Tout acheté (${total})` : `${left} restant${left > 1 ? 's' : ''} / ${total}`,
@@ -508,7 +509,7 @@ const T = {
     mealPlanResetBtn: '🔄 New plan',
     mealPlanDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
     dateLocale: 'en-US',
-    langPrompt: '\nRespond entirely in English.',
+    langPrompt: '\nUser-provided ingredients may be in any language (English, French, or mixed) — understand them correctly (e.g. "poulet" = chicken, "riz" = rice). Respond entirely in English: all ingredient names, titles, steps and instructions must be in English.',
     mealPlanTitle: '📅 Weekly Meal Plan',
     mealPlanSub: 'Your AI-generated 7-day menu',
     mealPlanIngredientsLabel: 'Ingredients available for the week',
@@ -533,6 +534,7 @@ const T = {
     addMissingBtn: 'Add unchecked items to my shopping list',
     shoppingListClear: 'Clear list',
     shoppingListEmpty: 'Your list is empty',
+    optionalTag: 'Optional',
     shoppingListAddPlaceholder: 'Add an item...',
     shoppingListAddBtn: '+ Add',
     shoppingListItemsLeft: (left, total) => left === 0 ? `All bought (${total})` : `${left} left / ${total}`,
@@ -1626,7 +1628,7 @@ function ShoppingListView({ t, shoppingList, setShoppingList }) {
                       <span className="shopping-checkbox-custom" />
                     </span>
                     <span className={`shopping-item-name${item.importance === 'essentiel' ? ' essential' : ''}`}>{item.name}</span>
-                    {item.importance === 'optionnel' && <span className="shopping-optional-tag">Optionnel</span>}
+                    {item.importance === 'optionnel' && <span className="shopping-optional-tag">{t.optionalTag}</span>}
                   </label>
                   <button className="shopping-delete-btn" onClick={() => deleteItem(i)} aria-label={t.shoppingListDelete}>✕</button>
                 </li>
@@ -2815,6 +2817,7 @@ Exact markdown, short steps:
           recipeIngredients,
           userIngredients: userIngList,
           people, cookingTime, dietary: buildDietStr(),
+          lang,
         }),
         signal: ctrl.signal,
       })
