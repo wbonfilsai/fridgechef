@@ -2663,8 +2663,12 @@ Ingredients: ${ingList}
 ${people} serving(s) · Style: ${cText} · Time: ${constraint}${dietText}${allergyText}
 ${skillText}
 
-3 varied proposals, different from: ${excludeNames || 'none'}. Strict format:
-[{"nom":"Name","emoji":"🍝","cuisine":"Style","description":"1-2 sentences.","tempsPrep":"10 min","tempsCuisson":"15 min","difficulte":"Easy","calories":420,"protein":28,"carbs":35,"fat":14}]${t.langPrompt}`
+3 varied proposals, different from: ${excludeNames || 'none'}.
+
+For EACH proposal, "ingredients_full" MUST contain the COMPLETE detailed list of every ingredient required to actually cook the dish for ${people} serving(s) — including sauces, spices, herbs, garnishes, condiments, oils, vinegars, dairy, proteins. Skip ONLY: salt, pepper, water. Quantities must be realistic and scaled to ${people} serving(s).
+
+Strict format:
+[{"nom":"Name","emoji":"🍝","cuisine":"Style","description":"1-2 sentences.","tempsPrep":"10 min","tempsCuisson":"15 min","difficulte":"Easy","calories":420,"protein":28,"carbs":35,"fat":14,"ingredients_full":[{"name":"Tomato","qty":"300g"},{"name":"Garlic","qty":"2 cloves"},{"name":"Olive oil","qty":"2 tbsp"}]}]${t.langPrompt}`
   }
 
   const buildFullRecipePrompt = (valid, proposal, checkIngs) => {
@@ -2743,7 +2747,7 @@ Exact markdown, short steps:
     const ctrl = new AbortController(); abortRef.current = ctrl
     let rawJson = ''
     try {
-      await streamSSE(buildProposalsPrompt(valid), c => { rawJson += c }, ctrl.signal, 'claude-sonnet-4-6', 1000)
+      await streamSSE(buildProposalsPrompt(valid), c => { rawJson += c }, ctrl.signal, 'claude-sonnet-4-6', 1500)
       const match = rawJson.match(/\[[\s\S]*\]/)
       if (!match) throw new Error(lang === 'fr' ? 'Format invalide. Réessayez.' : 'Invalid format. Please retry.')
       const parsed = JSON.parse(match[0])
@@ -2772,7 +2776,7 @@ Exact markdown, short steps:
     const excludeNames = proposals.map(p => p.nom).join(', ')
     let rawJson = ''
     try {
-      await streamSSE(buildProposalsPrompt(valid, excludeNames), c => { rawJson += c }, undefined, 'claude-sonnet-4-6', 1000)
+      await streamSSE(buildProposalsPrompt(valid, excludeNames), c => { rawJson += c }, undefined, 'claude-sonnet-4-6', 1500)
       const match = rawJson.match(/\[[\s\S]*\]/)
       if (!match) throw new Error(lang === 'fr' ? 'Format invalide. Réessayez.' : 'Invalid format. Please retry.')
       const parsed = JSON.parse(match[0])
@@ -2799,12 +2803,16 @@ Exact markdown, short steps:
 
     try {
       const userIngList = valid.map(i => `${i.name.trim()}${i.qty ? ` : ${i.qty} ${i.unit}` : ''}`)
-      console.log('[check-ingredients] Recipe:', proposal.nom, '| User ingredients:', userIngList)
+      const recipeIngredients = Array.isArray(proposal.ingredients_full) ? proposal.ingredients_full : []
+      console.log('[check-ingredients] Recipe:', proposal.nom)
+      console.log('[check-ingredients] RECIPE INGREDIENTS:', recipeIngredients)
+      console.log('[check-ingredients] USER INGREDIENTS:', userIngList)
       const res = await fetch('/api/check-ingredients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipeName: proposal.nom, recipeCuisine: proposal.cuisine,
+          recipeIngredients,
           userIngredients: userIngList,
           people, cookingTime, dietary: buildDietStr(),
         }),
