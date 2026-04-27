@@ -148,7 +148,22 @@ const T = {
       'Password should be at least 6 characters': 'Le mot de passe doit faire au moins 6 caractères.',
       'Email not confirmed': 'Email non confirmé. Vérifiez votre boîte mail.',
     },
-    newRecipe: '✨ Nouvelle recette', myRecipes: '❤️ Mes recettes', mealPlanNav: '📅 Plan semaine', logout: 'Déconnexion',
+    newRecipe: '✨ Nouvelle recette', myRecipes: '❤️ Mes recettes', historyNav: '🕒 Historique', mealPlanNav: '📅 Plan semaine', logout: 'Déconnexion',
+    historyTitle: 'Tes dernières recettes consultées',
+    historySub: 'Les 3 dernières recettes que tu as consultées',
+    historyEmptyTitle: 'Tu n\'as pas encore consulté de recettes',
+    historyEmptyDesc: 'Génère ta première recette pour la voir apparaître ici.',
+    historyEmptyBtn: '✨ Générer une recette',
+    historyClearBtn: 'Vider l\'historique',
+    historyClearConfirm: 'Vider tout l\'historique ?',
+    historyTabLabel: 'Historique',
+    historyViewedAt: (when) => `Consultée ${when}`,
+    historyJustNow: 'à l\'instant',
+    historyMinutesAgo: (n) => `il y a ${n} min`,
+    historyHoursAgo: (n) => `il y a ${n} h`,
+    historyDaysAgo: (n) => `il y a ${n} j`,
+    historyStatusGenerated: '👨‍🍳 Recette générée',
+    historyStatusPending: '🛒 Courses en cours',
     step1Title: '🥦 Mes ingrédients', step1Sub: "Qu'est-ce qu'il y a dans votre frigo ?",
     ing1Placeholder: 'Ex: poulet, tomates, riz...', ingPlaceholder: 'Ingrédient...',
     ingHint: '💡 Les quantités sont optionnelles, écris juste le nom de l\'ingrédient ou ajoute-les si tu veux plus de précision (ex: 300g de farine, 2 œufs)',
@@ -448,7 +463,22 @@ const T = {
       'Password should be at least 6 characters': 'Password must be at least 6 characters.',
       'Email not confirmed': 'Email not confirmed. Check your inbox.',
     },
-    newRecipe: '✨ New recipe', myRecipes: '❤️ My recipes', mealPlanNav: '📅 Meal Plan', logout: 'Sign out',
+    newRecipe: '✨ New recipe', myRecipes: '❤️ My recipes', historyNav: '🕒 History', mealPlanNav: '📅 Meal Plan', logout: 'Sign out',
+    historyTitle: 'Your recently viewed recipes',
+    historySub: 'The last 3 recipes you viewed',
+    historyEmptyTitle: 'You haven\'t viewed any recipes yet',
+    historyEmptyDesc: 'Generate your first recipe to see it appear here.',
+    historyEmptyBtn: '✨ Generate a recipe',
+    historyClearBtn: 'Clear history',
+    historyClearConfirm: 'Clear all history?',
+    historyTabLabel: 'History',
+    historyViewedAt: (when) => `Viewed ${when}`,
+    historyJustNow: 'just now',
+    historyMinutesAgo: (n) => `${n} min ago`,
+    historyHoursAgo: (n) => `${n} h ago`,
+    historyDaysAgo: (n) => `${n} d ago`,
+    historyStatusGenerated: '👨‍🍳 Recipe generated',
+    historyStatusPending: '🛒 Shopping in progress',
     step1Title: '🥦 My ingredients', step1Sub: "What's in your fridge?",
     ing1Placeholder: 'E.g. chicken, tomatoes, rice...', ingPlaceholder: 'Ingredient...',
     ingHint: '💡 Quantities are optional, just type the ingredient name or add amounts for more precision (ex: 2 cups flour, 3 eggs)',
@@ -1666,7 +1696,7 @@ function ShoppingListView({ t, shoppingList, setShoppingList }) {
 /* ════════════════════════════════════════════
    APP HEADER
    ════════════════════════════════════════════ */
-function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAuth, onShowPro, onShowContact, shoppingBadge }) {
+function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAuth, onShowPro, onShowContact, shoppingBadge, historyBadge }) {
   return (
     <header className="app-header">
       <div className="container header-inner">
@@ -1681,6 +1711,12 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAu
             <>
               <button className={`header-nav-btn${view === 'saved' ? ' active' : ''}`} onClick={() => onNavigate('saved')}>
                 {t.myRecipes}
+              </button>
+              <button className={`header-nav-btn${view === 'history' ? ' active' : ''}`} onClick={() => onNavigate('history')}>
+                <span className="nav-history-wrap">
+                  {t.historyNav}
+                  {historyBadge > 0 && <span className="history-badge">{historyBadge}</span>}
+                </span>
               </button>
               <button className={`header-nav-btn${view === 'meal-plan' ? ' active' : ''}`} onClick={() => onNavigate('meal-plan')}>
                 {t.mealPlanNav}
@@ -1715,11 +1751,12 @@ function AppHeader({ t, onToggleLang, user, view, onNavigate, onLogout, onShowAu
 /* ════════════════════════════════════════════
    BOTTOM TAB BAR (Mobile)
    ════════════════════════════════════════════ */
-function BottomTabBar({ lang, view, onNavigate, user, onShowAuth, onLogout, onShowContact, shoppingBadge }) {
+function BottomTabBar({ lang, view, onNavigate, user, onShowAuth, onLogout, onShowContact, shoppingBadge, historyBadge }) {
   const tabs = [
     { id: 'landing', icon: Home, label: lang === 'fr' ? 'Accueil' : 'Home' },
     { id: 'app', icon: ChefHat, label: lang === 'fr' ? 'Générer' : 'Generate' },
     ...(user ? [{ id: 'saved', icon: Bookmark, label: lang === 'fr' ? 'Recettes' : 'Recipes' }] : []),
+    { id: 'history', icon: History, label: lang === 'fr' ? 'Historique' : 'History', badge: historyBadge },
     { id: 'shopping', icon: ShoppingCart, label: lang === 'fr' ? 'Courses' : 'Shopping', badge: shoppingBadge },
     { id: 'contact', icon: Mail, label: 'Contact' },
     { id: user ? 'logout' : 'auth', icon: User, label: user ? (lang === 'fr' ? 'Déconnexion' : 'Sign out') : (lang === 'fr' ? 'Connexion' : 'Sign in') },
@@ -1850,6 +1887,91 @@ function SavedRecipesView({ t, onNavigate }) {
         )}
       </div>
       {activeRecipe && <RecipeModal recipe={activeRecipe} onClose={() => setActiveRecipe(null)} t={t} />}
+    </main>
+  )
+}
+
+/* ════════════════════════════════════════════
+   RECIPE HISTORY VIEW (DEV 2)
+   ════════════════════════════════════════════ */
+function RecipeHistoryView({ t, lang, recipeHistory, onRestore, onClear, onNavigate }) {
+  const [confirmClear, setConfirmClear] = useState(false)
+
+  const formatRelative = (ts) => {
+    if (!ts) return ''
+    const diff = Date.now() - ts
+    const min  = Math.floor(diff / 60000)
+    if (min < 1)   return t.historyJustNow
+    if (min < 60)  return t.historyMinutesAgo(min)
+    const hr = Math.floor(min / 60)
+    if (hr < 24)   return t.historyHoursAgo(hr)
+    return t.historyDaysAgo(Math.floor(hr / 24))
+  }
+
+  const empty = !recipeHistory.length
+
+  return (
+    <main className="main">
+      <div className="container">
+        <div className="saved-header">
+          <h1 className="saved-title">{t.historyTitle}</h1>
+          <p className="saved-sub">{t.historySub}</p>
+        </div>
+
+        {empty ? (
+          <div className="saved-empty">
+            <div className="saved-empty-illustration">🕒</div>
+            <h3>{t.historyEmptyTitle}</h3>
+            <p>{t.historyEmptyDesc}</p>
+            <button className="gen-btn saved-empty-btn" onClick={() => onNavigate('app')}>{t.historyEmptyBtn}</button>
+          </div>
+        ) : (
+          <>
+            <div className="history-toolbar">
+              {confirmClear ? (
+                <div className="history-clear-confirm">
+                  <span>{t.historyClearConfirm}</span>
+                  <button className="history-clear-yes" onClick={() => { onClear(); setConfirmClear(false) }}>{lang === 'fr' ? 'Oui' : 'Yes'}</button>
+                  <button className="history-clear-no" onClick={() => setConfirmClear(false)}>{lang === 'fr' ? 'Non' : 'No'}</button>
+                </div>
+              ) : (
+                <button className="history-clear-btn" onClick={() => setConfirmClear(true)}>🗑️ {t.historyClearBtn}</button>
+              )}
+            </div>
+            <div className="history-grid">
+              {recipeHistory.map((entry, idx) => {
+                const p = entry.proposal || {}
+                const generated = !!entry.recipeText
+                return (
+                  <button key={entry.id} className="history-card" style={{ animationDelay: `${idx * 0.05}s` }} onClick={() => onRestore(entry)}>
+                    <div className="history-card-emoji-wrap">
+                      <span className="history-card-emoji">{p.emoji || '🍽️'}</span>
+                    </div>
+                    <div className="history-card-content">
+                      <h3 className="history-card-title">{p.nom || (lang === 'fr' ? 'Recette' : 'Recipe')}</h3>
+                      <div className="history-card-badges">
+                        {p.cuisine    && <span className="saved-badge">{p.cuisine}</span>}
+                        {p.difficulte && <span className="saved-difficulty-badge">{p.difficulte}</span>}
+                      </div>
+                      <div className="history-card-times">
+                        {p.tempsPrep    && <span className="saved-meta-item">🔪 {p.tempsPrep}</span>}
+                        {p.tempsCuisson && <span className="saved-meta-item">🔥 {p.tempsCuisson}</span>}
+                        {p.calories    != null && <span className="saved-meta-item">🔥 {p.calories} kcal</span>}
+                      </div>
+                      <div className="history-card-footer">
+                        <span className={`history-status${generated ? ' generated' : ''}`}>
+                          {generated ? t.historyStatusGenerated : t.historyStatusPending}
+                        </span>
+                        <span className="history-viewed">{t.historyViewedAt(formatRelative(entry.viewedAt))}</span>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </>
+        )}
+      </div>
     </main>
   )
 }
@@ -2346,6 +2468,9 @@ export default function App() {
   const [shoppingList, setShoppingList] = useState(() => {
     try { return JSON.parse(localStorage.getItem('chefridge_shopping') || '[]') } catch { return [] }
   })
+  const [recipeHistory, setRecipeHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('chefridge_recipe_history') || '[]') } catch { return [] }
+  })
 
   const proposalsRef    = useRef(null)
   const checkRef        = useRef(null)
@@ -2481,6 +2606,42 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('chefridge_shopping', JSON.stringify(shoppingList))
   }, [shoppingList])
+
+  /* Persist recipe history to localStorage */
+  useEffect(() => {
+    localStorage.setItem('chefridge_recipe_history', JSON.stringify(recipeHistory))
+  }, [recipeHistory])
+
+  /* Sync recipe history from Supabase on login */
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('recipe_history')
+          .select('id, recipe_data, viewed_at')
+          .order('viewed_at', { ascending: false })
+          .limit(3)
+        if (cancelled || error || !Array.isArray(data)) return
+        const remote = data.map(r => ({
+          id: r.id,
+          ...r.recipe_data,
+          viewedAt: new Date(r.viewed_at).getTime(),
+        }))
+        if (!remote.length) return
+        // Merge: prefer most recent across local + remote, dedup by proposal name
+        setRecipeHistory(prev => {
+          const merged = [...remote]
+          for (const local of prev) {
+            if (!merged.find(m => m.proposal?.nom === local.proposal?.nom)) merged.push(local)
+          }
+          return merged.sort((a, b) => (b.viewedAt || 0) - (a.viewedAt || 0)).slice(0, 3)
+        })
+      } catch { /* table may not exist yet — ignore */ }
+    })()
+    return () => { cancelled = true }
+  }, [user?.id])
 
   /* Shopping list helpers */
   const addMissingToShopping = () => {
@@ -2835,8 +2996,15 @@ Exact markdown, short steps:
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || `Erreur (${res.status})`) }
       const { ingredients: extras } = await res.json()
       console.log('[check-ingredients] Missing ingredients:', extras)
-      setCheckIngredients((extras || []).map(e => ({ ...e, checked: true })))
+      const checkList = (extras || []).map(e => ({ ...e, checked: true }))
+      setCheckIngredients(checkList)
       setPhase('check')
+      upsertRecipeHistory({
+        proposal,
+        recipeText:       null,
+        userIngredients:  userIngList,
+        checkIngredients: checkList,
+      })
     } catch (err) {
       if (err.name !== 'AbortError') setError(`❌ ${err.message}`)
       setPhase('proposals')
@@ -2855,6 +3023,12 @@ Exact markdown, short steps:
         accumulated += chunk; setRecipeText(prev => prev + chunk)
       }, ctrl.signal, 'claude-opus-4-6', 2000)
       setPhase('recipe')
+      upsertRecipeHistory({
+        proposal,
+        recipeText:       accumulated,
+        userIngredients:  valid.map(i => `${i.name.trim()}${i.qty ? ` : ${i.qty} ${i.unit}` : ''}`),
+        checkIngredients: extras,
+      })
     } catch (err) {
       console.error('[Chefridge] Recipe generation error:', err)
       if (err.name === 'AbortError') {
@@ -2881,6 +3055,81 @@ Exact markdown, short steps:
     setSelectedIdx(null)
     setSelectedProposal(null)
     setPhase('proposals')
+  }
+
+  /* Recipe history helpers */
+  const upsertRecipeHistory = (entry) => {
+    if (!entry?.proposal?.nom) return
+    const key = entry.proposal.nom.toLowerCase()
+    let resolvedId = null
+    setRecipeHistory(prev => {
+      const existingIdx = prev.findIndex(e => e.proposal?.nom?.toLowerCase() === key)
+      const existing    = existingIdx >= 0 ? prev[existingIdx] : null
+      const id          = existing?.id || `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      resolvedId = id
+      const merged = {
+        id,
+        proposal:         entry.proposal ?? existing?.proposal,
+        recipeText:       entry.recipeText ?? existing?.recipeText ?? null,
+        userIngredients:  entry.userIngredients ?? existing?.userIngredients ?? [],
+        checkIngredients: entry.checkIngredients ?? existing?.checkIngredients ?? [],
+        viewedAt:         Date.now(),
+      }
+      const without = existingIdx >= 0 ? prev.filter((_, i) => i !== existingIdx) : prev
+      return [merged, ...without].slice(0, 3)
+    })
+    if (user) {
+      ;(async () => {
+        try {
+          const payload = {
+            id:           resolvedId,
+            proposal:     entry.proposal,
+            recipeText:   entry.recipeText ?? null,
+            userIngredients:  entry.userIngredients ?? [],
+            checkIngredients: entry.checkIngredients ?? [],
+          }
+          await supabase.from('recipe_history').upsert({
+            id:          resolvedId.startsWith('local-') ? undefined : resolvedId,
+            user_id:     user.id,
+            recipe_data: payload,
+            viewed_at:   new Date().toISOString(),
+          }, { onConflict: 'id' })
+          // Trim remote history to 3 most recent
+          const { data: extras } = await supabase.from('recipe_history')
+            .select('id').eq('user_id', user.id)
+            .order('viewed_at', { ascending: false }).range(3, 99)
+          if (extras?.length) {
+            await supabase.from('recipe_history').delete().in('id', extras.map(x => x.id))
+          }
+        } catch { /* table may not exist — ignore */ }
+      })()
+    }
+  }
+
+  const clearRecipeHistory = () => {
+    setRecipeHistory([])
+    if (user) {
+      ;(async () => {
+        try { await supabase.from('recipe_history').delete().eq('user_id', user.id) } catch {}
+      })()
+    }
+  }
+
+  const restoreFromHistory = (entry) => {
+    if (!entry?.proposal) return
+    setSelectedProposal(entry.proposal)
+    setSelectedIdx(null)
+    setCheckIngredients(entry.checkIngredients || [])
+    if (entry.recipeText) {
+      setRecipeText(entry.recipeText)
+      setPhase('recipe')
+    } else {
+      setRecipeText('')
+      setPhase('check')
+    }
+    setError(''); setSaved(false)
+    setView('app')
+    upsertRecipeHistory({ proposal: entry.proposal, recipeText: entry.recipeText, userIngredients: entry.userIngredients, checkIngredients: entry.checkIngredients })
   }
 
   const addMissingAndPrompt = () => {
@@ -2958,13 +3207,15 @@ Exact markdown, short steps:
 
   return (
     <div className="app">
-      <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} onShowAuth={() => setShowAuth(true)} onShowPro={() => { if (user) setShowProModal(true); else { setShowAuth(true); pendingFiltersRef.current = { ...pendingFiltersRef.current, openProAfterAuth: true } } }} onShowContact={() => setShowContact(true)} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
+      <AppHeader t={t} onToggleLang={toggleLang} user={user} view={view} onNavigate={setView} onLogout={handleLogout} onShowAuth={() => setShowAuth(true)} onShowPro={() => { if (user) setShowProModal(true); else { setShowAuth(true); pendingFiltersRef.current = { ...pendingFiltersRef.current, openProAfterAuth: true } } }} onShowContact={() => setShowContact(true)} shoppingBadge={shoppingList.filter(i => !i.checked).length} historyBadge={recipeHistory.length} />
 
       <div style={{ paddingTop: navHeight + 'px' }}>
       {view === 'meal-plan' ? (
         <MealPlanView t={t} lang={lang} onShowPro={() => setShowProModal(true)} />
       ) : view === 'saved' ? (
         <SavedRecipesView t={t} onNavigate={setView} />
+      ) : view === 'history' ? (
+        <RecipeHistoryView t={t} lang={lang} recipeHistory={recipeHistory} onRestore={restoreFromHistory} onClear={clearRecipeHistory} onNavigate={setView} />
       ) : view === 'shopping' ? (
         <ShoppingListView t={t} shoppingList={shoppingList} setShoppingList={setShoppingList} />
       ) : view === 'mealPlan' ? (
@@ -3372,7 +3623,7 @@ Exact markdown, short steps:
         )
       })()}
 
-      <BottomTabBar lang={lang} view={view} onNavigate={setView} user={user} onShowAuth={() => setShowAuth(true)} onLogout={handleLogout} onShowContact={() => setShowContact(true)} shoppingBadge={shoppingList.filter(i => !i.checked).length} />
+      <BottomTabBar lang={lang} view={view} onNavigate={setView} user={user} onShowAuth={() => setShowAuth(true)} onLogout={handleLogout} onShowContact={() => setShowContact(true)} shoppingBadge={shoppingList.filter(i => !i.checked).length} historyBadge={recipeHistory.length} />
 
       {showAuth && <AuthModal t={t} initialTab={authInitTab} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
       {showGate && (
