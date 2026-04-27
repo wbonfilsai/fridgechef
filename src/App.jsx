@@ -237,6 +237,11 @@ const T = {
     shoppingListNav: 'Courses',
     shoppingListTitle: '🛒 Liste de courses',
     addMissingBtn: 'Ajouter les items décochés à ma liste de courses',
+    shoppingDoneTitle: 'Ajouté à ta liste de courses !',
+    shoppingDoneSub: 'Que veux-tu faire ?',
+    shoppingDoneContinue: 'Continuer vers la recette',
+    shoppingDoneShopFirst: 'Je vais faire mes courses d\'abord',
+    shoppingDoneBack: 'Retour',
     shoppingListClear: 'Vider la liste',
     shoppingListEmpty: 'Votre liste est vide',
     optionalTag: 'Optionnel',
@@ -532,6 +537,11 @@ const T = {
     shoppingListNav: 'Shopping',
     shoppingListTitle: '🛒 Shopping List',
     addMissingBtn: 'Add unchecked items to my shopping list',
+    shoppingDoneTitle: 'Added to your shopping list!',
+    shoppingDoneSub: 'What do you want to do?',
+    shoppingDoneContinue: 'Continue to recipe',
+    shoppingDoneShopFirst: 'I\'ll go shopping first',
+    shoppingDoneBack: 'Back',
     shoppingListClear: 'Clear list',
     shoppingListEmpty: 'Your list is empty',
     optionalTag: 'Optional',
@@ -2261,6 +2271,7 @@ export default function App() {
   const [showProModal, setShowProModal]         = useState(false)
   const [userProfile, setUserProfile]           = useState(null)
   const [showPdfModal, setShowPdfModal]         = useState(false)
+  const [showShoppingDoneModal, setShowShoppingDoneModal] = useState(false)
   const [pdfUrl, setPdfUrl]             = useState(null)
   const pdfBlobRef = useRef(null)
   const [showContact, setShowContact] = useState(false)
@@ -2872,6 +2883,27 @@ Exact markdown, short steps:
     setPhase('proposals')
   }
 
+  const addMissingAndPrompt = () => {
+    if (!checkIngredients.some(i => !i.checked)) return
+    addMissingToShopping()
+    setShowShoppingDoneModal(true)
+  }
+
+  const continueAfterShopping = () => {
+    setShowShoppingDoneModal(false)
+    generateFullRecipe()
+  }
+
+  const goShoppingFirst = () => {
+    setShowShoppingDoneModal(false)
+    cancelCheck()
+  }
+
+  const closeShoppingDoneModal = () => {
+    setShowShoppingDoneModal(false)
+    cancelCheck()
+  }
+
   const stopGeneration = () => {
     abortRef.current?.abort(); abortRef.current = null
     if (phase === 'proposals-loading') setPhase('idle')
@@ -3238,7 +3270,7 @@ Exact markdown, short steps:
                     )}
                     <p className="check-sub-note" style={{ visibility: checkIngredients.some(i => !i.checked) ? 'visible' : 'hidden' }}>{t.checkNote}</p>
                     <div className="check-actions">
-                      <button className="gen-btn secondary add-missing-btn" disabled={!checkIngredients.some(i => !i.checked)} onClick={() => { addMissingToShopping(); generateFullRecipe() }}>
+                      <button className="gen-btn secondary add-missing-btn" disabled={!checkIngredients.some(i => !i.checked)} onClick={addMissingAndPrompt}>
                         🛒 {t.addMissingBtn}
                       </button>
                       <button className="gen-btn check-gen-btn" onClick={generateFullRecipe}>
@@ -3368,6 +3400,27 @@ Exact markdown, short steps:
           onClose={() => setShowProModal(false)}
           onJoined={(data) => { setUserProfile(p => ({ ...(p || {}), bonus_generations: data.bonus, bonus_expiry: data.expiry, waitlist_joined: true })) }}
         />
+      )}
+      {showShoppingDoneModal && (
+        <div className="modal-overlay" onClick={closeShoppingDoneModal}>
+          <div className="modal-card shopping-done-modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeShoppingDoneModal} aria-label="Close">×</button>
+            <div className="shopping-done-icon">🛒</div>
+            <h2 className="modal-title">{t.shoppingDoneTitle}</h2>
+            <p className="modal-sub">{t.shoppingDoneSub}</p>
+            <div className="shopping-done-actions">
+              <button className="gen-btn shopping-done-primary" onClick={continueAfterShopping}>
+                <span>👨‍🍳</span> {t.shoppingDoneContinue}
+              </button>
+              <button className="gen-btn secondary shopping-done-secondary" onClick={goShoppingFirst}>
+                {t.shoppingDoneShopFirst}
+              </button>
+              <button className="shopping-done-tertiary" onClick={closeShoppingDoneModal}>
+                {t.shoppingDoneBack}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       {showPdfModal && pdfUrl && (() => {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)

@@ -3461,3 +3461,75 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .cooking-mode-nav { padding: 1rem 16px; padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0)); }
   .cooking-mode-header { padding: 0.75rem 16px; padding-top: calc(0.75rem + env(safe-area-inset-top, 0)); }
 }
+
+/* ═══════════════════════════════════════════
+   SHOPPING DONE MODAL (after add-to-shopping click)
+   ═══════════════════════════════════════════ */
+.shopping-done-modal {
+  text-align: center;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  padding: 2rem 1.75rem;
+}
+.shopping-done-icon {
+  font-size: 2.6rem;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  animation: shoppingDonePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes shoppingDonePop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.shopping-done-modal .modal-title {
+  margin-bottom: 0.35rem;
+  font-size: 1.4rem;
+}
+.shopping-done-modal .modal-sub {
+  margin-bottom: 1.5rem;
+}
+.shopping-done-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.shopping-done-primary {
+  background: #C2410C;
+  color: #fff;
+  border: 1px solid #C2410C;
+  font-weight: 700;
+}
+.shopping-done-primary:hover { background: #9A330A; border-color: #9A330A; }
+.shopping-done-secondary {
+  background: transparent;
+  color: #C2410C;
+  border: 1.5px solid #C2410C;
+  font-weight: 600;
+}
+.shopping-done-secondary:hover {
+  background: rgba(194, 65, 12, 0.08);
+}
+.shopping-done-tertiary {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--t);
+  margin-top: 0.15rem;
+}
+.shopping-done-tertiary:hover {
+  color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .shopping-done-modal { padding: 1.75rem 1.25rem; border-radius: 20px; }
+  .shopping-done-primary,
+  .shopping-done-secondary { min-height: 52px; font-size: 1rem; }
+}
